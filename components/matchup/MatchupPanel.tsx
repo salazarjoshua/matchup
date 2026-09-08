@@ -16,6 +16,7 @@ import {
   InfoIcon,
   LockOpenIcon,
   LockSimpleIcon,
+  SidebarSimpleIcon,
   SlidersHorizontalIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
@@ -137,13 +138,12 @@ const MatchupPanel = ({
           aria-label={collapsed ? 'Show panel' : 'Hide panel'}
           title={collapsed ? 'Show panel' : 'Hide panel'}
           className={cn(
-            'size-rail-tile rounded-control grid place-items-center text-[18px] leading-none',
-            'transition-transform duration-[160ms] ease-out hover:bg-rail-tile-hover',
+            'size-rail-tile rounded-control grid place-items-center',
+            'hover:bg-rail-tile-hover transition-colors duration-120 ease-out',
             'focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none',
-            // The glove faces whichever way the panel opens, and turns away when it closes.
-            (collapsed ? !panelOnLeft : panelOnLeft) && '-scale-x-100',
+            collapsed ? 'text-muted' : 'text-white',
           )}>
-          🥊
+          <SidebarSimpleIcon className="w-5" />
         </button>
         <RailDivider />
         <RailToggle
@@ -153,7 +153,7 @@ const MatchupPanel = ({
           onClick={onToggleVisible}
           title="Hide overlay (⌥V)"
         >
-          {visible ? <EyeIcon /> : <EyeSlashIcon />}
+          {visible ? <EyeIcon className="w-5" /> : <EyeSlashIcon className="w-5" />}
         </RailToggle>
         <RailToggle
           accent="orange"
@@ -162,7 +162,7 @@ const MatchupPanel = ({
           onClick={onToggleLocked}
           title="Lock position (⌥L)"
         >
-          {locked ? <LockSimpleIcon solid /> : <LockOpenIcon />}
+          {locked ? <LockSimpleIcon className="w-5" solid /> : <LockOpenIcon className="w-5" />}
         </RailToggle>
         <RailToggle
           accent="yellow"
@@ -171,7 +171,7 @@ const MatchupPanel = ({
           onClick={onToggleDifference}
           title="Difference (⌥D)"
         >
-          <CircleHalfIcon />
+          <CircleHalfIcon className="w-5" />
         </RailToggle>
       </Rail>
 
@@ -181,10 +181,10 @@ const MatchupPanel = ({
             actions={
               <>
                 <IconButton aria-label="Settings">
-                  <SlidersHorizontalIcon size={16} />
+                  <SlidersHorizontalIcon className="w-4" />
                 </IconButton>
                 <IconButton aria-label="Shortcuts and help">
-                  <InfoIcon size={16} />
+                  <InfoIcon className="w-4" />
                 </IconButton>
               </>
             }
@@ -256,7 +256,7 @@ const MatchupPanel = ({
                       label={
                         <span
                           className={cn(
-                            "border-[1.5px] block size-[13px] border-dashed",
+                            "border-[1.5px] block size-3.25 border-dashed",
                             positionDisabled
                               ? "border-disabled"
                               : "border-muted",

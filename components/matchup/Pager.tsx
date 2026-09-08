@@ -16,7 +16,7 @@ const PagerButton = ({ enabled, className, children, ...props }: PagerButtonProp
     type="button"
     disabled={!enabled}
     className={cn(
-      'size-icon-btn rounded-icon duration-[120ms] grid place-items-center transition-colors ease-out',
+      'size-icon-btn rounded-icon duration-120 grid place-items-center transition-colors ease-out',
       'focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none',
       enabled ? 'bg-surface text-ink hover:bg-surface-track' : 'bg-canvas text-disabled',
       className,
@@ -31,10 +31,10 @@ const Pager = ({ page, pageCount, onPrev, onNext, className, ...props }: PagerPr
     <span className="text-meta text-muted font-mono">{`${page} / ${pageCount}`}</span>
     <span className="ml-auto flex items-center gap-2">
       <PagerButton enabled={page > 1} onClick={onPrev} aria-label="Previous page">
-        <CaretLeftIcon size={13} />
+        <CaretLeftIcon className="w-3.25" />
       </PagerButton>
       <PagerButton enabled={page < pageCount} onClick={onNext} aria-label="Next page">
-        <CaretRightIcon size={13} />
+        <CaretRightIcon className="w-3.25" />
       </PagerButton>
     </span>
   </div>

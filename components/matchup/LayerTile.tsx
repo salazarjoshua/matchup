@@ -89,7 +89,7 @@ const LayerTile = ({
           }
         }}
         className={cn(
-          "h-thumb rounded-control duration-[120ms] group relative cursor-pointer overflow-hidden transition-all ease-out",
+          "h-thumb rounded-control duration-120 group relative cursor-pointer overflow-hidden transition-all ease-out",
           "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
           selected && "ring-accent-blue ring-2",
           !selected && "hover:ring-placeholder hover:ring-2",
@@ -115,22 +115,22 @@ const LayerTile = ({
           />
         )}
         {uploadProgress === undefined && (
-          <span className="rounded-control absolute inset-0 hidden items-center justify-center gap-2 bg-black/[.42] group-hover:flex">
+          <span className="rounded-control absolute inset-0 hidden items-center justify-center gap-2 bg-black/42 group-hover:flex">
             <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
-              <PencilSimpleIcon size={13} />
+              <PencilSimpleIcon className="w-3.25" />
             </ThumbAction>
             <ThumbAction label={`Delete ${name}`} onClick={onDelete}>
-              <TrashIcon size={13} />
+              <TrashIcon className="w-3.25" />
             </ThumbAction>
           </span>
         )}
         {locked && (
-          <span className="rounded-badge bg-accent-orange text-ink absolute bottom-1 right-1 grid size-[18px] place-items-center">
-            <LockSimpleIcon size={11} strokeWidth={2.6} solid />
+          <span className="rounded-badge bg-accent-orange text-ink absolute bottom-1 right-1 grid size-4.5 place-items-center">
+            <LockSimpleIcon className="w-2.75" strokeWidth={2.6} solid />
           </span>
         )}
         {uploadProgress !== undefined && (
-          <span className="text-micro text-ink absolute inset-0 grid place-items-center bg-white/[.72] font-mono">
+          <span className="text-micro text-ink absolute inset-0 grid place-items-center bg-white/72 font-mono">
             {`${uploadProgress}%`}
           </span>
         )}
@@ -146,7 +146,7 @@ const LayerTile = ({
             if (event.key === "Enter") event.currentTarget.blur();
             if (event.key === "Escape") onRename?.(name);
           }}
-          className="border-[1.5px] rounded-badge border-accent-blue text-micro text-ink h-[18px] w-full bg-white px-[5px] font-mono outline-none"
+          className="border-[1.5px] rounded-badge border-accent-blue text-micro text-ink h-4.5 w-full bg-white px-1.25 font-mono outline-none"
         />
       ) : (
         <div
