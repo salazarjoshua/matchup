@@ -52,7 +52,6 @@ export const MATCHUP_DEFAULTS: MatchupState = {
 };
 
 export const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
-export const MAX_LAYERS = 8;
 export const LAYERS_PER_PAGE = 6;
 
 export const matchupState = storage.defineItem<MatchupState>('local:matchup-state', {

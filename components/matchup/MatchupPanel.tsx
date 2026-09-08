@@ -2,7 +2,7 @@ import { AnchorPad } from "./AnchorPad";
 import { EmptyState } from "./EmptyState";
 import { ErrorBanner } from "./ErrorBanner";
 import { Field } from "./Field";
-import { AddTile, LayerGrid, LAYERS_PER_PAGE, MAX_LAYERS } from "./LayerGrid";
+import { AddTile, LayerGrid, LAYERS_PER_PAGE } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
 import { Pager } from "./Pager";
@@ -119,10 +119,7 @@ const MatchupPanel = ({
   const pageCount = Math.max(1, Math.ceil(layers.length / LAYERS_PER_PAGE));
   const start = (page - 1) * LAYERS_PER_PAGE;
   const visibleLayers = layers.slice(start, start + LAYERS_PER_PAGE);
-  const canAdd =
-    layers.length > 0 &&
-    layers.length < MAX_LAYERS &&
-    visibleLayers.length < LAYERS_PER_PAGE;
+  const canAdd = layers.length > 0 && visibleLayers.length < LAYERS_PER_PAGE;
 
   return (
     <div

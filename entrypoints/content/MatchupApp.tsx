@@ -5,7 +5,6 @@ import {
   LAYERS_PER_PAGE,
   LAYER_DEFAULTS,
   MATCHUP_DEFAULTS,
-  MAX_LAYERS,
   matchupState,
 } from "@/utils/matchup-state";
 import {
@@ -133,20 +132,11 @@ export default function MatchupApp() {
         src: await readAsDataUrl(file),
       })),
     );
-    setState((current) => {
-      const added = decoded.slice(0, MAX_LAYERS - current.layers.length);
-      if (added.length === 0) {
-        setError(
-          `Matchup holds ${MAX_LAYERS} layers. Delete one to add another.`,
-        );
-        return current;
-      }
-      return {
-        ...current,
-        layers: [...current.layers, ...added],
-        selectedId: added[added.length - 1]?.id,
-      };
-    });
+    setState((current) => ({
+      ...current,
+      layers: [...current.layers, ...decoded],
+      selectedId: decoded[decoded.length - 1]?.id,
+    }));
   }, []);
 
   const pasteFromClipboard = useCallback(async () => {

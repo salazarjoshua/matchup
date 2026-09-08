@@ -3,7 +3,6 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { DownloadIcon, PlusIcon } from "@/components/icons";
 
 const LAYERS_PER_PAGE = 6;
-const MAX_LAYERS = 8;
 
 type LayerGridProps = ComponentPropsWithoutRef<"div"> & { children: ReactNode };
 
@@ -39,5 +38,5 @@ const DropTarget = ({
   </div>
 );
 
-export { LayerGrid, AddTile, DropTarget, LAYERS_PER_PAGE, MAX_LAYERS };
+export { LayerGrid, AddTile, DropTarget, LAYERS_PER_PAGE };
 export type { LayerGridProps };
