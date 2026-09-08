@@ -1,13 +1,21 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-type IconProps = Omit<ComponentPropsWithoutRef<'svg'>, 'viewBox' | 'children'> & {
+type IconProps = Omit<
+  ComponentPropsWithoutRef<"svg">,
+  "viewBox" | "children"
+> & {
   /** 20 in the rail, 16 in the title bar, 13 inside badges and hover actions. */
   size?: number;
 };
 
 type IconShellProps = IconProps & { children: ReactNode };
 
-const IconShell = ({ size = 20, strokeWidth = 2.2, children, ...props }: IconShellProps) => (
+const IconShell = ({
+  size = 20,
+  strokeWidth = 2.2,
+  children,
+  ...props
+}: IconShellProps) => (
   <svg
     viewBox="0 0 24 24"
     width={size}
@@ -18,7 +26,8 @@ const IconShell = ({ size = 20, strokeWidth = 2.2, children, ...props }: IconShe
     strokeLinecap="round"
     strokeLinejoin="round"
     className="block"
-    {...props}>
+    {...props}
+  >
     {children}
   </svg>
 );

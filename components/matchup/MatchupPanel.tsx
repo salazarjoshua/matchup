@@ -1,14 +1,14 @@
-import { AnchorPad } from './AnchorPad';
-import { EmptyState } from './EmptyState';
-import { ErrorBanner } from './ErrorBanner';
-import { Field } from './Field';
-import { AddTile, LayerGrid, LAYERS_PER_PAGE, MAX_LAYERS } from './LayerGrid';
-import { LayerTile } from './LayerTile';
-import { OpacityBar } from './OpacityBar';
-import { Pager } from './Pager';
-import { Rail, RailDivider, RailGrip } from './Rail';
-import { RailToggle } from './RailToggle';
-import { IconButton, TitleBar } from './TitleBar';
+import { AnchorPad } from "./AnchorPad";
+import { EmptyState } from "./EmptyState";
+import { ErrorBanner } from "./ErrorBanner";
+import { Field } from "./Field";
+import { AddTile, LayerGrid, LAYERS_PER_PAGE, MAX_LAYERS } from "./LayerGrid";
+import { LayerTile } from "./LayerTile";
+import { OpacityBar } from "./OpacityBar";
+import { Pager } from "./Pager";
+import { Rail, RailDivider, RailGrip } from "./Rail";
+import { RailToggle } from "./RailToggle";
+import { IconButton, TitleBar } from "./TitleBar";
 import {
   CircleHalfIcon,
   EyeIcon,
@@ -17,9 +17,12 @@ import {
   LockOpenIcon,
   LockSimpleIcon,
   SlidersHorizontalIcon,
-} from '@/components/icons';
-import { cn } from '@/utils/cn';
-import type { ComponentPropsWithoutRef, PointerEvent as ReactPointerEvent } from 'react';
+} from "@/components/icons";
+import { cn } from "@/utils/cn";
+import type {
+  ComponentPropsWithoutRef,
+  PointerEvent as ReactPointerEvent,
+} from "react";
 
 type Layer = {
   id: string;
@@ -29,7 +32,7 @@ type Layer = {
   uploadProgress?: number;
 };
 
-type MatchupPanelProps = Omit<ComponentPropsWithoutRef<'div'>, 'children'> & {
+type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   layers: Layer[];
   selectedId?: string;
   visible: boolean;
@@ -105,21 +108,44 @@ const MatchupPanel = ({
   const pageCount = Math.max(1, Math.ceil(layers.length / LAYERS_PER_PAGE));
   const start = (page - 1) * LAYERS_PER_PAGE;
   const visibleLayers = layers.slice(start, start + LAYERS_PER_PAGE);
-  const canAdd = layers.length > 0 && layers.length < MAX_LAYERS && visibleLayers.length < LAYERS_PER_PAGE;
+  const canAdd =
+    layers.length > 0 &&
+    layers.length < MAX_LAYERS &&
+    visibleLayers.length < LAYERS_PER_PAGE;
 
   return (
-    <div className={cn('flex items-start gap-3 font-sans', className)} {...props}>
+    <div
+      className={cn("flex items-start gap-3 font-sans", className)}
+      {...props}
+    >
       <Rail>
         <RailGrip onPointerDown={onGripPointerDown} />
-        <div className="size-rail-tile grid place-items-center text-[18px] leading-none">🥊</div>
+        <div className="size-rail-tile grid place-items-center text-[18px] leading-none">
+          🥊
+        </div>
         <RailDivider />
-        <RailToggle accent="blue" on={visible} onClick={onToggleVisible} title="Hide overlay  ⌥V">
+        <RailToggle
+          accent="blue"
+          on={visible}
+          onClick={onToggleVisible}
+          title="Hide overlay (⌥V)"
+        >
           {visible ? <EyeIcon /> : <EyeSlashIcon />}
         </RailToggle>
-        <RailToggle accent="orange" on={locked} onClick={onToggleLocked} title="Lock position  ⌥L">
+        <RailToggle
+          accent="orange"
+          on={locked}
+          onClick={onToggleLocked}
+          title="Lock position (⌥L)"
+        >
           {locked ? <LockSimpleIcon solid /> : <LockOpenIcon />}
         </RailToggle>
-        <RailToggle accent="yellow" on={difference} onClick={onToggleDifference} title="Difference  ⌥D">
+        <RailToggle
+          accent="yellow"
+          on={difference}
+          onClick={onToggleDifference}
+          title="Difference (⌥D)"
+        >
           <CircleHalfIcon />
         </RailToggle>
       </Rail>
@@ -141,12 +167,14 @@ const MatchupPanel = ({
 
           {error && <ErrorBanner message={error} />}
 
-          {layers.length === 0 && !error && <EmptyState onUpload={onUpload} onPaste={onPaste} />}
+          {layers.length === 0 && !error && (
+            <EmptyState onUpload={onUpload} onPaste={onPaste} />
+          )}
 
           {layers.length > 0 && (
             <>
               <LayerGrid>
-                {visibleLayers.map(layer => (
+                {visibleLayers.map((layer) => (
                   <LayerTile
                     key={layer.id}
                     name={layer.name}
@@ -158,11 +186,13 @@ const MatchupPanel = ({
                     renaming={layer.id === renamingId}
                     onSelect={() => onSelectLayer?.(layer.id)}
                     onStartRename={() => onStartRename?.(layer.id)}
-                    onRename={next => onRenameLayer?.(layer.id, next)}
+                    onRename={(next) => onRenameLayer?.(layer.id, next)}
                     onDelete={() => onDeleteLayer?.(layer.id)}
                   />
                 ))}
-                {canAdd && <AddTile aria-label="Add layer" onClick={onUpload} />}
+                {canAdd && (
+                  <AddTile aria-label="Add layer" onClick={onUpload} />
+                )}
               </LayerGrid>
 
               {layers.length > LAYERS_PER_PAGE && (
@@ -177,7 +207,11 @@ const MatchupPanel = ({
 
               <div className="border-hairline border-t p-3">
                 <div className="flex items-start gap-3">
-                  <AnchorPad selected={anchor} disabled={positionDisabled} onSelect={onAnchorSelect} />
+                  <AnchorPad
+                    selected={anchor}
+                    disabled={positionDisabled}
+                    onSelect={onAnchorSelect}
+                  />
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <Field
                       label="X"
@@ -197,8 +231,10 @@ const MatchupPanel = ({
                       label={
                         <span
                           className={cn(
-                            'border-[1.5px] block size-[13px] border-dashed',
-                            positionDisabled ? 'border-disabled' : 'border-muted',
+                            "border-[1.5px] block size-[13px] border-dashed",
+                            positionDisabled
+                              ? "border-disabled"
+                              : "border-muted",
                           )}
                         />
                       }
@@ -211,7 +247,12 @@ const MatchupPanel = ({
                 </div>
               </div>
 
-              <OpacityBar value={opacity} disabled={opacityDisabled} onChange={onOpacityChange} className="p-3" />
+              <OpacityBar
+                value={opacity}
+                disabled={opacityDisabled}
+                onChange={onOpacityChange}
+                className="p-3 pt-0"
+              />
             </>
           )}
         </div>

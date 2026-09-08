@@ -1,15 +1,25 @@
-import { cn } from '@/utils/cn';
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import { cn } from "@/utils/cn";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-type RailProps = ComponentPropsWithoutRef<'div'> & { children: ReactNode };
+type RailProps = ComponentPropsWithoutRef<"div"> & { children: ReactNode };
 
-const RailGrip = ({ className, ...props }: ComponentPropsWithoutRef<'div'>) => (
+const RailGrip = ({ className, ...props }: ComponentPropsWithoutRef<"div">) => (
   <div
-    className={cn('w-rail-tile grid h-6 cursor-grab grid-cols-3 grid-rows-2 place-content-center gap-1', className)}
-    {...props}>
-    {Array.from({ length: 6 }, (_, i) => (
-      <span key={i} className="size-1 rounded-full bg-white/[.38]" />
-    ))}
+    className={cn(
+      "w-full cursor-grab grid place-content-center gap-1 text-white/38 pt-2 -mt-4 -mb-3",
+      className,
+    )}
+    {...props}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="32"
+      height="32"
+      fill="currentColor"
+      viewBox="0 0 256 256"
+    >
+      <path d="M72,92A12,12,0,1,1,60,80,12,12,0,0,1,72,92Zm56-12a12,12,0,1,0,12,12A12,12,0,0,0,128,80Zm68,24a12,12,0,1,0-12-12A12,12,0,0,0,196,104ZM60,152a12,12,0,1,0,12,12A12,12,0,0,0,60,152Zm68,0a12,12,0,1,0,12,12A12,12,0,0,0,128,152Zm68,0a12,12,0,1,0,12,12A12,12,0,0,0,196,152Z"></path>
+    </svg>
   </div>
 );
 
@@ -18,10 +28,11 @@ const RailDivider = () => <div className="h-px w-6 bg-white/[.16]" />;
 const Rail = ({ className, children, ...props }: RailProps) => (
   <div
     className={cn(
-      'w-rail rounded-panel border-hairline-dark bg-rail flex flex-none flex-col items-center gap-2 border py-3',
+      "w-rail rounded-panel border-hairline-dark bg-rail flex flex-none flex-col items-center gap-2 border py-3",
       className,
     )}
-    {...props}>
+    {...props}
+  >
     {children}
   </div>
 );

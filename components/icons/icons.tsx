@@ -1,5 +1,5 @@
-import { IconShell } from './Icon';
-import type { IconProps } from './Icon';
+import { IconShell } from "./Icon";
+import type { IconProps } from "./Icon";
 
 /** Active rail icons flip to solid on the accent fill. */
 type SolidIconProps = IconProps & { solid?: boolean };
@@ -7,7 +7,7 @@ type SolidIconProps = IconProps & { solid?: boolean };
 export const EyeIcon = ({ solid = true, ...props }: SolidIconProps) => (
   <IconShell {...props}>
     <ellipse cx="12" cy="12" rx="9.5" ry="6" />
-    <circle cx="12" cy="12" r="2.6" fill={solid ? 'currentColor' : 'none'} />
+    <circle cx="12" cy="12" r="2.6" fill={solid ? "currentColor" : "none"} />
   </IconShell>
 );
 
@@ -27,8 +27,8 @@ export const LockSimpleIcon = ({ solid = false, ...props }: SolidIconProps) => (
       width="15"
       height="9.5"
       rx="2.5"
-      fill={solid ? 'currentColor' : 'none'}
-      stroke={solid ? 'none' : undefined}
+      fill={solid ? "currentColor" : "none"}
+      stroke={solid ? "none" : undefined}
     />
     <path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3" />
   </IconShell>
@@ -66,14 +66,13 @@ export const InfoIcon = (props: IconProps) => (
 
 export const PencilSimpleIcon = (props: IconProps) => (
   <IconShell {...props}>
-    <path d="M4 20h4L20 8l-4-4L4 16v4Z" />
-    <path d="M14.5 5.5 18.5 9.5" />
+    <path d="m21.31 6.878-4.188-4.19a1.5 1.5 0 0 0-2.122 0L3.44 14.25A1.49 1.49 0 0 0 3 15.31v4.19A1.5 1.5 0 0 0 4.5 21h4.19a1.49 1.49 0 0 0 1.06-.44L21.31 9a1.5 1.5 0 0 0 0-2.122M4.81 15l7.94-7.94 1.565 1.565-7.94 7.939zm-.31 1.81 2.69 2.69H4.5zM9 19.19l-1.565-1.565 7.94-7.94 1.565 1.565zm9-9L13.81 6l2.25-2.25 4.19 4.189z" />
   </IconShell>
 );
 
 export const XIcon = (props: IconProps) => (
   <IconShell {...props}>
-    <path d="M6 6l12 12M18 6 6 18" />
+    <path d="M20.25 4.5H16.5v-.75a2.25 2.25 0 0 0-2.25-2.25h-4.5A2.25 2.25 0 0 0 7.5 3.75v.75H3.75a.75.75 0 0 0 0 1.5h.75v13.5A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V6h.75a.75.75 0 1 0 0-1.5M9 3.75A.75.75 0 0 1 9.75 3h4.5a.75.75 0 0 1 .75.75v.75H9zm9 15.75H6V6h12zm-7.5-9.75v6a.75.75 0 1 1-1.5 0v-6a.75.75 0 0 1 1.5 0m4.5 0v6a.75.75 0 1 1-1.5 0v-6a.75.75 0 1 1 1.5 0" />
   </IconShell>
 );
 
