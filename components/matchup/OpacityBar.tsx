@@ -1,8 +1,15 @@
-import { cn } from '@/utils/cn';
-import { useRef } from 'react';
-import type { ComponentPropsWithoutRef, KeyboardEvent, PointerEvent } from 'react';
+import { cn } from "@/utils/cn";
+import { useRef } from "react";
+import type {
+  ComponentPropsWithoutRef,
+  KeyboardEvent,
+  PointerEvent,
+} from "react";
 
-type OpacityBarProps = Omit<ComponentPropsWithoutRef<'div'>, 'children' | 'onChange'> & {
+type OpacityBarProps = Omit<
+  ComponentPropsWithoutRef<"div">,
+  "children" | "onChange"
+> & {
   /** 0–100. */
   value: number;
   disabled?: boolean;
@@ -11,7 +18,13 @@ type OpacityBarProps = Omit<ComponentPropsWithoutRef<'div'>, 'children' | 'onCha
 
 const clamp = (n: number) => Math.min(100, Math.max(0, Math.round(n)));
 
-const OpacityBar = ({ value, disabled = false, onChange, className, ...props }: OpacityBarProps) => {
+const OpacityBar = ({
+  value,
+  disabled = false,
+  onChange,
+  className,
+  ...props
+}: OpacityBarProps) => {
   const track = useRef<HTMLDivElement>(null);
 
   const setFromClientX = (clientX: number) => {
@@ -28,7 +41,8 @@ const OpacityBar = ({ value, disabled = false, onChange, className, ...props }: 
   };
 
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (disabled || !event.currentTarget.hasPointerCapture(event.pointerId)) return;
+    if (disabled || !event.currentTarget.hasPointerCapture(event.pointerId))
+      return;
     setFromClientX(event.clientX);
   };
 
@@ -36,9 +50,9 @@ const OpacityBar = ({ value, disabled = false, onChange, className, ...props }: 
     if (disabled) return;
     const step = event.shiftKey ? 10 : 1;
     const delta =
-      event.key === 'ArrowRight' || event.key === 'ArrowUp'
+      event.key === "ArrowRight" || event.key === "ArrowUp"
         ? step
-        : event.key === 'ArrowLeft' || event.key === 'ArrowDown'
+        : event.key === "ArrowLeft" || event.key === "ArrowDown"
           ? -step
           : 0;
     if (delta === 0) return;
@@ -47,7 +61,7 @@ const OpacityBar = ({ value, disabled = false, onChange, className, ...props }: 
   };
 
   return (
-    <div className={cn('flex items-center gap-3', className)} {...props}>
+    <div className={cn("flex items-center gap-3", className)} {...props}>
       <div
         ref={track}
         role="slider"
@@ -61,23 +75,33 @@ const OpacityBar = ({ value, disabled = false, onChange, className, ...props }: 
         onPointerMove={onPointerMove}
         onKeyDown={onKeyDown}
         className={cn(
-          'h-control rounded-control group relative flex-1 overflow-hidden',
-          'focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none',
-          disabled ? 'bg-surface' : 'bg-surface-track cursor-pointer',
-        )}>
+          "h-control rounded-control group relative flex-1 overflow-hidden",
+          "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
+          disabled ? "bg-surface" : "bg-surface-track cursor-pointer",
+        )}
+      >
         <div
-          className={cn('absolute inset-y-0 left-0', disabled ? 'bg-disabled' : 'bg-accent-blue')}
+          className={cn(
+            "absolute inset-y-0 left-0",
+            disabled ? "bg-disabled" : "bg-accent-blue",
+          )}
           style={{ width: `${value}%` }}
         />
         <div
           className={cn(
-            'duration-[120ms] pointer-events-none absolute inset-y-[5px] -ml-0.5 w-1 rounded-[3px] bg-white transition-all ease-out',
-            !disabled && 'group-hover:ring-accent-blue/[.22] group-hover:w-1.5 group-hover:ring-4',
+            "pointer-events-none absolute inset-y-1.25 -ml-0.5 w-1 rounded-[3px] bg-white",
+            !disabled &&
+              "group-hover:ring-accent-blue/[.22] group-hover:w-1.5 group-hover:ring-4",
           )}
           style={{ left: `clamp(4px, ${value}%, calc(100% - 8px))` }}
         />
       </div>
-      <span className={cn('text-value w-10 text-right font-mono', disabled ? 'text-disabled' : 'text-ink')}>
+      <span
+        className={cn(
+          "text-value w-10 text-right font-mono",
+          disabled ? "text-disabled" : "text-ink",
+        )}
+      >
         {value}%
       </span>
     </div>

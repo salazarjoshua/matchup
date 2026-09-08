@@ -1,6 +1,6 @@
-import type { ComponentPropsWithoutRef } from 'react';
+import type { ComponentPropsWithoutRef } from "react";
 
-export type IconProps = Omit<ComponentPropsWithoutRef<'svg'>, 'viewBox'> & {
+export type IconProps = Omit<ComponentPropsWithoutRef<"svg">, "viewBox"> & {
   /** 20 in the rail, 16 in the title bar, 13 inside badges and hover actions. */
   size?: number;
 };
@@ -8,26 +8,26 @@ export type IconProps = Omit<ComponentPropsWithoutRef<'svg'>, 'viewBox'> & {
 /** Shared defaults for outlined icons. Override any of them inline on the icon. */
 const stroked = (size = 20) =>
   ({
-    viewBox: '0 0 24 24',
+    viewBox: "0 0 24 24",
     width: size,
     height: size,
-    className: 'block',
-    fill: 'none',
-    stroke: 'currentColor',
+    className: "block",
+    fill: "none",
+    stroke: "currentColor",
     strokeWidth: 2.2,
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
   }) as const;
 
 /** Shared defaults for solid icons whose path already describes the filled shape. */
 const filled = (size = 20) =>
   ({
-    viewBox: '0 0 24 24',
+    viewBox: "0 0 24 24",
     width: size,
     height: size,
-    className: 'block',
-    fill: 'currentColor',
-    stroke: 'none',
+    className: "block",
+    fill: "currentColor",
+    stroke: "none",
   }) as const;
 
 /** Active rail icons flip to solid on the accent fill. */
@@ -36,7 +36,7 @@ type SolidIconProps = IconProps & { solid?: boolean };
 export const EyeIcon = ({ size, solid = true, ...props }: SolidIconProps) => (
   <svg {...stroked(size)} {...props}>
     <ellipse cx="12" cy="12" rx="9.5" ry="6" />
-    <circle cx="12" cy="12" r="2.6" fill={solid ? 'currentColor' : 'none'} />
+    <circle cx="12" cy="12" r="2.6" fill={solid ? "currentColor" : "none"} />
   </svg>
 );
 
@@ -48,7 +48,11 @@ export const EyeSlashIcon = ({ size, ...props }: IconProps) => (
   </svg>
 );
 
-export const LockSimpleIcon = ({ size, solid = false, ...props }: SolidIconProps) => (
+export const LockSimpleIcon = ({
+  size,
+  solid = false,
+  ...props
+}: SolidIconProps) => (
   <svg {...stroked(size)} {...props}>
     <rect
       x="4.5"
@@ -56,8 +60,8 @@ export const LockSimpleIcon = ({ size, solid = false, ...props }: SolidIconProps
       width="15"
       height="9.5"
       rx="2.5"
-      fill={solid ? 'currentColor' : 'none'}
-      stroke={solid ? 'none' : undefined}
+      fill={solid ? "currentColor" : "none"}
+      stroke={solid ? "none" : undefined}
     />
     <path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3" />
   </svg>
@@ -93,6 +97,17 @@ export const InfoIcon = ({ size, ...props }: IconProps) => (
   </svg>
 );
 
+export const PlusIcon = ({ ...props }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M21 12a.75.75 0 0 1-.75.75h-7.5v7.5a.75.75 0 1 1-1.5 0v-7.5h-7.5a.75.75 0 1 1 0-1.5h7.5v-7.5a.75.75 0 1 1 1.5 0v7.5h7.5A.75.75 0 0 1 21 12" />
+  </svg>
+);
+
 export const PencilSimpleIcon = ({ size, ...props }: IconProps) => (
   <svg {...filled(size)} {...props}>
     <path d="m21.31 6.878-4.188-4.19a1.5 1.5 0 0 0-2.122 0L3.44 14.25A1.49 1.49 0 0 0 3 15.31v4.19A1.5 1.5 0 0 0 4.5 21h4.19a1.49 1.49 0 0 0 1.06-.44L21.31 9a1.5 1.5 0 0 0 0-2.122M4.81 15l7.94-7.94 1.565 1.565-7.94 7.939zm-.31 1.81 2.69 2.69H4.5zM9 19.19l-1.565-1.565 7.94-7.94 1.565 1.565zm9-9L13.81 6l2.25-2.25 4.19 4.189z" />
@@ -111,10 +126,14 @@ export const XIcon = ({ size, ...props }: IconProps) => (
   </svg>
 );
 
-export const ArrowUpIcon = ({ size, ...props }: IconProps) => (
-  <svg {...stroked(size)} {...props}>
-    <path d="M12 19V5" />
-    <path d="M6 11l6-6 6 6" />
+export const DownloadIcon = ({ ...props }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M21 13.5v6a.75.75 0 0 1-.75.75H3.75A.75.75 0 0 1 3 19.5v-6a.75.75 0 1 1 1.5 0v5.25h15V13.5a.75.75 0 1 1 1.5 0M8.78 7.28l2.47-2.47v8.69a.75.75 0 1 0 1.5 0V4.81l2.47 2.47a.75.75 0 1 0 1.06-1.06l-3.75-3.75a.75.75 0 0 0-1.06 0L7.72 6.22a.75.75 0 0 0 1.06 1.06" />
   </svg>
 );
 

@@ -1,4 +1,8 @@
-import { LockSimpleIcon, PencilSimpleIcon, TrashIcon } from '@/components/icons';
+import {
+  LockSimpleIcon,
+  PencilSimpleIcon,
+  TrashIcon,
+} from "@/components/icons";
 import { cn } from "@/utils/cn";
 import { useEffect, useRef } from "react";
 import type { ComponentPropsWithoutRef } from "react";
@@ -103,7 +107,13 @@ const LayerTile = ({
               }
         }
       >
-        {src && <img src={src} alt="" className="size-full object-cover" />}
+        {src && (
+          <img
+            src={src}
+            alt=""
+            className="size-full object-cover select-none"
+          />
+        )}
         {uploadProgress === undefined && (
           <span className="rounded-control absolute inset-0 hidden items-center justify-center gap-2 bg-black/[.42] group-hover:flex">
             <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>

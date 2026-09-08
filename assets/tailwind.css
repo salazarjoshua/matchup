@@ -65,6 +65,12 @@
   --shadow-thumb-action: 0 1px 4px rgb(0 0 0 / 0.3);
 }
 
-button {
-  @apply cursor-pointer;
+@layer base {
+  ::selection {
+    @apply bg-accent-blue text-white;
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
 }
