@@ -40,6 +40,11 @@ export default function MatchupApp() {
 
   const fileInput = useRef<HTMLInputElement>(null);
   const dragOffset = useRef<{ dx: number; dy: number } | null>(null);
+  const overlay = useRef<HTMLDivElement>(null);
+  const widget = useRef<HTMLDivElement>(null);
+  const overlayDrag = useRef<{ dx: number; dy: number } | null>(null);
+  const [draggingOverlay, setDraggingOverlay] = useState(false);
+  const [widgetSize, setWidgetSize] = useState({ w: RAIL_WIDTH, h: RAIL_MIN_VISIBLE });
 
   const patch = useCallback(
     (next: Partial<MatchupState>) =>
@@ -89,6 +94,20 @@ export default function MatchupApp() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  useEffect(() => {
+    const el = widget.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      setWidgetSize({
+        w: Math.round(entry.contentRect.width),
+        h: Math.round(entry.contentRect.height),
+      });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hydrated]);
+
   const addFiles = useCallback(async (files: File[]) => {
     const rejected = files.find((file) => !ACCEPTED_TYPES.includes(file.type));
     if (rejected) {
@@ -117,7 +136,7 @@ export default function MatchupApp() {
       return {
         ...current,
         layers: [...current.layers, ...added],
-        selectedId: current.selectedId ?? added[0]?.id,
+        selectedId: added[added.length - 1]?.id,
       };
     });
   }, []);
@@ -162,6 +181,33 @@ export default function MatchupApp() {
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const typing =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable === true;
+
+      if (!event.altKey && !typing) {
+        const step = event.shiftKey ? 10 : 1;
+        const nudge =
+          event.key === "ArrowLeft"
+            ? { dx: -step, dy: 0 }
+            : event.key === "ArrowRight"
+              ? { dx: step, dy: 0 }
+              : event.key === "ArrowUp"
+                ? { dx: 0, dy: -step }
+                : event.key === "ArrowDown"
+                  ? { dx: 0, dy: step }
+                  : null;
+        if (nudge) {
+          const layer = selectedRef.current;
+          if (!layer || layer.locked || !layer.visible) return;
+          event.preventDefault();
+          moveBy(nudge.dx, nudge.dy);
+          return;
+        }
+      }
+
       if (!event.altKey) return;
       const key = event.key.toLowerCase();
       if (key === "v") patchLayer({ visible: !selectedRef.current?.visible });
@@ -194,16 +240,78 @@ export default function MatchupApp() {
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
 
+  /** An anchored layer is picked up from wherever it currently sits on screen. */
+  const freePosition = () => {
+    const layer = selectedRef.current;
+    if (!layer) return { x: 0, y: 0 };
+    if (layer.anchor === null) {
+      return { x: Number(layer.x) || 0, y: Number(layer.y) || 0 };
+    }
+    const rect = overlay.current?.getBoundingClientRect();
+    return { x: Math.round(rect?.left ?? 0), y: Math.round(rect?.top ?? 0) };
+  };
+
+  // Composes off the latest state so a held-down arrow key never drops steps.
+  const moveBy = (dx: number, dy: number) =>
+    setState((current) => {
+      const layer = current.layers.find((l) => l.id === current.selectedId);
+      if (!layer) return current;
+      const rect = overlay.current?.getBoundingClientRect();
+      const base =
+        layer.anchor === null
+          ? { x: Number(layer.x) || 0, y: Number(layer.y) || 0 }
+          : { x: Math.round(rect?.left ?? 0), y: Math.round(rect?.top ?? 0) };
+      return {
+        ...current,
+        layers: current.layers.map((l) =>
+          l.id === current.selectedId
+            ? {
+                ...l,
+                anchor: null,
+                x: String(base.x + dx),
+                y: String(base.y + dy),
+              }
+            : l,
+        ),
+      };
+    });
+
+  const onOverlayPointerDown = (event: ReactPointerEvent) => {
+    const layer = selectedRef.current;
+    if (!layer || layer.locked) return;
+    event.preventDefault();
+    const from = freePosition();
+    overlayDrag.current = {
+      dx: event.clientX - from.x,
+      dy: event.clientY - from.y,
+    };
+    setDraggingOverlay(true);
+    const onMove = (move: PointerEvent) => {
+      if (!overlayDrag.current) return;
+      patchLayer({
+        anchor: null,
+        x: String(Math.round(move.clientX - overlayDrag.current.dx)),
+        y: String(Math.round(move.clientY - overlayDrag.current.dy)),
+      });
+    };
+    const onUp = () => {
+      overlayDrag.current = null;
+      setDraggingOverlay(false);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
   // Devtools opening shrinks the viewport, which can strand the rail off-screen.
   // Only the rail is pinned inside the edges — the panel flips to whichever side fits.
   const railLeft = Math.max(
     EDGE,
     Math.min(state.origin.left, viewport.w - RAIL_WIDTH - EDGE),
   );
-  const railTop = Math.max(
-    EDGE,
-    Math.min(state.origin.top, viewport.h - RAIL_MIN_VISIBLE),
-  );
+  const maxTop = Math.max(EDGE, viewport.h - widgetSize.h - EDGE);
+  const railTop = Math.min(Math.max(EDGE, state.origin.top), maxTop);
 
   const roomRight = viewport.w - (railLeft + RAIL_WIDTH) - GAP - EDGE;
   const roomLeft = railLeft - GAP - EDGE;
@@ -256,6 +364,10 @@ export default function MatchupApp() {
           scale={Number(settings.scale) || 1}
           opacity={settings.opacity}
           difference={settings.difference}
+          draggable={!settings.locked}
+          dragging={draggingOverlay}
+          onPointerDown={onOverlayPointerDown}
+          ref={overlay}
         />
       )}
 
@@ -272,6 +384,7 @@ export default function MatchupApp() {
       />
 
       <div
+        ref={widget}
         style={{
           position: "fixed",
           top: railTop,

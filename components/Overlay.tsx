@@ -1,3 +1,5 @@
+import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
+
 type OverlayProps = {
   src: string;
   /** Index 0–8 of the active snap point, or null when x/y are used directly. */
@@ -8,6 +10,11 @@ type OverlayProps = {
   /** 0–100. */
   opacity: number;
   difference: boolean;
+  /** Locking the layer hands clicks back to the page underneath. */
+  draggable?: boolean;
+  dragging?: boolean;
+  onPointerDown?: (event: ReactPointerEvent) => void;
+  ref?: Ref<HTMLDivElement>;
 };
 
 const EDGE = ['0px', '50%', '100%'];
@@ -24,25 +31,42 @@ const ORIGIN = [
   'bottom right',
 ];
 
-const Overlay = ({ src, anchor, x, y, scale, opacity, difference }: OverlayProps) => {
+const Overlay = ({
+  src,
+  anchor,
+  x,
+  y,
+  scale,
+  opacity,
+  difference,
+  draggable = false,
+  dragging = false,
+  onPointerDown,
+  ref,
+}: OverlayProps) => {
   const col = anchor === null ? 0 : anchor % 3;
   const row = anchor === null ? 0 : Math.floor(anchor / 3);
 
   return (
     <div
-      // Never intercepts clicks: the point of the tool is comparing against a live page.
+      ref={ref}
+      onPointerDown={draggable ? onPointerDown : undefined}
       style={{
         position: 'fixed',
         left: anchor === null ? `${x}px` : EDGE[col],
         top: anchor === null ? `${y}px` : EDGE[row],
         transform: anchor === null ? undefined : `translate(${SHIFT[col]}, ${SHIFT[row]})`,
         mixBlendMode: difference ? 'difference' : 'normal',
-        pointerEvents: 'none',
+        // Only grabs clicks while it can actually be moved; locked overlays are inert.
+        pointerEvents: draggable ? 'auto' : 'none',
+        cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined,
+        touchAction: draggable ? 'none' : undefined,
         zIndex: 2147483646,
       }}>
       <img
         src={src}
         alt=""
+        draggable={false}
         style={{
           display: 'block',
           opacity: opacity / 100,
