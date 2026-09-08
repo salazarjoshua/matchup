@@ -3,16 +3,22 @@ import { MatchupPanel } from '@/components/matchup';
 import {
   ACCEPTED_TYPES,
   LAYERS_PER_PAGE,
+  LAYER_DEFAULTS,
   MATCHUP_DEFAULTS,
   MAX_LAYERS,
   matchupState,
 } from '@/utils/matchup-state';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { browser } from 'wxt/browser';
-import type { MatchupState } from '@/utils/matchup-state';
+import type { LayerSettings, MatchupState } from '@/utils/matchup-state';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 
 const SAVE_DEBOUNCE_MS = 300;
+const RAIL_WIDTH = 64;
+const PANEL_WIDTH = 320;
+const GAP = 12;
+const EDGE = 8;
+const RAIL_MIN_VISIBLE = 120;
 
 const readAsDataUrl = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -27,11 +33,22 @@ export default function MatchupApp() {
   const [renamingId, setRenamingId] = useState<string>();
   const [error, setError] = useState<string>();
   const [hydrated, setHydrated] = useState(false);
+  const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight });
 
   const fileInput = useRef<HTMLInputElement>(null);
   const dragOffset = useRef<{ dx: number; dy: number } | null>(null);
 
   const patch = useCallback((next: Partial<MatchupState>) => setState(current => ({ ...current, ...next })), []);
+
+  /** Settings live on the layer, so every edit targets the selected one. */
+  const patchLayer = useCallback(
+    (next: Partial<LayerSettings>) =>
+      setState(current => ({
+        ...current,
+        layers: current.layers.map(layer => (layer.id === current.selectedId ? { ...layer, ...next } : layer)),
+      })),
+    [],
+  );
 
   useEffect(() => {
     matchupState
@@ -52,6 +69,12 @@ export default function MatchupApp() {
     return () => clearTimeout(timer);
   }, [state, hydrated]);
 
+  useEffect(() => {
+    const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const addFiles = useCallback(async (files: File[]) => {
     const rejected = files.find(file => !ACCEPTED_TYPES.includes(file.type));
     if (rejected) {
@@ -61,6 +84,7 @@ export default function MatchupApp() {
     setError(undefined);
     const decoded = await Promise.all(
       files.map(async file => ({
+        ...LAYER_DEFAULTS,
         id: crypto.randomUUID(),
         name: file.name || 'pasted.png',
         src: await readAsDataUrl(file),
@@ -68,12 +92,11 @@ export default function MatchupApp() {
     );
     setState(current => {
       const added = decoded.slice(0, MAX_LAYERS - current.layers.length);
-      if (added.length === 0) return current;
-      return {
-        ...current,
-        layers: [...current.layers, ...added],
-        selectedId: current.selectedId ?? added[0]?.id,
-      };
+      if (added.length === 0) {
+        setError(`Matchup holds ${MAX_LAYERS} layers. Delete one to add another.`);
+        return current;
+      }
+      return { ...current, layers: [...current.layers, ...added], selectedId: current.selectedId ?? added[0]?.id };
     });
   }, []);
 
@@ -113,9 +136,9 @@ export default function MatchupApp() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey) return;
       const key = event.key.toLowerCase();
-      if (key === 'v') setState(c => ({ ...c, visible: !c.visible }));
-      else if (key === 'l') setState(c => ({ ...c, locked: !c.locked }));
-      else if (key === 'd') setState(c => ({ ...c, difference: !c.difference }));
+      if (key === 'v') patchLayer({ visible: !selectedRef.current?.visible });
+      else if (key === 'l') patchLayer({ locked: !selectedRef.current?.locked });
+      else if (key === 'd') patchLayer({ difference: !selectedRef.current?.difference });
       else if (event.key === '[') setState(c => ({ ...c, page: Math.max(1, c.page - 1) }));
       else if (event.key === ']') setState(c => ({ ...c, page: c.page + 1 }));
       else return;
@@ -134,10 +157,28 @@ export default function MatchupApp() {
       window.removeEventListener('keydown', onKeyDown, true);
       window.removeEventListener('paste', onPaste, true);
     };
-  }, [open, addFiles]);
+  }, [open, addFiles, patchLayer]);
+
+  const selected = state.layers.find(layer => layer.id === state.selectedId);
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
+
+  // Devtools opening shrinks the viewport, which can strand the rail off-screen.
+  // Only the rail is pinned inside the edges — the panel flips to whichever side fits.
+  const railLeft = Math.max(EDGE, Math.min(state.origin.left, viewport.w - RAIL_WIDTH - EDGE));
+  const railTop = Math.max(EDGE, Math.min(state.origin.top, viewport.h - RAIL_MIN_VISIBLE));
+
+  const roomRight = viewport.w - (railLeft + RAIL_WIDTH) - GAP - EDGE;
+  const roomLeft = railLeft - GAP - EDGE;
+  const panelOnLeft = roomRight < PANEL_WIDTH && roomLeft >= PANEL_WIDTH;
+
+  // Anchoring by the right edge keeps the rail put while the panel grows leftward.
+  const anchorStyle = panelOnLeft
+    ? { right: viewport.w - (railLeft + RAIL_WIDTH) }
+    : { left: railLeft };
 
   const onGripPointerDown = (event: ReactPointerEvent) => {
-    dragOffset.current = { dx: event.clientX - state.origin.left, dy: event.clientY - state.origin.top };
+    dragOffset.current = { dx: event.clientX - railLeft, dy: event.clientY - railTop };
     const onMove = (move: PointerEvent) => {
       if (!dragOffset.current) return;
       patch({ origin: { left: move.clientX - dragOffset.current.dx, top: move.clientY - dragOffset.current.dy } });
@@ -153,20 +194,20 @@ export default function MatchupApp() {
 
   if (!hydrated || !open) return null;
 
-  const selected = state.layers.find(layer => layer.id === state.selectedId);
+  const settings: LayerSettings = selected ?? LAYER_DEFAULTS;
   const pageCount = Math.max(1, Math.ceil(state.layers.length / LAYERS_PER_PAGE));
 
   return (
     <>
-      {selected?.src && state.visible && (
+      {selected?.src && settings.visible && (
         <Overlay
           src={selected.src}
-          anchor={state.anchor}
-          x={Number(state.x) || 0}
-          y={Number(state.y) || 0}
-          scale={Number(state.scale) || 1}
-          opacity={state.opacity}
-          difference={state.difference}
+          anchor={settings.anchor}
+          x={Number(settings.x) || 0}
+          y={Number(settings.y) || 0}
+          scale={Number(settings.scale) || 1}
+          opacity={settings.opacity}
+          difference={settings.difference}
         />
       )}
 
@@ -182,26 +223,30 @@ export default function MatchupApp() {
         }}
       />
 
-      <div style={{ position: 'fixed', left: state.origin.left, top: state.origin.top, zIndex: 2147483647 }}>
+      <div style={{ position: 'fixed', top: railTop, zIndex: 2147483647, ...anchorStyle }}>
         <MatchupPanel
           layers={state.layers}
           selectedId={state.selectedId}
           renamingId={renamingId}
-          visible={state.visible}
-          locked={state.locked}
-          difference={state.difference}
-          opacity={state.opacity}
-          anchor={state.anchor}
-          x={state.x}
-          y={state.y}
-          scale={state.scale}
+          visible={settings.visible}
+          locked={settings.locked}
+          difference={settings.difference}
+          opacity={settings.opacity}
+          anchor={settings.anchor}
+          x={settings.x}
+          y={settings.y}
+          scale={settings.scale}
           page={Math.min(state.page, pageCount)}
           error={error}
-          onToggleVisible={() => patch({ visible: !state.visible })}
-          onToggleLocked={() => patch({ locked: !state.locked })}
-          onToggleDifference={() => patch({ difference: !state.difference })}
-          onOpacityChange={opacity => patch({ opacity })}
-          onAnchorSelect={index => patch({ anchor: state.anchor === index ? null : index })}
+          collapsed={!state.panelOpen}
+          panelOnLeft={panelOnLeft}
+          hasSelection={Boolean(selected)}
+          onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
+          onToggleVisible={() => patchLayer({ visible: !settings.visible })}
+          onToggleLocked={() => patchLayer({ locked: !settings.locked })}
+          onToggleDifference={() => patchLayer({ difference: !settings.difference })}
+          onOpacityChange={opacity => patchLayer({ opacity })}
+          onAnchorSelect={index => patchLayer({ anchor: settings.anchor === index ? null : index })}
           onPageChange={next => patch({ page: Math.min(Math.max(1, next), pageCount) })}
           onUpload={() => fileInput.current?.click()}
           onPaste={() => void pasteFromClipboard()}
@@ -216,9 +261,9 @@ export default function MatchupApp() {
             const remaining = state.layers.filter(layer => layer.id !== id);
             patch({ layers: remaining, selectedId: state.selectedId === id ? remaining[0]?.id : state.selectedId });
           }}
-          onXChange={x => patch({ x })}
-          onYChange={y => patch({ y })}
-          onScaleChange={scale => patch({ scale })}
+          onXChange={x => patchLayer({ x })}
+          onYChange={y => patchLayer({ y })}
+          onScaleChange={scale => patchLayer({ scale })}
           onGripPointerDown={onGripPointerDown}
         />
       </div>
