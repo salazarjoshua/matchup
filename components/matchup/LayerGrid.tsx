@@ -34,7 +34,7 @@ const DropTarget = ({
   ...props
 }: ComponentPropsWithoutRef<"div">) => (
   <div className={cn("flex min-w-0 flex-col gap-2", className)} {...props}>
-    <div className="border-[1.5px] h-thumb rounded-control border-accent-blue bg-accent-blue/[.05] border-dashed" />
+    <div className="border-[1.5px] h-thumb rounded-control border-accent-blue bg-accent-blue/5 border-dashed" />
     <div className="text-micro text-muted truncate font-mono">drop here</div>
   </div>
 );

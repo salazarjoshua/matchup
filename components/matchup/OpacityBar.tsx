@@ -91,7 +91,7 @@ const OpacityBar = ({
           className={cn(
             "pointer-events-none absolute inset-y-1.25 -ml-0.5 w-1 rounded-[3px] bg-white",
             !disabled &&
-              "group-hover:ring-accent-blue/[.22] group-hover:w-1.5 group-hover:ring-4",
+              "group-hover:ring-accent-blue/22 group-hover:w-1.5 group-hover:ring-4",
           )}
           style={{ left: `clamp(4px, ${value}%, calc(100% - 8px))` }}
         />

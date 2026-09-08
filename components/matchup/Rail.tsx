@@ -32,7 +32,7 @@ const RailGrip = ({ className, ...props }: ComponentPropsWithoutRef<"div">) => (
   </div>
 );
 
-const RailDivider = () => <div className="h-px w-6 bg-white/[.16]" />;
+const RailDivider = () => <div className="h-px w-6 bg-white/16" />;
 
 const Rail = ({ className, children, ...props }: RailProps) => (
   <div

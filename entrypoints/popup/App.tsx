@@ -23,7 +23,7 @@ export default function App() {
   };
 
   return (
-    <div className="bg-canvas flex w-[260px] flex-col gap-3 p-3 font-sans">
+    <div className="bg-canvas flex w-65 flex-col gap-3 p-3 font-sans">
       <div className="flex items-center gap-2">
         <span className="text-[15px] leading-none">🥊</span>
         <span className="text-panel-title text-ink">Matchup</span>
@@ -31,7 +31,7 @@ export default function App() {
       <button
         type="button"
         onClick={togglePanel}
-        className="h-control rounded-control bg-accent-blue text-tile-label text-white transition-colors duration-[120ms] ease-out hover:brightness-95">
+        className="h-control rounded-control bg-accent-blue text-tile-label text-white transition-colors duration-120 ease-out hover:brightness-95">
         Toggle panel
       </button>
       {problem ? (
