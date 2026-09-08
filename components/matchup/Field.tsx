@@ -11,6 +11,13 @@ type FieldProps = Omit<ComponentPropsWithoutRef<'div'>, 'onChange'> & {
   onChange?: (value: string) => void;
 };
 
+/** Keeps a partial entry like "-" or "1." usable while still rejecting non-numeric input. */
+const toNumeric = (raw: string) => {
+  const negative = raw.trimStart().startsWith('-');
+  const [whole, ...rest] = raw.replace(/[^0-9.]/g, '').split('.');
+  return `${negative ? '-' : ''}${whole}${rest.length ? `.${rest.join('')}` : ''}`;
+};
+
 const Field = ({ label, value, editable = false, disabled = false, onChange, className, ...props }: FieldProps) => {
   const [focused, setFocused] = useState(false);
   const interactive = editable && !disabled && Boolean(onChange);
@@ -18,7 +25,7 @@ const Field = ({ label, value, editable = false, disabled = false, onChange, cla
   return (
     <div
       className={cn(
-        'h-control rounded-control duration-[120ms] flex items-center gap-2 transition-colors ease-out',
+        'h-control rounded-control duration-120 flex items-center gap-2 transition-colors ease-out',
         focused && interactive
           ? 'border-[1.5px] border-accent-blue bg-white px-[11.5px]'
           : editable && !disabled
@@ -34,7 +41,7 @@ const Field = ({ label, value, editable = false, disabled = false, onChange, cla
         <input
           value={value}
           inputMode="decimal"
-          onChange={event => onChange?.(event.currentTarget.value)}
+          onChange={event => onChange?.(toNumeric(event.currentTarget.value))}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           className="text-value text-ink min-w-0 flex-1 bg-transparent font-mono outline-none"
