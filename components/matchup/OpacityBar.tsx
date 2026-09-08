@@ -1,5 +1,5 @@
 import { cn } from "@/utils/cn";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type {
   ComponentPropsWithoutRef,
   KeyboardEvent,
@@ -16,6 +16,9 @@ type OpacityBarProps = Omit<
   onChange?: (value: number) => void;
 };
 
+/** Every 10%, skipping the ends so nothing sits under the rounded corners. */
+const TICKS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
+
 const clamp = (n: number) => Math.min(100, Math.max(0, Math.round(n)));
 
 const OpacityBar = ({
@@ -26,6 +29,14 @@ const OpacityBar = ({
   ...props
 }: OpacityBarProps) => {
   const track = useRef<HTMLDivElement>(null);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const commitDraft = () => {
+    setEditing(false);
+    if (draft.trim() === "") return;
+    onChange?.(clamp(Number(draft)));
+  };
 
   const setFromClientX = (clientX: number) => {
     const el = track.current;
@@ -75,9 +86,9 @@ const OpacityBar = ({
         onPointerMove={onPointerMove}
         onKeyDown={onKeyDown}
         className={cn(
-          "h-control rounded-control group relative flex-1 overflow-hidden",
+          "h-control rounded-control bg-surface group relative flex-1 overflow-hidden",
           "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
-          disabled ? "bg-surface" : "bg-surface-track cursor-pointer",
+          !disabled && "cursor-pointer",
         )}
       >
         <div
@@ -87,23 +98,62 @@ const OpacityBar = ({
           )}
           style={{ width: `${value}%` }}
         />
+        {!disabled &&
+          TICKS.map((tick) => (
+            <span
+              key={tick}
+              // Each tick colours itself for the ground it sits on, so the blue fill
+              // and the grey track both stay legible without clipping tricks.
+              className={cn(
+                "pointer-events-none absolute top-1/2 h-2.5 w-px -translate-y-1/2 rounded-full",
+                "opacity-0 transition-opacity duration-120 ease-out",
+                "group-hover:opacity-100 group-focus-visible:opacity-100",
+                tick <= value ? "bg-white/55" : "bg-ink/15",
+              )}
+              style={{ left: `${tick}%` }}
+            />
+          ))}
         <div
-          className={cn(
-            "pointer-events-none absolute inset-y-1.25 -ml-0.5 w-1 rounded-[3px] bg-white",
-            !disabled &&
-              "group-hover:ring-accent-blue/22 group-hover:w-1.5 group-hover:ring-4",
-          )}
-          style={{ left: `clamp(4px, ${value}%, calc(100% - 8px))` }}
+          className="pointer-events-none absolute inset-y-1.75 -ml-1.75 w-1 rounded-full bg-white"
+          style={{ left: `clamp(4px, ${value}%, calc(100% - 4px))` }}
         />
       </div>
-      <span
-        className={cn(
-          "text-value w-10 text-right font-mono",
-          disabled ? "text-disabled" : "text-ink",
-        )}
-      >
-        {value}%
-      </span>
+      {editing && !disabled ? (
+        <input
+          autoFocus
+          value={draft}
+          inputMode="numeric"
+          aria-label="Overlay opacity value"
+          onChange={(event) =>
+            setDraft(event.currentTarget.value.replace(/[^0-9]/g, ""))
+          }
+          onBlur={commitDraft}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.currentTarget.blur();
+            if (event.key === "Escape") setEditing(false);
+            // The track's arrow handling shouldn't fight the caret.
+            event.stopPropagation();
+          }}
+          className="text-value text-ink w-10 bg-transparent text-right font-mono outline-none"
+        />
+      ) : (
+        <button
+          type="button"
+          disabled={disabled}
+          aria-label="Edit opacity value"
+          onClick={() => {
+            setDraft(String(value));
+            setEditing(true);
+          }}
+          className={cn(
+            "text-value w-10 text-right font-mono",
+            "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue rounded-[3px] focus-visible:outline-none",
+            disabled ? "text-disabled" : "text-ink hover:text-accent-blue",
+          )}
+        >
+          {value}%
+        </button>
+      )}
     </div>
   );
 };
