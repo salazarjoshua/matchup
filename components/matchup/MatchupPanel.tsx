@@ -61,6 +61,11 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onRenameLayer?: (id: string, name: string) => void;
   onDeleteLayer?: (id: string) => void;
   onDismissError?: () => void;
+  onTogglePanel?: () => void;
+  /** Render the panel on the rail's left so it stays on screen near the right edge. */
+  panelOnLeft?: boolean;
+  /** Settings belong to a layer, so the rail is inert until one is selected. */
+  hasSelection?: boolean;
   onXChange?: (value: string) => void;
   onYChange?: (value: string) => void;
   onScaleChange?: (value: string) => void;
@@ -95,6 +100,9 @@ const MatchupPanel = ({
   onRenameLayer,
   onDeleteLayer,
   onDismissError,
+  onTogglePanel,
+  panelOnLeft = false,
+  hasSelection = true,
   onXChange,
   onYChange,
   onScaleChange,
@@ -117,17 +125,30 @@ const MatchupPanel = ({
 
   return (
     <div
-      className={cn("flex items-start gap-3 font-sans", className)}
+      className={cn('flex items-start gap-3 font-sans', panelOnLeft && 'flex-row-reverse', className)}
       {...props}
     >
       <Rail>
         <RailGrip onPointerDown={onGripPointerDown} />
-        <div className="size-rail-tile grid place-items-center text-[18px] leading-none">
+        <button
+          type="button"
+          onClick={onTogglePanel}
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? 'Show panel' : 'Hide panel'}
+          title={collapsed ? 'Show panel' : 'Hide panel'}
+          className={cn(
+            'size-rail-tile rounded-control grid place-items-center text-[18px] leading-none',
+            'transition-transform duration-[160ms] ease-out hover:bg-rail-tile-hover',
+            'focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none',
+            // The glove faces whichever way the panel opens, and turns away when it closes.
+            (collapsed ? !panelOnLeft : panelOnLeft) && '-scale-x-100',
+          )}>
           🥊
-        </div>
+        </button>
         <RailDivider />
         <RailToggle
           accent="blue"
+          disabled={!hasSelection}
           on={visible}
           onClick={onToggleVisible}
           title="Hide overlay (⌥V)"
@@ -136,6 +157,7 @@ const MatchupPanel = ({
         </RailToggle>
         <RailToggle
           accent="orange"
+          disabled={!hasSelection}
           on={locked}
           onClick={onToggleLocked}
           title="Lock position (⌥L)"
@@ -144,6 +166,7 @@ const MatchupPanel = ({
         </RailToggle>
         <RailToggle
           accent="yellow"
+          disabled={!hasSelection}
           on={difference}
           onClick={onToggleDifference}
           title="Difference (⌥D)"
