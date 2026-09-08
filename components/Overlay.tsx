@@ -2,8 +2,6 @@ import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
 
 type OverlayProps = {
   src: string;
-  /** Index 0–8 of the active snap point, or null when x/y are used directly. */
-  anchor: number | null;
   x: number;
   y: number;
   scale: number;
@@ -14,26 +12,18 @@ type OverlayProps = {
   draggable?: boolean;
   dragging?: boolean;
   onPointerDown?: (event: ReactPointerEvent) => void;
+  onLoad?: () => void;
   ref?: Ref<HTMLDivElement>;
+  imageRef?: Ref<HTMLImageElement>;
 };
 
-const EDGE = ['0px', '50%', '100%'];
-const SHIFT = ['0%', '-50%', '-100%'];
-const ORIGIN = [
-  'top left',
-  'top center',
-  'top right',
-  'center left',
-  'center',
-  'center right',
-  'bottom left',
-  'bottom center',
-  'bottom right',
-];
-
+/**
+ * There is exactly one positioning model: the top-left corner of the scaled image
+ * sits at (x, y). Anchors are arithmetic on x/y, never a second way to lay this out —
+ * otherwise releasing an anchor moves the image out from under the cursor.
+ */
 const Overlay = ({
   src,
-  anchor,
   x,
   y,
   scale,
@@ -42,41 +32,38 @@ const Overlay = ({
   draggable = false,
   dragging = false,
   onPointerDown,
+  onLoad,
   ref,
-}: OverlayProps) => {
-  const col = anchor === null ? 0 : anchor % 3;
-  const row = anchor === null ? 0 : Math.floor(anchor / 3);
-
-  return (
-    <div
-      ref={ref}
-      onPointerDown={draggable ? onPointerDown : undefined}
+  imageRef,
+}: OverlayProps) => (
+  <div
+    ref={ref}
+    onPointerDown={draggable ? onPointerDown : undefined}
+    style={{
+      position: 'fixed',
+      left: `${x}px`,
+      top: `${y}px`,
+      mixBlendMode: difference ? 'difference' : 'normal',
+      pointerEvents: draggable ? 'auto' : 'none',
+      cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined,
+      touchAction: draggable ? 'none' : undefined,
+      zIndex: 2147483646,
+    }}>
+    <img
+      ref={imageRef}
+      src={src}
+      alt=""
+      draggable={false}
+      onLoad={onLoad}
       style={{
-        position: 'fixed',
-        left: anchor === null ? `${x}px` : EDGE[col],
-        top: anchor === null ? `${y}px` : EDGE[row],
-        transform: anchor === null ? undefined : `translate(${SHIFT[col]}, ${SHIFT[row]})`,
-        mixBlendMode: difference ? 'difference' : 'normal',
-        // Only grabs clicks while it can actually be moved; locked overlays are inert.
-        pointerEvents: draggable ? 'auto' : 'none',
-        cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined,
-        touchAction: draggable ? 'none' : undefined,
-        zIndex: 2147483646,
-      }}>
-      <img
-        src={src}
-        alt=""
-        draggable={false}
-        style={{
-          display: 'block',
-          opacity: opacity / 100,
-          maxWidth: 'none',
-          transform: `scale(${scale})`,
-          transformOrigin: anchor === null ? 'top left' : ORIGIN[anchor],
-        }}
-      />
-    </div>
-  );
-};
+        display: 'block',
+        opacity: opacity / 100,
+        maxWidth: 'none',
+        transform: `scale(${scale})`,
+        transformOrigin: 'top left',
+      }}
+    />
+  </div>
+);
 
 export default Overlay;

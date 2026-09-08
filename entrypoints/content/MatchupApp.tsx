@@ -8,7 +8,13 @@ import {
   MAX_LAYERS,
   matchupState,
 } from "@/utils/matchup-state";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { browser } from "wxt/browser";
 import type { LayerSettings, MatchupState } from "@/utils/matchup-state";
 import type { PointerEvent as ReactPointerEvent } from "react";
@@ -41,6 +47,8 @@ export default function MatchupApp() {
   const fileInput = useRef<HTMLInputElement>(null);
   const dragOffset = useRef<{ dx: number; dy: number } | null>(null);
   const overlay = useRef<HTMLDivElement>(null);
+  const overlayImage = useRef<HTMLImageElement>(null);
+  const [imageEpoch, setImageEpoch] = useState(0);
   const widget = useRef<HTMLDivElement>(null);
   const overlayDrag = useRef<{ dx: number; dy: number } | null>(null);
   const [draggingOverlay, setDraggingOverlay] = useState(false);
@@ -240,27 +248,46 @@ export default function MatchupApp() {
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
 
-  /** An anchored layer is picked up from wherever it currently sits on screen. */
-  const freePosition = () => {
+  /** Where the scaled image's top-left corner lands for a given snap point. */
+  const anchoredPosition = useCallback(
+    (index: number, scale: number) => {
+      const image = overlayImage.current;
+      const width = (image?.naturalWidth ?? 0) * scale;
+      const height = (image?.naturalHeight ?? 0) * scale;
+      const col = index % 3;
+      const row = Math.floor(index / 3);
+      const axis = (cell: number, available: number, size: number) =>
+        cell === 0 ? 0 : cell === 1 ? Math.round((available - size) / 2) : Math.round(available - size);
+      return {
+        x: String(axis(col, viewport.w, width)),
+        y: String(axis(row, viewport.h, height)),
+      };
+    },
+    [viewport.w, viewport.h],
+  );
+
+  // An anchored layer re-solves its position when the window, scale or image changes.
+  useLayoutEffect(() => {
     const layer = selectedRef.current;
-    if (!layer) return { x: 0, y: 0 };
-    if (layer.anchor === null) {
-      return { x: Number(layer.x) || 0, y: Number(layer.y) || 0 };
-    }
-    const rect = overlay.current?.getBoundingClientRect();
-    return { x: Math.round(rect?.left ?? 0), y: Math.round(rect?.top ?? 0) };
-  };
+    if (!layer || layer.anchor === null) return;
+    const next = anchoredPosition(layer.anchor, Number(layer.scale) || 1);
+    if (layer.x === next.x && layer.y === next.y) return;
+    patchLayer(next);
+  }, [
+    state.selectedId,
+    selected?.anchor,
+    selected?.scale,
+    selected?.src,
+    imageEpoch,
+    anchoredPosition,
+    patchLayer,
+  ]);
 
   // Composes off the latest state so a held-down arrow key never drops steps.
   const moveBy = (dx: number, dy: number) =>
     setState((current) => {
       const layer = current.layers.find((l) => l.id === current.selectedId);
       if (!layer) return current;
-      const rect = overlay.current?.getBoundingClientRect();
-      const base =
-        layer.anchor === null
-          ? { x: Number(layer.x) || 0, y: Number(layer.y) || 0 }
-          : { x: Math.round(rect?.left ?? 0), y: Math.round(rect?.top ?? 0) };
       return {
         ...current,
         layers: current.layers.map((l) =>
@@ -268,8 +295,8 @@ export default function MatchupApp() {
             ? {
                 ...l,
                 anchor: null,
-                x: String(base.x + dx),
-                y: String(base.y + dy),
+                x: String((Number(l.x) || 0) + dx),
+                y: String((Number(l.y) || 0) + dy),
               }
             : l,
         ),
@@ -280,10 +307,9 @@ export default function MatchupApp() {
     const layer = selectedRef.current;
     if (!layer || layer.locked) return;
     event.preventDefault();
-    const from = freePosition();
     overlayDrag.current = {
-      dx: event.clientX - from.x,
-      dy: event.clientY - from.y,
+      dx: event.clientX - (Number(layer.x) || 0),
+      dy: event.clientY - (Number(layer.y) || 0),
     };
     setDraggingOverlay(true);
     const onMove = (move: PointerEvent) => {
@@ -358,7 +384,6 @@ export default function MatchupApp() {
       {selected?.src && settings.visible && (
         <Overlay
           src={selected.src}
-          anchor={settings.anchor}
           x={Number(settings.x) || 0}
           y={Number(settings.y) || 0}
           scale={Number(settings.scale) || 1}
@@ -367,7 +392,9 @@ export default function MatchupApp() {
           draggable={!settings.locked}
           dragging={draggingOverlay}
           onPointerDown={onOverlayPointerDown}
+          onLoad={() => setImageEpoch((n) => n + 1)}
           ref={overlay}
+          imageRef={overlayImage}
         />
       )}
 
@@ -417,7 +444,14 @@ export default function MatchupApp() {
           }
           onOpacityChange={(opacity) => patchLayer({ opacity })}
           onAnchorSelect={(index) =>
-            patchLayer({ anchor: settings.anchor === index ? null : index })
+            patchLayer(
+              settings.anchor === index
+                ? { anchor: null }
+                : {
+                    anchor: index,
+                    ...anchoredPosition(index, Number(settings.scale) || 1),
+                  },
+            )
           }
           onPageChange={(next) =>
             patch({ page: Math.min(Math.max(1, next), pageCount) })
