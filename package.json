@@ -1,6 +1,6 @@
 {
-  "name": "wxt-react-starter",
-  "description": "manifest.json description",
+  "name": "matchup-extension",
+  "description": "Pixel-perfect image overlay for comparing designs against live pages.",
   "private": true,
   "version": "0.0.0",
   "type": "module",
