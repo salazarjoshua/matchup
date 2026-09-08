@@ -77,6 +77,25 @@ export default function MatchupApp() {
     });
   }, []);
 
+  const pasteFromClipboard = useCallback(async () => {
+    try {
+      const items = await navigator.clipboard.read();
+      const files: File[] = [];
+      for (const item of items) {
+        const type = item.types.find(candidate => ACCEPTED_TYPES.includes(candidate));
+        if (!type) continue;
+        files.push(new File([await item.getType(type)], `pasted.${type.split('/')[1]}`, { type }));
+      }
+      if (files.length === 0) {
+        setError('No image on the clipboard. Copy an image, then try again.');
+        return;
+      }
+      await addFiles(files);
+    } catch {
+      setError('Couldn’t read the clipboard. Press ⌘V over the page instead.');
+    }
+  }, [addFiles]);
+
   useEffect(() => {
     const onMessage = (message: unknown) => {
       if ((message as { type?: string })?.type === 'matchup:toggle') {
@@ -185,7 +204,8 @@ export default function MatchupApp() {
           onAnchorSelect={index => patch({ anchor: state.anchor === index ? null : index })}
           onPageChange={next => patch({ page: Math.min(Math.max(1, next), pageCount) })}
           onUpload={() => fileInput.current?.click()}
-          onPaste={() => setError('Press ⌘V to paste an image from your clipboard.')}
+          onPaste={() => void pasteFromClipboard()}
+          onDismissError={() => setError(undefined)}
           onSelectLayer={id => patch({ selectedId: id })}
           onStartRename={setRenamingId}
           onRenameLayer={(id, name) => {

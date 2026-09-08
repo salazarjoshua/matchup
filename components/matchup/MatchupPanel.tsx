@@ -60,6 +60,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onStartRename?: (id: string) => void;
   onRenameLayer?: (id: string, name: string) => void;
   onDeleteLayer?: (id: string) => void;
+  onDismissError?: () => void;
   onXChange?: (value: string) => void;
   onYChange?: (value: string) => void;
   onScaleChange?: (value: string) => void;
@@ -93,6 +94,7 @@ const MatchupPanel = ({
   onStartRename,
   onRenameLayer,
   onDeleteLayer,
+  onDismissError,
   onXChange,
   onYChange,
   onScaleChange,
@@ -165,9 +167,9 @@ const MatchupPanel = ({
             }
           />
 
-          {error && <ErrorBanner message={error} />}
+          {error && <ErrorBanner message={error} onDismiss={onDismissError} />}
 
-          {layers.length === 0 && !error && (
+          {layers.length === 0 && (
             <EmptyState onUpload={onUpload} onPaste={onPaste} />
           )}
 

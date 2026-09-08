@@ -10,7 +10,7 @@ export default defineConfig({
   manifest: {
     name: 'Matchup',
     description: 'Pixel-perfect image overlay for comparing designs against live pages.',
-    permissions: ['storage', 'unlimitedStorage'],
+    permissions: ['storage', 'unlimitedStorage', 'clipboardRead'],
     host_permissions: ['<all_urls>'],
   },
 });
