@@ -32,9 +32,11 @@ const RailToggle = ({
     className={cn(
       "size-rail-tile rounded-control duration-120 grid place-items-center transition-colors ease-out",
       "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
-      on
-        ? [accentFill[accent], accentGlyph[accent]]
-        : "bg-rail-tile hover:bg-rail-tile-hover text-muted",
+      props.disabled
+        ? "bg-rail-tile text-muted/40 cursor-not-allowed"
+        : on
+          ? [accentFill[accent], accentGlyph[accent]]
+          : "bg-rail-tile hover:bg-rail-tile-hover text-muted",
       className,
     )}
     {...props}
