@@ -1,4 +1,4 @@
-import { LockSimpleIcon, PencilSimpleIcon, XIcon } from "@/components/icons";
+import { LockSimpleIcon, PencilSimpleIcon, TrashIcon } from '@/components/icons';
 import { cn } from "@/utils/cn";
 import { useEffect, useRef } from "react";
 import type { ComponentPropsWithoutRef } from "react";
@@ -107,10 +107,10 @@ const LayerTile = ({
         {uploadProgress === undefined && (
           <span className="rounded-control absolute inset-0 hidden items-center justify-center gap-2 bg-black/[.42] group-hover:flex">
             <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
-              <PencilSimpleIcon size={13} fill="currentColor" stroke="none" />
+              <PencilSimpleIcon size={13} />
             </ThumbAction>
             <ThumbAction label={`Delete ${name}`} onClick={onDelete}>
-              <XIcon size={13} fill="currentColor" stroke="none" />
+              <TrashIcon size={13} />
             </ThumbAction>
           </span>
         )}
