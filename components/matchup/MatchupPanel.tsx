@@ -38,8 +38,8 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<'div'>, 'children'> & {
   opacity: number;
   /** Index 0–8 of the active snap point, or null when X/Y are free. */
   anchor: number | null;
-  x: number;
-  y: number;
+  x: string | number;
+  y: string | number;
   scale: string | number;
   page?: number;
   error?: string;
