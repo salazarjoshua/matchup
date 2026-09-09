@@ -26,6 +26,9 @@ const EDGE = 8;
 const RAIL_HEIGHT = 40;
 const DRAG_THRESHOLD = 4;
 
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
 const swallowClick = (event: MouseEvent) => {
   event.stopPropagation();
   event.preventDefault();
@@ -118,25 +121,36 @@ export default function MatchupApp() {
   }, [state, hydrated]);
 
   useEffect(() => {
-    const onResize = () =>
-      setViewport({ w: window.innerWidth, h: window.innerHeight });
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    // A resize event never fires for a tab that was hidden when the script mounted,
+    // which would leave the viewport reading 0 and disable position clamping.
+    const read = () =>
+      setViewport({
+        w: document.documentElement.clientWidth || window.innerWidth,
+        h: document.documentElement.clientHeight || window.innerHeight,
+      });
+    read();
+    const observer = new ResizeObserver(read);
+    observer.observe(document.documentElement);
+    document.addEventListener("visibilitychange", read);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", read);
+    };
   }, []);
 
-  useEffect(() => {
+  // Measured after every render rather than only from a ResizeObserver: observer
+  // callbacks are part of the rendering steps, so a throttled or hidden tab never
+  // delivers them and the widget would keep clamping against a stale height.
+  useLayoutEffect(() => {
     const el = widget.current;
     if (!el) return;
-    const observer = new ResizeObserver(([entry]) => {
-      if (!entry) return;
-      setWidgetSize({
-        w: Math.round(entry.contentRect.width),
-        h: Math.round(entry.contentRect.height),
-      });
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hydrated]);
+    const rect = el.getBoundingClientRect();
+    const w = Math.round(rect.width);
+    const h = Math.round(rect.height);
+    setWidgetSize((previous) =>
+      previous.w === w && previous.h === h ? previous : { w, h },
+    );
+  });
 
   const addFiles = useCallback(async (files: File[]) => {
     const rejected = files.find((file) => !ACCEPTED_TYPES.includes(file.type));
@@ -319,12 +333,25 @@ export default function MatchupApp() {
       ? Math.max(EDGE, viewport.h - widgetSize.h - EDGE)
       : Infinity;
   const corner = prefs.panelPosition;
-  const origin = state.origin ?? {
-    left: corner.endsWith("right") ? maxLeft : EDGE,
-    top: corner.startsWith("bottom") ? maxTop : EDGE,
-  };
-  const railLeft = Math.min(Math.max(EDGE, origin.left), maxLeft);
-  const railTop = Math.min(Math.max(EDGE, origin.top), maxTop);
+  const edgeX =
+    state.dock?.edgeX ?? (corner.endsWith("right") ? "right" : "left");
+  const edgeY =
+    state.dock?.edgeY ?? (corner.startsWith("bottom") ? "bottom" : "top");
+  const offsetX = state.dock?.x ?? EDGE;
+  const offsetY = state.dock?.y ?? EDGE;
+
+  // Resolved from the docked edge, so the widget stays put relative to that edge
+  // as it grows and shrinks rather than hanging off the bottom of the window.
+  const railLeft = clamp(
+    edgeX === "left" ? offsetX : viewport.w - PANEL_WIDTH - offsetX,
+    EDGE,
+    maxLeft,
+  );
+  const railTop = clamp(
+    edgeY === "top" ? offsetY : viewport.h - widgetSize.h - offsetY,
+    EDGE,
+    maxTop,
+  );
 
   const onGripPointerDown = (event: ReactPointerEvent) => {
     const startX = event.clientX;
@@ -342,10 +369,26 @@ export default function MatchupApp() {
         if (travelled < DRAG_THRESHOLD) return;
         moved = true;
       }
+      const nextLeft = clamp(
+        from.left + (move.clientX - startX),
+        EDGE,
+        maxLeft,
+      );
+      const nextTop = clamp(from.top + (move.clientY - startY), EDGE, maxTop);
+      const nextEdgeX =
+        nextLeft + PANEL_WIDTH / 2 > viewport.w / 2 ? "right" : "left";
+      const nextEdgeY =
+        nextTop + widgetSize.h / 2 > viewport.h / 2 ? "bottom" : "top";
       patch({
-        origin: {
-          left: from.left + (move.clientX - startX),
-          top: from.top + (move.clientY - startY),
+        dock: {
+          edgeX: nextEdgeX,
+          edgeY: nextEdgeY,
+          x:
+            nextEdgeX === "left"
+              ? nextLeft
+              : viewport.w - PANEL_WIDTH - nextLeft,
+          y:
+            nextEdgeY === "top" ? nextTop : viewport.h - widgetSize.h - nextTop,
         },
       });
     };
@@ -438,6 +481,9 @@ export default function MatchupApp() {
           onOpenSettings={() =>
             void browser.runtime.sendMessage({ type: "matchup:open-settings" })
           }
+          onOpenHelp={() =>
+            void browser.runtime.sendMessage({ type: "matchup:open-help" })
+          }
           onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
           onToggleVisible={() => patchLayer({ visible: !settings.visible })}
           onToggleLocked={() => patchLayer({ locked: !settings.locked })}
@@ -471,6 +517,18 @@ export default function MatchupApp() {
             });
             setRenamingId(undefined);
           }}
+          onReorderLayers={(fromId, toId) =>
+            setState((current) => {
+              const from = current.layers.findIndex((l) => l.id === fromId);
+              const to = current.layers.findIndex((l) => l.id === toId);
+              if (from < 0 || to < 0 || from === to) return current;
+              const layers = [...current.layers];
+              const [moved] = layers.splice(from, 1);
+              if (!moved) return current;
+              layers.splice(to, 0, moved);
+              return { ...current, layers };
+            })
+          }
           onDeleteLayer={(id) => {
             const remaining = state.layers.filter((layer) => layer.id !== id);
             patch({
