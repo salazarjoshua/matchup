@@ -1,4 +1,4 @@
-import { storage } from 'wxt/utils/storage';
+import { storage } from "wxt/utils/storage";
 
 /** Everything a layer remembers on its own — images differ in size, so these can't be global. */
 export type LayerSettings = {
@@ -29,7 +29,8 @@ export type MatchupState = {
   open: boolean;
   /** The panel is expanded beside the rail. Toggled by the glove. */
   panelOpen: boolean;
-  origin: { left: number; top: number };
+  /** Set once the widget has been dragged; until then the corner preference wins. */
+  origin?: { left: number; top: number };
 };
 
 export const LAYER_DEFAULTS: LayerSettings = {
@@ -38,9 +39,9 @@ export const LAYER_DEFAULTS: LayerSettings = {
   difference: false,
   opacity: 50,
   anchor: 0,
-  x: '0',
-  y: '0',
-  scale: '1',
+  x: "0",
+  y: "0",
+  scale: "1",
 };
 
 export const MATCHUP_DEFAULTS: MatchupState = {
@@ -48,12 +49,19 @@ export const MATCHUP_DEFAULTS: MatchupState = {
   page: 1,
   open: false,
   panelOpen: true,
-  origin: { left: 16, top: 16 },
 };
 
-export const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+export const ACCEPTED_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/svg+xml",
+];
 export const LAYERS_PER_PAGE = 6;
 
-export const matchupState = storage.defineItem<MatchupState>('local:matchup-state', {
-  fallback: MATCHUP_DEFAULTS,
-});
+export const matchupState = storage.defineItem<MatchupState>(
+  "local:matchup-state",
+  {
+    fallback: MATCHUP_DEFAULTS,
+  },
+);
