@@ -124,7 +124,7 @@ export default function App() {
               }
               className={selectClass}
             >
-              <option value="none">No anchor (free position)</option>
+              <option value="none">Free position</option>
               {ANCHOR_LABELS.map((label, index) => (
                 <option key={label} value={index}>
                   {label}

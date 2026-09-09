@@ -47,10 +47,10 @@ export const LAYER_DEFAULTS: LayerSettings = {
   locked: false,
   difference: false,
   opacity: 50,
-  anchor: 0,
+  anchor: null,
   x: "0",
   y: "0",
-  scale: "1",
+  scale: "0.5",
 };
 
 export const MATCHUP_DEFAULTS: MatchupState = {

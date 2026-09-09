@@ -21,7 +21,7 @@ import type { LayerSettings, MatchupState } from "@/utils/matchup-state";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
 const SAVE_DEBOUNCE_MS = 300;
-const PANEL_WIDTH = 320;
+const PANEL_WIDTH = 300;
 const EDGE = 8;
 const RAIL_HEIGHT = 40;
 const DRAG_THRESHOLD = 4;

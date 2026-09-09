@@ -3,7 +3,10 @@ import { storage } from "wxt/utils/storage";
 import type { LayerSettings } from "./matchup-state";
 
 export type PanelCorner =
-  "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
 
 export type MatchupSettings = {
   /** Where the panel first appears, before it has been dragged anywhere. */
@@ -21,13 +24,13 @@ export const PANEL_CORNERS: { value: PanelCorner; label: string }[] = [
 
 export const ANCHOR_LABELS = [
   "Top left",
-  "Top centre",
+  "Top center",
   "Top right",
   "Middle left",
-  "Centre",
+  "Center",
   "Middle right",
   "Bottom left",
-  "Bottom centre",
+  "Bottom center",
   "Bottom right",
 ];
 
