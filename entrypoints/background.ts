@@ -11,6 +11,13 @@ const RESTRICTED = [
 ];
 
 export default defineBackground(() => {
+  // Only extension pages may open the options page, so the panel asks us to.
+  browser.runtime.onMessage.addListener((message: unknown) => {
+    if ((message as { type?: string })?.type === "matchup:open-settings") {
+      void browser.runtime.openOptionsPage();
+    }
+  });
+
   // No popup: the icon toggles the panel straight away, and again to close it.
   browser.action.onClicked.addListener(async (tab) => {
     if (

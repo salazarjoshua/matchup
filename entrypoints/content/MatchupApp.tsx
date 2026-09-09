@@ -315,7 +315,9 @@ export default function MatchupApp() {
   const maxLeft =
     viewport.w > 0 ? Math.max(EDGE, viewport.w - PANEL_WIDTH - EDGE) : Infinity;
   const maxTop =
-    viewport.h > 0 ? Math.max(EDGE, viewport.h - widgetSize.h - EDGE) : Infinity;
+    viewport.h > 0
+      ? Math.max(EDGE, viewport.h - widgetSize.h - EDGE)
+      : Infinity;
   const corner = prefs.panelPosition;
   const origin = state.origin ?? {
     left: corner.endsWith("right") ? maxLeft : EDGE,
@@ -433,6 +435,9 @@ export default function MatchupApp() {
           error={error}
           collapsed={!state.panelOpen}
           hasSelection={Boolean(selected)}
+          onOpenSettings={() =>
+            void browser.runtime.sendMessage({ type: "matchup:open-settings" })
+          }
           onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
           onToggleVisible={() => patchLayer({ visible: !settings.visible })}
           onToggleLocked={() => patchLayer({ locked: !settings.locked })}

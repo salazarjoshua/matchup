@@ -62,6 +62,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onDeleteLayer?: (id: string) => void;
   onDismissError?: () => void;
   onTogglePanel?: () => void;
+  onOpenSettings?: () => void;
   /** Settings belong to a layer, so the rail is inert until one is selected. */
   hasSelection?: boolean;
   onXChange?: (value: string) => void;
@@ -99,6 +100,7 @@ const MatchupPanel = ({
   onDeleteLayer,
   onDismissError,
   onTogglePanel,
+  onOpenSettings,
   hasSelection = true,
   onXChange,
   onYChange,
@@ -190,7 +192,7 @@ const MatchupPanel = ({
             className="cursor-grab"
             actions={
               <>
-                <IconButton aria-label="Settings">
+                <IconButton aria-label="Settings" onClick={onOpenSettings}>
                   <SlidersHorizontalIcon className="w-4" />
                 </IconButton>
                 <IconButton aria-label="Shortcuts and help">
