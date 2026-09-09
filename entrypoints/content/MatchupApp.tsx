@@ -1,5 +1,6 @@
 import Overlay from "@/components/Overlay";
 import { MatchupPanel } from "@/components/matchup";
+import { SETTINGS_DEFAULTS, matchupSettings } from "@/utils/matchup-settings";
 import {
   ACCEPTED_TYPES,
   LAYERS_PER_PAGE,
@@ -15,6 +16,7 @@ import {
   useState,
 } from "react";
 import { browser } from "wxt/browser";
+import type { MatchupSettings } from "@/utils/matchup-settings";
 import type { LayerSettings, MatchupState } from "@/utils/matchup-state";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
@@ -22,6 +24,12 @@ const SAVE_DEBOUNCE_MS = 300;
 const PANEL_WIDTH = 320;
 const EDGE = 8;
 const RAIL_HEIGHT = 40;
+const DRAG_THRESHOLD = 4;
+
+const swallowClick = (event: MouseEvent) => {
+  event.stopPropagation();
+  event.preventDefault();
+};
 
 const readAsDataUrl = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -36,6 +44,9 @@ export default function MatchupApp() {
   const [renamingId, setRenamingId] = useState<string>();
   const [error, setError] = useState<string>();
   const [hydrated, setHydrated] = useState(false);
+  const [prefs, setPrefs] = useState<MatchupSettings>(SETTINGS_DEFAULTS);
+  const prefsRef = useRef(prefs);
+  prefsRef.current = prefs;
   const [viewport, setViewport] = useState({
     w: window.innerWidth,
     h: window.innerHeight,
@@ -71,6 +82,17 @@ export default function MatchupApp() {
       })),
     [],
   );
+
+  useEffect(() => {
+    matchupSettings
+      .getValue()
+      .then((stored) => setPrefs({ ...SETTINGS_DEFAULTS, ...stored }))
+      .catch(() => undefined);
+    const unwatch = matchupSettings.watch((next) =>
+      setPrefs({ ...SETTINGS_DEFAULTS, ...next }),
+    );
+    return unwatch;
+  }, []);
 
   useEffect(() => {
     matchupState
@@ -127,17 +149,25 @@ export default function MatchupApp() {
     setError(undefined);
     const decoded = await Promise.all(
       files.map(async (file) => ({
-        ...LAYER_DEFAULTS,
+        ...prefsRef.current.layerDefaults,
         id: crypto.randomUUID(),
         name: file.name || "pasted.png",
         src: await readAsDataUrl(file),
       })),
     );
-    setState((current) => ({
-      ...current,
-      layers: [...current.layers, ...decoded],
-      selectedId: decoded[decoded.length - 1]?.id,
-    }));
+    setState((current) => {
+      const layers = [...current.layers, ...decoded];
+      const selectedId = decoded[decoded.length - 1]?.id;
+      // The new layer is the selected one, so follow it onto its page.
+      const index = layers.findIndex((layer) => layer.id === selectedId);
+      return {
+        ...current,
+        layers,
+        selectedId,
+        page:
+          index < 0 ? current.page : Math.floor(index / LAYERS_PER_PAGE) + 1,
+      };
+    });
   }, []);
 
   const pasteFromClipboard = useCallback(async () => {
@@ -180,33 +210,6 @@ export default function MatchupApp() {
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const typing =
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target?.isContentEditable === true;
-
-      if (!event.altKey && !typing) {
-        const step = event.shiftKey ? 10 : 1;
-        const nudge =
-          event.key === "ArrowLeft"
-            ? { dx: -step, dy: 0 }
-            : event.key === "ArrowRight"
-              ? { dx: step, dy: 0 }
-              : event.key === "ArrowUp"
-                ? { dx: 0, dy: -step }
-                : event.key === "ArrowDown"
-                  ? { dx: 0, dy: step }
-                  : null;
-        if (nudge) {
-          const layer = selectedRef.current;
-          if (!layer || layer.locked || !layer.visible) return;
-          event.preventDefault();
-          moveBy(nudge.dx, nudge.dy);
-          return;
-        }
-      }
-
       if (!event.altKey) return;
       const key = event.key.toLowerCase();
       if (key === "v") patchLayer({ visible: !selectedRef.current?.visible });
@@ -278,26 +281,6 @@ export default function MatchupApp() {
     patchLayer,
   ]);
 
-  // Composes off the latest state so a held-down arrow key never drops steps.
-  const moveBy = (dx: number, dy: number) =>
-    setState((current) => {
-      const layer = current.layers.find((l) => l.id === current.selectedId);
-      if (!layer) return current;
-      return {
-        ...current,
-        layers: current.layers.map((l) =>
-          l.id === current.selectedId
-            ? {
-                ...l,
-                anchor: null,
-                x: String((Number(l.x) || 0) + dx),
-                y: String((Number(l.y) || 0) + dy),
-              }
-            : l,
-        ),
-      };
-    });
-
   const onOverlayPointerDown = (event: ReactPointerEvent) => {
     const layer = selectedRef.current;
     if (!layer || layer.locked) return;
@@ -327,30 +310,61 @@ export default function MatchupApp() {
 
   // The rail sits above the panel in one column, so both share the panel's width.
   // Clamping keeps it reachable when devtools opening shrinks the viewport.
-  const maxLeft = Math.max(EDGE, viewport.w - PANEL_WIDTH - EDGE);
-  const maxTop = Math.max(EDGE, viewport.h - widgetSize.h - EDGE);
-  const railLeft = Math.min(Math.max(EDGE, state.origin.left), maxLeft);
-  const railTop = Math.min(Math.max(EDGE, state.origin.top), maxTop);
+  // A hidden or background tab can report a 0x0 viewport. Clamping against that
+  // would pin the widget to the corner and refuse to move, so skip it until known.
+  const maxLeft =
+    viewport.w > 0 ? Math.max(EDGE, viewport.w - PANEL_WIDTH - EDGE) : Infinity;
+  const maxTop =
+    viewport.h > 0 ? Math.max(EDGE, viewport.h - widgetSize.h - EDGE) : Infinity;
+  const corner = prefs.panelPosition;
+  const origin = state.origin ?? {
+    left: corner.endsWith("right") ? maxLeft : EDGE,
+    top: corner.startsWith("bottom") ? maxTop : EDGE,
+  };
+  const railLeft = Math.min(Math.max(EDGE, origin.left), maxLeft);
+  const railTop = Math.min(Math.max(EDGE, origin.top), maxTop);
 
   const onGripPointerDown = (event: ReactPointerEvent) => {
-    dragOffset.current = {
-      dx: event.clientX - railLeft,
-      dy: event.clientY - railTop,
-    };
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const from = { left: railLeft, top: railTop };
+    let moved = false;
+
     const onMove = (move: PointerEvent) => {
-      if (!dragOffset.current) return;
+      if (!moved) {
+        // Below the threshold this is still a click, so buttons keep working.
+        const travelled = Math.hypot(
+          move.clientX - startX,
+          move.clientY - startY,
+        );
+        if (travelled < DRAG_THRESHOLD) return;
+        moved = true;
+      }
       patch({
         origin: {
-          left: move.clientX - dragOffset.current.dx,
-          top: move.clientY - dragOffset.current.dy,
+          left: from.left + (move.clientX - startX),
+          top: from.top + (move.clientY - startY),
         },
       });
     };
+
     const onUp = () => {
-      dragOffset.current = null;
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+      if (!moved) return;
+      // Swallow the click this release would otherwise fire on whatever was grabbed,
+      // then drop the listener so it can never eat an unrelated click later.
+      window.addEventListener("click", swallowClick, {
+        capture: true,
+        once: true,
+      });
+      setTimeout(
+        () =>
+          window.removeEventListener("click", swallowClick, { capture: true }),
+        0,
+      );
     };
+
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
   };

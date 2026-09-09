@@ -122,7 +122,10 @@ const MatchupPanel = ({
       className={cn("flex flex-col items-start gap-1 font-sans", className)}
       {...props}
     >
-      <Rail>
+      <Rail
+        onPointerDown={onGripPointerDown}
+        className="cursor-grab select-none"
+      >
         <button
           type="button"
           onClick={onTogglePanel}
@@ -183,11 +186,7 @@ const MatchupPanel = ({
       {!collapsed && (
         <div className="w-panel rounded-panel border-hairline shadow-panel flex-none overflow-hidden border bg-white">
           <TitleBar
-            onPointerDown={(event) => {
-              // The bar drags the whole widget, but its buttons keep their clicks.
-              if ((event.target as HTMLElement).closest("button")) return;
-              onGripPointerDown?.(event);
-            }}
+            onPointerDown={onGripPointerDown}
             className="cursor-grab"
             actions={
               <>
