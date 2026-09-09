@@ -30,10 +30,12 @@ const RailToggle = ({
   <button
     aria-pressed={on}
     className={cn(
-      "size-rail-tile rounded-control duration-120 grid place-items-center transition-colors ease-out",
+      "h-rail-tile duration-120 grid flex-1 place-items-center transition-colors ease-out",
       "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
       props.disabled
-        ? "bg-rail-tile text-muted/40 cursor-not-allowed"
+        ? // Design system §06: disabled controls drop to the surface with disabled text,
+          // which also stops them reading identically to a toggle that is merely off.
+          "bg-surface text-disabled cursor-not-allowed"
         : on
           ? [accentFill[accent], accentGlyph[accent]]
           : "bg-rail-tile hover:bg-rail-tile-hover text-muted",

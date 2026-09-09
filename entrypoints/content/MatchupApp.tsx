@@ -19,11 +19,9 @@ import type { LayerSettings, MatchupState } from "@/utils/matchup-state";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
 const SAVE_DEBOUNCE_MS = 300;
-const RAIL_WIDTH = 64;
 const PANEL_WIDTH = 320;
-const GAP = 12;
 const EDGE = 8;
-const RAIL_MIN_VISIBLE = 120;
+const RAIL_HEIGHT = 40;
 
 const readAsDataUrl = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -51,7 +49,10 @@ export default function MatchupApp() {
   const widget = useRef<HTMLDivElement>(null);
   const overlayDrag = useRef<{ dx: number; dy: number } | null>(null);
   const [draggingOverlay, setDraggingOverlay] = useState(false);
-  const [widgetSize, setWidgetSize] = useState({ w: RAIL_WIDTH, h: RAIL_MIN_VISIBLE });
+  const [widgetSize, setWidgetSize] = useState({
+    w: PANEL_WIDTH,
+    h: RAIL_HEIGHT,
+  });
 
   const patch = useCallback(
     (next: Partial<MatchupState>) =>
@@ -247,7 +248,11 @@ export default function MatchupApp() {
       const col = index % 3;
       const row = Math.floor(index / 3);
       const axis = (cell: number, available: number, size: number) =>
-        cell === 0 ? 0 : cell === 1 ? Math.round((available - size) / 2) : Math.round(available - size);
+        cell === 0
+          ? 0
+          : cell === 1
+            ? Math.round((available - size) / 2)
+            : Math.round(available - size);
       return {
         x: String(axis(col, viewport.w, width)),
         y: String(axis(row, viewport.h, height)),
@@ -320,23 +325,12 @@ export default function MatchupApp() {
     window.addEventListener("pointerup", onUp);
   };
 
-  // Devtools opening shrinks the viewport, which can strand the rail off-screen.
-  // Only the rail is pinned inside the edges — the panel flips to whichever side fits.
-  const railLeft = Math.max(
-    EDGE,
-    Math.min(state.origin.left, viewport.w - RAIL_WIDTH - EDGE),
-  );
+  // The rail sits above the panel in one column, so both share the panel's width.
+  // Clamping keeps it reachable when devtools opening shrinks the viewport.
+  const maxLeft = Math.max(EDGE, viewport.w - PANEL_WIDTH - EDGE);
   const maxTop = Math.max(EDGE, viewport.h - widgetSize.h - EDGE);
+  const railLeft = Math.min(Math.max(EDGE, state.origin.left), maxLeft);
   const railTop = Math.min(Math.max(EDGE, state.origin.top), maxTop);
-
-  const roomRight = viewport.w - (railLeft + RAIL_WIDTH) - GAP - EDGE;
-  const roomLeft = railLeft - GAP - EDGE;
-  const panelOnLeft = roomRight < PANEL_WIDTH && roomLeft >= PANEL_WIDTH;
-
-  // Anchoring by the right edge keeps the rail put while the panel grows leftward.
-  const anchorStyle = panelOnLeft
-    ? { right: viewport.w - (railLeft + RAIL_WIDTH) }
-    : { left: railLeft };
 
   const onGripPointerDown = (event: ReactPointerEvent) => {
     dragOffset.current = {
@@ -404,9 +398,9 @@ export default function MatchupApp() {
         ref={widget}
         style={{
           position: "fixed",
+          left: railLeft,
           top: railTop,
           zIndex: 2147483647,
-          ...anchorStyle,
         }}
       >
         <MatchupPanel
@@ -424,7 +418,6 @@ export default function MatchupApp() {
           page={Math.min(state.page, pageCount)}
           error={error}
           collapsed={!state.panelOpen}
-          panelOnLeft={panelOnLeft}
           hasSelection={Boolean(selected)}
           onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
           onToggleVisible={() => patchLayer({ visible: !settings.visible })}

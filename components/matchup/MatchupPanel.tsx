@@ -6,7 +6,7 @@ import { AddTile, LayerGrid, LAYERS_PER_PAGE } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
 import { Pager } from "./Pager";
-import { Rail, RailDivider, RailGrip } from "./Rail";
+import { Rail } from "./Rail";
 import { RailToggle } from "./RailToggle";
 import { IconButton, TitleBar } from "./TitleBar";
 import {
@@ -16,7 +16,6 @@ import {
   InfoIcon,
   LockOpenIcon,
   LockSimpleIcon,
-  SidebarSimpleIcon,
   SlidersHorizontalIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
@@ -63,8 +62,6 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onDeleteLayer?: (id: string) => void;
   onDismissError?: () => void;
   onTogglePanel?: () => void;
-  /** Render the panel on the rail's left so it stays on screen near the right edge. */
-  panelOnLeft?: boolean;
   /** Settings belong to a layer, so the rail is inert until one is selected. */
   hasSelection?: boolean;
   onXChange?: (value: string) => void;
@@ -102,7 +99,6 @@ const MatchupPanel = ({
   onDeleteLayer,
   onDismissError,
   onTogglePanel,
-  panelOnLeft = false,
   hasSelection = true,
   onXChange,
   onYChange,
@@ -123,58 +119,76 @@ const MatchupPanel = ({
 
   return (
     <div
-      className={cn('flex items-start gap-3 font-sans', panelOnLeft && 'flex-row-reverse', className)}
+      className={cn("flex flex-col items-start gap-1 font-sans", className)}
       {...props}
     >
       <Rail>
-        <RailGrip onPointerDown={onGripPointerDown} />
         <button
           type="button"
           onClick={onTogglePanel}
           aria-expanded={!collapsed}
-          aria-label={collapsed ? 'Show panel' : 'Hide panel'}
-          title={collapsed ? 'Show panel' : 'Hide panel'}
+          aria-label={collapsed ? "Show panel" : "Hide panel"}
+          title={collapsed ? "Show panel" : "Hide panel"}
           className={cn(
-            'size-rail-tile rounded-control grid place-items-center',
-            'hover:bg-rail-tile-hover transition-colors duration-120 ease-out',
-            'focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none',
-            collapsed ? 'text-muted' : 'text-white',
-          )}>
-          <SidebarSimpleIcon className="w-5" />
+            "size-rail-tile rounded-control grid place-items-center relative",
+            "bg-control transition-colors duration-120 ease-out",
+            "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
+            "text-white",
+          )}
+        >
+          <span className="bg-ink absolute h-0.5 w-4" />
+          {collapsed && <span className="bg-ink absolute h-4 w-0.5" />}
         </button>
-        <RailDivider />
-        <RailToggle
-          accent="blue"
-          disabled={!hasSelection}
-          on={visible}
-          onClick={onToggleVisible}
-          title="Hide overlay (⌥V)"
-        >
-          {visible ? <EyeIcon className="w-5" /> : <EyeSlashIcon className="w-5" />}
-        </RailToggle>
-        <RailToggle
-          accent="orange"
-          disabled={!hasSelection}
-          on={locked}
-          onClick={onToggleLocked}
-          title="Lock position (⌥L)"
-        >
-          {locked ? <LockSimpleIcon className="w-5" solid /> : <LockOpenIcon className="w-5" />}
-        </RailToggle>
-        <RailToggle
-          accent="yellow"
-          disabled={!hasSelection}
-          on={difference}
-          onClick={onToggleDifference}
-          title="Difference (⌥D)"
-        >
-          <CircleHalfIcon className="w-5" />
-        </RailToggle>
+        <div className="flex flex-1">
+          <RailToggle
+            accent="blue"
+            disabled={!hasSelection}
+            on={visible}
+            onClick={onToggleVisible}
+            title="Hide overlay (⌥V)"
+            className="rounded-l-control"
+          >
+            {visible ? (
+              <EyeIcon className="w-5" />
+            ) : (
+              <EyeSlashIcon className="w-5" />
+            )}
+          </RailToggle>
+          <RailToggle
+            accent="orange"
+            disabled={!hasSelection}
+            on={locked}
+            onClick={onToggleLocked}
+            title="Lock position (⌥L)"
+          >
+            {locked ? (
+              <LockSimpleIcon className="w-5" solid />
+            ) : (
+              <LockOpenIcon className="w-5" />
+            )}
+          </RailToggle>
+          <RailToggle
+            accent="yellow"
+            disabled={!hasSelection}
+            on={difference}
+            onClick={onToggleDifference}
+            title="Difference (⌥D)"
+            className="rounded-r-control"
+          >
+            <CircleHalfIcon className="w-5" />
+          </RailToggle>
+        </div>
       </Rail>
 
       {!collapsed && (
         <div className="w-panel rounded-panel border-hairline shadow-panel flex-none overflow-hidden border bg-white">
           <TitleBar
+            onPointerDown={(event) => {
+              // The bar drags the whole widget, but its buttons keep their clicks.
+              if ((event.target as HTMLElement).closest("button")) return;
+              onGripPointerDown?.(event);
+            }}
+            className="cursor-grab"
             actions={
               <>
                 <IconButton aria-label="Settings">
