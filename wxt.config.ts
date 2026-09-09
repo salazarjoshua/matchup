@@ -9,6 +9,8 @@ export default defineConfig({
   }),
   manifest: {
     name: 'Matchup',
+    // Declared with no popup so the icon fires action.onClicked instead.
+    action: { default_title: 'Matchup' },
     description: 'Pixel-perfect image overlay for comparing designs against live pages.',
     permissions: ['storage', 'unlimitedStorage', 'clipboardRead'],
     host_permissions: ['<all_urls>'],
