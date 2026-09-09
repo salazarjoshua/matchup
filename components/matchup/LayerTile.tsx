@@ -29,6 +29,11 @@ type LayerTileProps = Omit<
   onStartRename?: () => void;
   onRename?: (name: string) => void;
   onDelete?: () => void;
+  onDragStartLayer?: () => void;
+  onDropOnLayer?: () => void;
+  onDragEndLayer?: () => void;
+  /** True while another tile is being dragged over this one. */
+  dropTarget?: boolean;
 };
 
 const ThumbAction = ({
@@ -62,6 +67,10 @@ const LayerTile = ({
   onStartRename,
   onRename,
   onDelete,
+  onDragStartLayer,
+  onDropOnLayer,
+  onDragEndLayer,
+  dropTarget = false,
   className,
   ...props
 }: LayerTileProps) => {
@@ -81,6 +90,24 @@ const LayerTile = ({
         tabIndex={0}
         aria-pressed={selected}
         aria-label={`Select ${name}`}
+        // Reordering stays inside the grid: the only drop targets are the tiles
+        // rendered on the current page.
+        draggable={Boolean(onDragStartLayer) && !renaming}
+        onDragStart={(event) => {
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", name);
+          onDragStartLayer?.();
+        }}
+        onDragOver={(event) => {
+          if (!onDropOnLayer) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          onDropOnLayer?.();
+        }}
+        onDragEnd={onDragEndLayer}
         onClick={onSelect}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -95,6 +122,7 @@ const LayerTile = ({
           !selected && "hover:ring-placeholder hover:ring-2",
           lifted &&
             "shadow-drag ring-accent-blue z-10 -rotate-2 scale-[1.03] ring-2",
+          dropTarget && "ring-accent-blue ring-2 ring-offset-1",
         )}
         style={
           src
