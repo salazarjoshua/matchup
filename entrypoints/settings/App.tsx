@@ -90,13 +90,13 @@ export default function App() {
           >
             <select
               value={settings.panelPosition}
-              onChange={(event) =>
-                setSettings((current) => ({
-                  ...current,
-                  panelPosition: event.currentTarget
-                    .value as MatchupSettings["panelPosition"],
-                }))
-              }
+              onChange={(event) => {
+                // Read before the updater runs: React clears currentTarget once the
+                // handler returns, and a functional update is invoked after that.
+                const panelPosition = event.currentTarget
+                  .value as MatchupSettings["panelPosition"];
+                setSettings((current) => ({ ...current, panelPosition }));
+              }}
               className={selectClass}
             >
               {PANEL_CORNERS.map((corner) => (
