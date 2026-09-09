@@ -19,6 +19,7 @@ import {
   SlidersHorizontalIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
+import { useState } from "react";
 import type {
   ComponentPropsWithoutRef,
   PointerEvent as ReactPointerEvent,
@@ -60,9 +61,11 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onStartRename?: (id: string) => void;
   onRenameLayer?: (id: string, name: string) => void;
   onDeleteLayer?: (id: string) => void;
+  onReorderLayers?: (fromId: string, toId: string) => void;
   onDismissError?: () => void;
   onTogglePanel?: () => void;
   onOpenSettings?: () => void;
+  onOpenHelp?: () => void;
   /** Settings belong to a layer, so the rail is inert until one is selected. */
   hasSelection?: boolean;
   onXChange?: (value: string) => void;
@@ -98,9 +101,11 @@ const MatchupPanel = ({
   onStartRename,
   onRenameLayer,
   onDeleteLayer,
+  onReorderLayers,
   onDismissError,
   onTogglePanel,
   onOpenSettings,
+  onOpenHelp,
   hasSelection = true,
   onXChange,
   onYChange,
@@ -114,6 +119,8 @@ const MatchupPanel = ({
   const opacityDisabled = !visible;
   const positionEditable = anchor === null && !positionDisabled;
 
+  const [draggingId, setDraggingId] = useState<string>();
+  const [overId, setOverId] = useState<string>();
   const pageCount = Math.max(1, Math.ceil(layers.length / LAYERS_PER_PAGE));
   const start = (page - 1) * LAYERS_PER_PAGE;
   const visibleLayers = layers.slice(start, start + LAYERS_PER_PAGE);
@@ -195,7 +202,10 @@ const MatchupPanel = ({
                 <IconButton aria-label="Settings" onClick={onOpenSettings}>
                   <SlidersHorizontalIcon className="w-4" />
                 </IconButton>
-                <IconButton aria-label="Shortcuts and help">
+                <IconButton
+                  aria-label="Shortcuts and help"
+                  onClick={onOpenHelp}
+                >
                   <InfoIcon className="w-4" />
                 </IconButton>
               </>
@@ -225,6 +235,25 @@ const MatchupPanel = ({
                     onStartRename={() => onStartRename?.(layer.id)}
                     onRename={(next) => onRenameLayer?.(layer.id, next)}
                     onDelete={() => onDeleteLayer?.(layer.id)}
+                    lifted={draggingId === layer.id}
+                    dropTarget={
+                      Boolean(draggingId) &&
+                      overId === layer.id &&
+                      draggingId !== layer.id
+                    }
+                    onDragStartLayer={() => setDraggingId(layer.id)}
+                    onDropOnLayer={() => {
+                      if (draggingId && draggingId !== layer.id) {
+                        onReorderLayers?.(draggingId, layer.id);
+                      }
+                      setDraggingId(undefined);
+                      setOverId(undefined);
+                    }}
+                    onDragEndLayer={() => {
+                      setDraggingId(undefined);
+                      setOverId(undefined);
+                    }}
+                    onDragEnter={() => setOverId(layer.id)}
                   />
                 ))}
                 {canAdd && (
@@ -279,6 +308,7 @@ const MatchupPanel = ({
                       editable={!positionDisabled}
                       disabled={positionDisabled}
                       onChange={onScaleChange}
+                      step={0.1}
                     />
                   </div>
                 </div>

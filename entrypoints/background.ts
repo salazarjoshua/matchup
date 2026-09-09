@@ -1,6 +1,8 @@
 import { browser } from "wxt/browser";
 import { defineBackground } from "wxt/utils/define-background";
 
+const HELP_URL = 'https://joshuasalazar.me/';
+
 /** Pages where content scripts can't run, so there is nothing to toggle. */
 const RESTRICTED = [
   "about:",
@@ -13,8 +15,11 @@ const RESTRICTED = [
 export default defineBackground(() => {
   // Only extension pages may open the options page, so the panel asks us to.
   browser.runtime.onMessage.addListener((message: unknown) => {
-    if ((message as { type?: string })?.type === "matchup:open-settings") {
+    const type = (message as { type?: string })?.type;
+    if (type === "matchup:open-settings") {
       void browser.runtime.openOptionsPage();
+    } else if (type === "matchup:open-help") {
+      void browser.tabs.create({ url: HELP_URL });
     }
   });
 
