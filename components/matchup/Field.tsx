@@ -9,6 +9,8 @@ type FieldProps = Omit<ComponentPropsWithoutRef<"div">, "onChange"> & {
   editable?: boolean;
   disabled?: boolean;
   onChange?: (value: string) => void;
+  /** Arrow-key increment; Shift multiplies it by ten. */
+  step?: number;
 };
 
 /** Keeps a partial entry like "-" or "1." usable while still rejecting non-numeric input. */
@@ -24,6 +26,7 @@ const Field = ({
   editable = false,
   disabled = false,
   onChange,
+  step = 1,
   className,
   ...props
 }: FieldProps) => {
@@ -60,6 +63,17 @@ const Field = ({
           onChange={(event) => onChange?.(toNumeric(event.currentTarget.value))}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
+          onKeyDown={(event) => {
+            // Up/Down step the value. Left/Right stay with the caret.
+            const direction =
+              event.key === "ArrowUp" ? 1 : event.key === "ArrowDown" ? -1 : 0;
+            if (direction === 0) return;
+            event.preventDefault();
+            const delta = direction * step * (event.shiftKey ? 10 : 1);
+            const next = (Number(value) || 0) + delta;
+            // Trims float noise from decimal steps without losing real precision.
+            onChange?.(String(Number(next.toFixed(4))));
+          }}
           className="text-value text-ink min-w-0 flex-1 bg-transparent font-mono outline-none"
         />
       ) : (
