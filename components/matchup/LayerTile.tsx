@@ -95,7 +95,6 @@ const LayerTile = ({
           !selected && "hover:ring-placeholder hover:ring-2",
           lifted &&
             "shadow-drag ring-accent-blue z-10 -rotate-2 scale-[1.03] ring-2",
-          hidden && selected && "opacity-45",
         )}
         style={
           src
@@ -122,11 +121,6 @@ const LayerTile = ({
             <ThumbAction label={`Delete ${name}`} onClick={onDelete}>
               <TrashIcon className="w-3.25" />
             </ThumbAction>
-          </span>
-        )}
-        {locked && (
-          <span className="rounded-badge bg-accent-orange text-ink absolute bottom-1 right-1 grid size-4.5 place-items-center">
-            <LockSimpleIcon className="w-2.75" strokeWidth={2.6} solid />
           </span>
         )}
         {uploadProgress !== undefined && (
