@@ -2,7 +2,7 @@ import { AnchorPad } from "./AnchorPad";
 import { EmptyState } from "./EmptyState";
 import { ErrorBanner } from "./ErrorBanner";
 import { Field } from "./Field";
-import { AddTile, LayerGrid } from "./LayerGrid";
+import { AddButton, AddTile, LayerGrid } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
 import { Pager } from "./Pager";
@@ -127,7 +127,6 @@ const MatchupPanel = ({
   const pageCount = Math.max(1, Math.ceil(layers.length / LAYERS_PER_PAGE));
   const start = (page - 1) * LAYERS_PER_PAGE;
   const visibleLayers = layers.slice(start, start + LAYERS_PER_PAGE);
-  const canAdd = layers.length > 0 && visibleLayers.length < LAYERS_PER_PAGE;
 
   return (
     <div
@@ -257,20 +256,22 @@ const MatchupPanel = ({
                     onDragEnter={() => setOverId(layer.id)}
                   />
                 ))}
-                {canAdd && (
-                  <AddTile aria-label="Add layer" onClick={onUpload} />
-                )}
               </LayerGrid>
 
-              {layers.length > LAYERS_PER_PAGE && (
+              {/*
+                One footer row: Add on the left, pager on the right. Shown even
+                at a single page, so the Add control never moves around and a
+                full page can't leave it nowhere to render.
+              */}
+              <div className="flex items-center justify-between px-3 pb-3">
+                <AddButton aria-label="Add layer" onClick={onUpload} />
                 <Pager
                   page={page}
                   pageCount={pageCount}
                   onPrev={() => onPageChange?.(page - 1)}
                   onNext={() => onPageChange?.(page + 1)}
-                  className="px-3 pb-3"
                 />
-              )}
+              </div>
 
               <div className="border-hairline border-t p-3">
                 <div className="flex items-start gap-3">
