@@ -287,6 +287,9 @@ export default function MatchupApp() {
         case "KeyD":
           patchLayer({ difference: !selectedRef.current?.difference });
           break;
+        case "Slash":
+          setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
+          break;
         case "BracketLeft":
           setState((c) => ({ ...c, page: Math.max(1, c.page - 1) }));
           break;

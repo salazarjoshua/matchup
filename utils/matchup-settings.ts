@@ -38,6 +38,7 @@ export const HOTKEYS = [
   { keys: "⌥V", action: "Toggle visibility" },
   { keys: "⌥L", action: "Toggle lock" },
   { keys: "⌥D", action: "Toggle difference" },
+  { keys: "⌥/", action: "Toggle panel" },
   { keys: "⌥[", action: "Previous page" },
   { keys: "⌥]", action: "Next page" },
   { keys: "⌘V", action: "Paste an image" },

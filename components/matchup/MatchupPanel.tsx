@@ -142,7 +142,7 @@ const MatchupPanel = ({
           onClick={onTogglePanel}
           aria-expanded={!collapsed}
           aria-label={collapsed ? "Show panel" : "Hide panel"}
-          title={collapsed ? "Show panel" : "Hide panel"}
+          title={collapsed ? "Show panel (⌥/)" : "Hide panel (⌥/)"}
           className={cn(
             "size-rail-tile rounded-control grid place-items-center relative",
             "bg-rail-tile hover:bg-rail-tile-hover text-muted",
