@@ -24,6 +24,7 @@ import type { LayerSettings, MatchupState } from "@/utils/matchup-state";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
 const SAVE_DEBOUNCE_MS = 300;
+/** Only a first guess: the real size is measured after the first render below. */
 const PANEL_WIDTH = 300;
 const EDGE = 8;
 const RAIL_HEIGHT = 40;
@@ -32,6 +33,25 @@ const DRAG_THRESHOLD = 4;
 const swallowClick = (event: MouseEvent) => {
   event.stopPropagation();
   event.preventDefault();
+};
+
+/**
+ * How far the widget may sit from the top or left edge on one axis.
+ *
+ * The margin is a preference, not a rule: in a viewport too small to hold the
+ * widget with margins — a 300px-wide window against the 300px panel — insisting
+ * on it produced min > max, which pinned the widget to a single point 8px off
+ * the right edge and killed the drag on that axis entirely. Dropping the margin
+ * there keeps the widget fully visible and keeps whatever travel is left.
+ */
+const travel = (available: number, size: number) => {
+  // A hidden or background tab can report a 0x0 viewport. Clamping against that
+  // would pin the widget to the corner and refuse to move, so skip it until known.
+  if (available <= 0) return { min: -Infinity, max: Infinity };
+  const max = available - size - EDGE;
+  return max >= EDGE
+    ? { min: EDGE, max }
+    : { min: 0, max: Math.max(0, available - size) };
 };
 
 /**
@@ -353,16 +373,6 @@ export default function MatchupApp() {
     window.addEventListener("pointerup", onUp);
   };
 
-  // The rail sits above the panel in one column, so both share the panel's width.
-  // Clamping keeps it reachable when devtools opening shrinks the viewport.
-  // A hidden or background tab can report a 0x0 viewport. Clamping against that
-  // would pin the widget to the corner and refuse to move, so skip it until known.
-  const maxLeft =
-    viewport.w > 0 ? Math.max(EDGE, viewport.w - PANEL_WIDTH - EDGE) : Infinity;
-  const maxTop =
-    viewport.h > 0
-      ? Math.max(EDGE, viewport.h - widgetSize.h - EDGE)
-      : Infinity;
   const corner = prefs.panelPosition;
   const edgeX = dock?.edgeX ?? (corner.endsWith("right") ? "right" : "left");
   const edgeY = dock?.edgeY ?? (corner.startsWith("bottom") ? "bottom" : "top");
@@ -371,25 +381,39 @@ export default function MatchupApp() {
 
   // Resolved from the docked edge, so the widget stays put relative to that edge
   // as it grows and shrinks rather than hanging off the bottom of the window.
+  const xTravel = travel(viewport.w, widgetSize.w);
+  const yTravel = travel(viewport.h, widgetSize.h);
   const railLeft = clamp(
-    edgeX === "left" ? offsetX : viewport.w - PANEL_WIDTH - offsetX,
-    EDGE,
-    maxLeft,
+    edgeX === "left" ? offsetX : viewport.w - widgetSize.w - offsetX,
+    xTravel.min,
+    xTravel.max,
   );
   const railTop = clamp(
     edgeY === "top" ? offsetY : viewport.h - widgetSize.h - offsetY,
-    EDGE,
-    maxTop,
+    yTravel.min,
+    yTravel.max,
   );
 
+  // Read inside the drag rather than closed over: the viewport and the widget's
+  // own height both change mid-drag (devtools opening, an image finishing), and
+  // stale bounds would clamp the widget to a position the pointer has left.
+  const geometry = useRef({ viewport, widgetSize, railLeft, railTop });
+  geometry.current = { viewport, widgetSize, railLeft, railTop };
+
   const onGripPointerDown = (event: ReactPointerEvent) => {
+    const grip = event.currentTarget as HTMLElement;
+    const pointerId = event.pointerId;
     const startX = event.clientX;
     const startY = event.clientY;
-    const from = { left: railLeft, top: railTop };
+    const from = {
+      left: geometry.current.railLeft,
+      top: geometry.current.railTop,
+    };
     let moved = false;
     let landed: Dock | undefined;
 
     const onMove = (move: PointerEvent) => {
+      if (move.pointerId !== pointerId) return;
       if (!moved) {
         // Below the threshold this is still a click, so buttons keep working.
         const travelled = Math.hypot(
@@ -398,30 +422,45 @@ export default function MatchupApp() {
         );
         if (travelled < DRAG_THRESHOLD) return;
         moved = true;
+        // Only captured once it is definitely a drag: capturing on pointerdown
+        // would retarget the click and break the rail's own toggle buttons.
+        // Without it the drag dies the moment the pointer crosses an iframe on
+        // the host page, which is most of the width of a narrow viewport.
+        try {
+          grip.setPointerCapture(pointerId);
+        } catch {
+          // Not fatal — the window listeners below still track the pointer for
+          // as long as it stays over this document.
+        }
       }
+      const { viewport: vp, widgetSize: size } = geometry.current;
+      const bx = travel(vp.w, size.w);
+      const by = travel(vp.h, size.h);
       const nextLeft = clamp(
         from.left + (move.clientX - startX),
-        EDGE,
-        maxLeft,
+        bx.min,
+        bx.max,
       );
-      const nextTop = clamp(from.top + (move.clientY - startY), EDGE, maxTop);
-      const nextEdgeX =
-        nextLeft + PANEL_WIDTH / 2 > viewport.w / 2 ? "right" : "left";
-      const nextEdgeY =
-        nextTop + widgetSize.h / 2 > viewport.h / 2 ? "bottom" : "top";
+      const nextTop = clamp(from.top + (move.clientY - startY), by.min, by.max);
+      const nextEdgeX = nextLeft + size.w / 2 > vp.w / 2 ? "right" : "left";
+      const nextEdgeY = nextTop + size.h / 2 > vp.h / 2 ? "bottom" : "top";
       landed = {
         edgeX: nextEdgeX,
         edgeY: nextEdgeY,
-        x:
-          nextEdgeX === "left" ? nextLeft : viewport.w - PANEL_WIDTH - nextLeft,
-        y: nextEdgeY === "top" ? nextTop : viewport.h - widgetSize.h - nextTop,
+        x: nextEdgeX === "left" ? nextLeft : vp.w - size.w - nextLeft,
+        y: nextEdgeY === "top" ? nextTop : vp.h - size.h - nextTop,
       };
       setDock(landed);
     };
 
-    const onUp = () => {
+    const onUp = (up: PointerEvent) => {
+      if (up.pointerId !== pointerId) return;
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      if (grip.hasPointerCapture(pointerId)) {
+        grip.releasePointerCapture(pointerId);
+      }
       if (!moved) return;
       // Persisted once on release, not on every move: this is a per-tab memory
       // for a reload, not a running log of the drag.
@@ -441,6 +480,7 @@ export default function MatchupApp() {
 
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
   };
 
   if (!hydrated || !open) return null;

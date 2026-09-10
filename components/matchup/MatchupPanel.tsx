@@ -201,7 +201,7 @@ const MatchupPanel = ({
         <div className="w-panel rounded-panel border-hairline shadow-panel flex-none overflow-hidden border bg-white">
           <TitleBar
             onPointerDown={onGripPointerDown}
-            className="cursor-grab"
+            className="cursor-grab select-none"
             actions={
               <>
                 <IconButton aria-label="About" onClick={onOpenHelp}>
