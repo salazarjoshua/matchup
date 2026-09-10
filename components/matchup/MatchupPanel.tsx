@@ -127,6 +127,7 @@ const MatchupPanel = ({
   const pageCount = Math.max(1, Math.ceil(layers.length / LAYERS_PER_PAGE));
   const start = (page - 1) * LAYERS_PER_PAGE;
   const visibleLayers = layers.slice(start, start + LAYERS_PER_PAGE);
+  const canAdd = layers.length > 0 && visibleLayers.length < LAYERS_PER_PAGE;
 
   return (
     <div
@@ -256,15 +257,19 @@ const MatchupPanel = ({
                     onDragEnter={() => setOverId(layer.id)}
                   />
                 ))}
+                {canAdd && (
+                  <AddTile aria-label="Add layer" onClick={onUpload} />
+                )}
               </LayerGrid>
 
               {/*
-                One footer row: Add on the left, pager on the right. Shown even
-                at a single page, so the Add control never moves around and a
-                full page can't leave it nowhere to render.
+                One footer row: Add on the left, pager on the right. This button
+                is always here, so a page with no spare cell for the AddTile
+                above still has a way to add. Shown at a single page too, so the
+                row's height never changes.
               */}
               <div className="flex items-center justify-between px-3 pb-3">
-                <AddButton aria-label="Add layer" onClick={onUpload} />
+                <AddButton onClick={onUpload} />
                 <Pager
                   page={page}
                   pageCount={pageCount}
