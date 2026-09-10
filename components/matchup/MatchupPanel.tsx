@@ -135,7 +135,7 @@ const MatchupPanel = ({
     >
       <Rail
         onPointerDown={onGripPointerDown}
-        className="cursor-grab select-none"
+        className="cursor-grab touch-none select-none"
       >
         <button
           type="button"
@@ -201,7 +201,7 @@ const MatchupPanel = ({
         <div className="w-panel rounded-panel border-hairline shadow-panel flex-none overflow-hidden border bg-white">
           <TitleBar
             onPointerDown={onGripPointerDown}
-            className="cursor-grab select-none"
+            className="cursor-grab touch-none select-none"
             actions={
               <>
                 <IconButton aria-label="About" onClick={onOpenHelp}>
