@@ -7,7 +7,8 @@ import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
 import { Rail } from "./Rail";
 import { RailToggle } from "./RailToggle";
-import { IconButton, TitleBar } from "./TitleBar";
+import { IconButton } from "./IconButton";
+import { TitleBar } from "./TitleBar";
 import {
   CircleHalfIcon,
   EyeIcon,
@@ -52,7 +53,8 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   y: string | number;
   scale: string | number;
   error?: string;
-  collapsed?: boolean;
+  /** The panel shows its content. Collapsed, only the rail shows. */
+  panelOpen?: boolean;
   renamingId?: string;
   onToggleVisible?: () => void;
   onToggleLocked?: () => void;
@@ -90,7 +92,7 @@ const MatchupPanel = ({
   y,
   scale,
   error,
-  collapsed = false,
+  panelOpen = true,
   renamingId,
   onToggleVisible,
   onToggleLocked,
@@ -136,9 +138,9 @@ const MatchupPanel = ({
         <button
           type="button"
           onClick={onTogglePanel}
-          aria-expanded={!collapsed}
-          aria-label={collapsed ? "Show panel" : "Hide panel"}
-          title={collapsed ? "Show panel (⌥/)" : "Hide panel (⌥/)"}
+          aria-expanded={panelOpen}
+          aria-label={panelOpen ? "Hide panel" : "Show panel"}
+          title={panelOpen ? "Hide panel (⌥/)" : "Show panel (⌥/)"}
           className={cn(
             "size-rail-tile rounded-control grid place-items-center relative",
             "bg-rail-tile hover:bg-rail-tile-hover text-muted",
@@ -147,10 +149,10 @@ const MatchupPanel = ({
             !hasSelection && "flex-1",
           )}
         >
-          {collapsed ? (
-            <PlusIcon className="w-5" />
-          ) : (
+          {panelOpen ? (
             <MinusIcon className="w-5" />
+          ) : (
+            <PlusIcon className="w-5" />
           )}
         </button>
         {hasSelection && (
@@ -159,7 +161,7 @@ const MatchupPanel = ({
               accent="blue"
               on={visible}
               onClick={onToggleVisible}
-              title="Toggle Overlay (⌥V)"
+              title="Toggle visibility (⌥V)"
               className="rounded-l-control"
             >
               {visible ? (
@@ -172,7 +174,7 @@ const MatchupPanel = ({
               accent="yellow"
               on={locked}
               onClick={onToggleLocked}
-              title="Toggle Lock (⌥L)"
+              title="Toggle lock (⌥L)"
             >
               {locked ? (
                 <LockIcon className="w-5" />
@@ -184,7 +186,7 @@ const MatchupPanel = ({
               accent="pink"
               on={difference}
               onClick={onToggleDifference}
-              title="Toggle Difference (⌥D)"
+              title="Toggle difference (⌥D)"
               className="rounded-r-control"
             >
               <CircleHalfIcon className="w-5" />
@@ -193,7 +195,7 @@ const MatchupPanel = ({
         )}
       </Rail>
 
-      {!collapsed && (
+      {panelOpen && (
         <div className="w-panel rounded-panel border-hairline shadow-panel flex-none overflow-hidden border bg-white">
           <TitleBar
             onPointerDown={onGripPointerDown}

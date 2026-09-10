@@ -544,7 +544,7 @@ export default function MatchupApp() {
           y={settings.y}
           scale={settings.scale}
           error={error}
-          collapsed={!state.panelOpen}
+          panelOpen={state.panelOpen}
           hasSelection={Boolean(selected)}
           onOpenSettings={() =>
             void browser.runtime.sendMessage({ type: "matchup:open-settings" })

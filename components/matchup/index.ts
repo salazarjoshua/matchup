@@ -2,6 +2,7 @@ export * from "./AnchorPad";
 export * from "./EmptyState";
 export * from "./ErrorBanner";
 export * from "./Field";
+export * from "./IconButton";
 export * from "./LayerGrid";
 export * from "./LayerTile";
 export * from "./MatchupPanel";
