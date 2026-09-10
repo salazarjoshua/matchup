@@ -148,6 +148,7 @@ const MatchupPanel = ({
             "bg-rail-tile hover:bg-rail-tile-hover text-muted",
             "transition-colors duration-120 ease-out",
             "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
+            !hasSelection && `flex-1`,
           )}
         >
           {collapsed ? (
@@ -156,45 +157,44 @@ const MatchupPanel = ({
             <MinusIcon className="w-5" />
           )}
         </button>
-        <div className="flex flex-1">
-          <RailToggle
-            accent="blue"
-            disabled={!hasSelection}
-            on={visible}
-            onClick={onToggleVisible}
-            title="Hide overlay (⌥V)"
-            className="rounded-l-control"
-          >
-            {visible ? (
-              <EyeIcon className="w-5" />
-            ) : (
-              <EyeSlashIcon className="w-5" />
-            )}
-          </RailToggle>
-          <RailToggle
-            accent="yellow"
-            disabled={!hasSelection}
-            on={locked}
-            onClick={onToggleLocked}
-            title="Lock position (⌥L)"
-          >
-            {locked ? (
-              <LockIcon className="w-5" solid />
-            ) : (
-              <UnlockIcon className="w-5" />
-            )}
-          </RailToggle>
-          <RailToggle
-            accent="pink"
-            disabled={!hasSelection}
-            on={difference}
-            onClick={onToggleDifference}
-            title="Difference (⌥D)"
-            className="rounded-r-control"
-          >
-            <CircleHalfIcon className="w-5" />
-          </RailToggle>
-        </div>
+        {hasSelection && (
+          <div className="flex flex-1">
+            <RailToggle
+              accent="blue"
+              on={visible}
+              onClick={onToggleVisible}
+              title="Hide overlay (⌥V)"
+              className="rounded-l-control"
+            >
+              {visible ? (
+                <EyeIcon className="w-5" />
+              ) : (
+                <EyeSlashIcon className="w-5" />
+              )}
+            </RailToggle>
+            <RailToggle
+              accent="yellow"
+              on={locked}
+              onClick={onToggleLocked}
+              title="Lock position (⌥L)"
+            >
+              {locked ? (
+                <LockIcon className="w-5" solid />
+              ) : (
+                <UnlockIcon className="w-5" />
+              )}
+            </RailToggle>
+            <RailToggle
+              accent="pink"
+              on={difference}
+              onClick={onToggleDifference}
+              title="Difference (⌥D)"
+              className="rounded-r-control"
+            >
+              <CircleHalfIcon className="w-5" />
+            </RailToggle>
+          </div>
+        )}
       </Rail>
 
       {!collapsed && (
