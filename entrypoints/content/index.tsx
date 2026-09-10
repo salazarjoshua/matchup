@@ -1,4 +1,5 @@
 import MatchupApp from "./MatchupApp";
+import { loadInterFont } from "@/utils/matchup-font";
 import ReactDOM from "react-dom/client";
 import { createShadowRootUi } from "wxt/utils/content-script-ui/shadow-root";
 import { defineContentScript } from "wxt/utils/define-content-script";
@@ -10,6 +11,10 @@ export default defineContentScript({
   cssInjectionMode: "ui",
 
   async main(ctx) {
+    // Has to happen against the page document: a face declared inside the shadow
+    // root would be ignored, leaving the panel on a system fallback.
+    loadInterFont();
+
     const ui = await createShadowRootUi(ctx, {
       name: "matchup-panel",
       position: "inline",

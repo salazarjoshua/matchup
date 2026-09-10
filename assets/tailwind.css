@@ -24,7 +24,8 @@
   --color-error-icon: #d62d20;
   --color-hairline: rgb(0 0 0 / 0.08);
 
-  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  /* Registered from JS — see utils/matchup-font.ts. */
+  --font-sans: "Matchup Inter", Inter, ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, Menlo, monospace;
 
   --text-panel-title: 12px;

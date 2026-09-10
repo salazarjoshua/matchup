@@ -16,6 +16,11 @@ export default defineConfig({
     options_ui: { page: "settings.html", open_in_tab: true },
     description: "Design & code. Let's see how they match up.",
     permissions: ["storage", "unlimitedStorage", "clipboardRead"],
+    // The panel's font is fetched by the content script from the page's own
+    // context, so the page has to be allowed to read it.
+    web_accessible_resources: [
+      { resources: ["/fonts/*"], matches: ["<all_urls>"] },
+    ],
     host_permissions: ["<all_urls>"],
   },
 });
