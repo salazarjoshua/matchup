@@ -51,7 +51,7 @@ const Pager = ({
     <PagerButton enabled={page > 1} onClick={onPrev} aria-label="Previous page">
       <CaretLeftIcon className="w-3" />
     </PagerButton>
-    <span className="text-micro text-muted tabular-nums font-mono">{`${page}/${pageCount}`}</span>
+    <span className="text-micro text-muted tabular-nums">{`${page}/${pageCount}`}</span>
     <PagerButton
       enabled={page < pageCount}
       onClick={onNext}

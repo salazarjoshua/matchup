@@ -133,7 +133,7 @@ const OpacityBar = ({
             // The track's arrow handling shouldn't fight the caret.
             event.stopPropagation();
           }}
-          className="text-value text-ink w-10 bg-transparent text-right font-mono outline-none"
+          className="text-value text-ink w-10 bg-transparent text-right tabular-nums outline-none"
         />
       ) : (
         <button
@@ -145,7 +145,7 @@ const OpacityBar = ({
             setEditing(true);
           }}
           className={cn(
-            "text-value w-10 text-right font-mono",
+            "text-value w-10 text-right tabular-nums",
             "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue rounded-[3px] focus-visible:outline-none",
             disabled ? "text-disabled" : "text-ink hover:text-accent-blue",
           )}

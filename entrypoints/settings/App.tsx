@@ -46,7 +46,7 @@ const Row = ({
 const selectClass =
   "h-control rounded-control bg-surface text-value text-ink w-44 px-3 outline-none focus-visible:ring-[1.5px] focus-visible:ring-accent-yellow";
 const numberClass =
-  "h-control rounded-control bg-surface text-value text-ink w-24 px-3 text-right font-mono outline-none focus-visible:ring-[1.5px] focus-visible:ring-accent-yellow";
+  "h-control rounded-control bg-surface text-value text-ink w-24 px-3 text-right tabular-nums outline-none focus-visible:ring-[1.5px] focus-visible:ring-accent-yellow";
 
 export default function App() {
   const [settings, setSettings] = useState<MatchupSettings>(SETTINGS_DEFAULTS);
@@ -185,9 +185,7 @@ export default function App() {
                 className="flex items-center justify-between px-3 py-2.5"
               >
                 <span className="text-[13px]">{hotkey.action}</span>
-                <kbd className="text-value text-muted font-mono">
-                  {hotkey.keys}
-                </kbd>
+                <kbd className="text-value text-muted">{hotkey.keys}</kbd>
               </li>
             ))}
           </ul>

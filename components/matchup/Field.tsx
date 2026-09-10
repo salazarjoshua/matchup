@@ -49,7 +49,7 @@ const Field = ({
       {label && (
         <span
           className={cn(
-            "w-6 font-mono text-[12px]",
+            "w-6 text-[12px]",
             disabled ? "text-disabled" : "text-muted",
           )}
         >
@@ -74,12 +74,12 @@ const Field = ({
             // Trims float noise from decimal steps without losing real precision.
             onChange?.(String(Number(next.toFixed(4))));
           }}
-          className="text-value text-ink min-w-0 flex-1 bg-transparent font-mono outline-none"
+          className="text-value text-ink min-w-0 flex-1 bg-transparent tabular-nums outline-none"
         />
       ) : (
         <span
           className={cn(
-            "text-value flex-1 font-mono",
+            "text-value flex-1 tabular-nums",
             disabled ? "text-disabled" : "text-muted",
           )}
         >
