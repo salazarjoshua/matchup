@@ -1,8 +1,6 @@
 @import "tailwindcss";
 
-/* Matchup design system — see design/Design System.dc.html */
 @theme {
-  /* Accents are state signals, never decoration: one accent per control. */
   --color-accent-blue: #0a84ff;
   --color-accent-yellow: #ffce3f;
   --color-accent-pink: #f64da6;
@@ -13,7 +11,6 @@
   --color-disabled: #c9c9c7;
   --color-surface: #f5f5f5;
 
-  /* Derived from the eight above — not new colours. */
   --color-rail-tile: #1c1c1c;
   --color-rail-tile-hover: #2a2a2a;
   --color-surface-hover: #f0efec;
@@ -26,13 +23,6 @@
 
   /* Registered from JS — see utils/matchup-font.ts. */
   --font-sans: "Matchup Inter", Inter, ui-sans-serif, system-ui, sans-serif;
-  /*
-   * No monospace in this design system. `initial` removes Tailwind's own
-   * --font-mono default, which also removes the font-mono utility, so the class
-   * can't quietly come back. Preflight still hands code/kbd/samp/pre a mono
-   * family of its own, so that is pointed at the sans stack too.
-   */
-  --font-mono: initial;
   --default-mono-font-family: var(--font-sans);
 
   --text-panel-title: 12px;
@@ -59,10 +49,7 @@
   --spacing-title-bar: 40px;
   --spacing-anchor: 112px;
   --spacing-panel: 300px;
-  /* How tall the layer grid gets before it scrolls: two full rows plus half of
-     the third, so a longer list is visibly scrollable rather than looking cut
-     off. One row is 96px (64px thumb + 8px gap + label, plus the 12px grid
-     gap), and the grid's own padding adds 24px. */
+
   --spacing-layer-list: 264px;
 
   --shadow-panel: 0 1px 3px rgb(0 0 0 / 0.06);
@@ -70,14 +57,6 @@
 }
 
 @layer components {
-  /*
-   * The layer grid's scrollbar, drawn from the palette: the UA default is a
-   * heavy slab that reads as part of the host page rather than of the panel.
-   *
-   * These pseudo-elements are the Blink/WebKit path, and they are what gives a
-   * *persistent* bar — it reserves its own 6px, where macOS's native overlay
-   * scrollbar fades out and hides the styling entirely.
-   */
   .scrollbar-panel::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -96,11 +75,6 @@
     background-color: var(--color-disabled);
   }
 
-  /*
-   * Firefox has no ::-webkit-scrollbar, so it needs the standard properties —
-   * but they have to be gated, because Blink ignores the pseudo-elements above
-   * the moment either of these is set to anything but `auto`.
-   */
   @supports not selector(::-webkit-scrollbar) {
     .scrollbar-panel {
       scrollbar-width: thin;
