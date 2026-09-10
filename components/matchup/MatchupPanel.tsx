@@ -14,9 +14,11 @@ import {
   EyeIcon,
   EyeSlashIcon,
   InfoIcon,
-  LockOpenIcon,
-  LockSimpleIcon,
-  SlidersHorizontalIcon,
+  UnlockIcon,
+  LockIcon,
+  SettingsIcon,
+  PlusIcon,
+  MinusIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
 import { useState } from "react";
@@ -143,13 +145,16 @@ const MatchupPanel = ({
           title={collapsed ? "Show panel" : "Hide panel"}
           className={cn(
             "size-rail-tile rounded-control grid place-items-center relative",
-            "bg-control transition-colors duration-120 ease-out",
+            "bg-rail-tile hover:bg-rail-tile-hover text-muted",
+            "transition-colors duration-120 ease-out",
             "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
-            "text-white",
           )}
         >
-          <span className="bg-ink absolute h-0.5 w-4" />
-          {collapsed && <span className="bg-ink absolute h-4 w-0.5" />}
+          {collapsed ? (
+            <PlusIcon className="w-5" />
+          ) : (
+            <MinusIcon className="w-5" />
+          )}
         </button>
         <div className="flex flex-1">
           <RailToggle
@@ -167,20 +172,20 @@ const MatchupPanel = ({
             )}
           </RailToggle>
           <RailToggle
-            accent="orange"
+            accent="yellow"
             disabled={!hasSelection}
             on={locked}
             onClick={onToggleLocked}
             title="Lock position (⌥L)"
           >
             {locked ? (
-              <LockSimpleIcon className="w-5" solid />
+              <LockIcon className="w-5" solid />
             ) : (
-              <LockOpenIcon className="w-5" />
+              <UnlockIcon className="w-5" />
             )}
           </RailToggle>
           <RailToggle
-            accent="yellow"
+            accent="pink"
             disabled={!hasSelection}
             on={difference}
             onClick={onToggleDifference}
@@ -199,14 +204,11 @@ const MatchupPanel = ({
             className="cursor-grab"
             actions={
               <>
-                <IconButton aria-label="Settings" onClick={onOpenSettings}>
-                  <SlidersHorizontalIcon className="w-4" />
-                </IconButton>
-                <IconButton
-                  aria-label="Shortcuts and help"
-                  onClick={onOpenHelp}
-                >
+                <IconButton aria-label="About" onClick={onOpenHelp}>
                   <InfoIcon className="w-4" />
+                </IconButton>
+                <IconButton aria-label="Settings" onClick={onOpenSettings}>
+                  <SettingsIcon className="w-4" />
                 </IconButton>
               </>
             }

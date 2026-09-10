@@ -1,8 +1,4 @@
-import {
-  LockSimpleIcon,
-  PencilSimpleIcon,
-  TrashIcon,
-} from "@/components/icons";
+import { EditIcon, DeleteIcon } from "@/components/icons";
 import { cn } from "@/utils/cn";
 import { useEffect, useRef } from "react";
 import type { ComponentPropsWithoutRef } from "react";
@@ -48,7 +44,7 @@ const ThumbAction = ({
       event.stopPropagation();
       onClick?.(event);
     }}
-    className="text-ink grid size-8 place-items-center rounded-full bg-white"
+    className="text-ink grid size-6 place-items-center rounded-full bg-surface"
   >
     {children}
   </button>
@@ -116,10 +112,11 @@ const LayerTile = ({
           }
         }}
         className={cn(
-          "h-thumb rounded-control duration-120 group relative cursor-pointer overflow-hidden transition-all ease-out",
+          "h-thumb rounded-control group relative cursor-pointer overflow-hidden",
+          "duration-120 transition-all ease-out",
           "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
           selected && "ring-accent-blue ring-2",
-          !selected && "hover:ring-placeholder hover:ring-2",
+          !selected && "hover:ring-accent-blue hover:ring-2",
           lifted &&
             "shadow-drag ring-accent-blue z-10 -rotate-2 scale-[1.03] ring-2",
           dropTarget && "ring-accent-blue ring-2 ring-offset-1",
@@ -142,17 +139,17 @@ const LayerTile = ({
           />
         )}
         {uploadProgress === undefined && (
-          <span className="rounded-control absolute inset-0 hidden items-center justify-center gap-2 bg-black/42 group-hover:flex">
+          <span className="rounded-control absolute inset-0 items-start justify-between p-1 gap-1 bg-black/40 backdrop-blur-xs hidden group-hover:flex">
             <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
-              <PencilSimpleIcon className="w-3.25" />
+              <EditIcon className="w-3 text-accent-blue" />
             </ThumbAction>
             <ThumbAction label={`Delete ${name}`} onClick={onDelete}>
-              <TrashIcon className="w-3.25" />
+              <DeleteIcon className="w-3 text-accent-red" />
             </ThumbAction>
           </span>
         )}
         {uploadProgress !== undefined && (
-          <span className="text-micro text-ink absolute inset-0 grid place-items-center bg-white/72 font-mono">
+          <span className="text-micro text-ink absolute inset-0 grid place-items-center bg-white/72">
             {`${uploadProgress}%`}
           </span>
         )}
@@ -168,12 +165,12 @@ const LayerTile = ({
             if (event.key === "Enter") event.currentTarget.blur();
             if (event.key === "Escape") onRename?.(name);
           }}
-          className="border-[1.5px] rounded-badge border-accent-blue text-micro text-ink h-4.5 w-full bg-white px-1.25 font-mono outline-none"
+          className="border-[1.5px] rounded-badge border-accent-blue text-micro text-ink h-4.5 w-full bg-white px-1.25 outline-none"
         />
       ) : (
         <div
           className={cn(
-            "text-micro truncate font-mono",
+            "text-micro truncate",
             selected ? "text-ink" : "text-muted",
           )}
           title={name}

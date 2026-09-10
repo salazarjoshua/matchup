@@ -1,6 +1,6 @@
 import { cn } from "@/utils/cn";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
-import { DownloadIcon, PlusIcon } from "@/components/icons";
+import { PlusIcon, UploadImageIcon } from "@/components/icons";
 
 const LAYERS_PER_PAGE = 6;
 
@@ -21,10 +21,9 @@ const AddTile = ({
     className={cn("flex min-w-0 flex-col gap-2 text-left", className)}
     {...props}
   >
-    <span className="border-[1.5px] h-thumb rounded-control border-disabled text-muted grid place-items-center border-dashed">
-      {/* <DownloadIcon className="w-4" /> */}
-      <PlusIcon className="w-4" />
-    </span>
+    <div className="border-[1.5px] h-thumb rounded-control border-placeholder text-placeholder grid place-items-center border-dashed">
+      <UploadImageIcon className="w-6" />
+    </div>
   </button>
 );
 

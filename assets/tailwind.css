@@ -4,8 +4,8 @@
 @theme {
   /* Accents are state signals, never decoration: one accent per control. */
   --color-accent-blue: #0a84ff;
-  --color-accent-orange: #ff8a00;
-  --color-accent-yellow: #ffc400;
+  --color-accent-yellow: #ffce3f;
+  --color-accent-pink: #f64da6;
   --color-accent-red: #ff3b2f;
 
   --color-rail: #0a0a0a;
@@ -22,7 +22,6 @@
   --color-canvas: #fafaf9;
   --color-placeholder: #ababab;
   /* Ground for the collapse control — sits between disabled and placeholder. */
-  --color-control: #bbbbbb;
   --color-error-bg: #ffecea;
   --color-error-icon: #d62d20;
   --color-error-ink: #8e1c13;
@@ -43,8 +42,6 @@
   --text-helper--line-height: 1;
   --text-value: 14px;
   --text-value--line-height: 1;
-  --text-meta: 11px;
-  --text-meta--line-height: 1;
   --text-micro: 10px;
   --text-micro--line-height: 1;
 

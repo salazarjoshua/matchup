@@ -10,15 +10,14 @@ export const EyeIcon = ({ solid = true, ...props }: SolidIconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
+    fill="currentColor"
     {...props}
   >
-    <ellipse cx="12" cy="12" rx="9.5" ry="6" />
-    <circle cx="12" cy="12" r="2.6" fill={solid ? "currentColor" : "none"} />
+    <path
+      fillRule="evenodd"
+      d="M12 4c3.952 0 7.79 2.272 10.357 6.583.52.873.52 1.961 0 2.834C19.79 17.727 15.952 20 12 20s-7.79-2.272-10.357-6.583a2.77 2.77 0 0 1 0-2.834C4.21 6.273 8.048 4 12 4m-3.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"
+      clipRule="evenodd"
+    />
   </svg>
 );
 
@@ -26,56 +25,48 @@ export const EyeSlashIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
+    fill="currentColor"
     {...props}
   >
-    <ellipse cx="12" cy="12" rx="9.5" ry="6" />
-    <circle cx="12" cy="12" r="2.6" />
-    <path d="M4 20 20 4" />
-  </svg>
-);
-
-export const LockSimpleIcon = ({ solid = false, ...props }: SolidIconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <rect
-      x="4.5"
-      y="10.5"
-      width="15"
-      height="9.5"
-      rx="2.5"
-      fill={solid ? "currentColor" : "none"}
-      stroke={solid ? "none" : undefined}
+    <path
+      fillRule="evenodd"
+      d="M2.293 2.293a1 1 0 0 1 1.414 0l3.64 3.64.004.003L18.064 16.65l.003.002 3.64 3.64a1 1 0 0 1-1.414 1.415l-3.09-3.09c-2.519 1.405-5.333 1.746-8.01.994-2.922-.821-5.601-2.921-7.549-6.193a2.77 2.77 0 0 1-.001-2.834c.988-1.66 2.163-3.018 3.465-4.061L2.293 3.707a1 1 0 0 1 0-1.414M8 12c0-.741.203-1.436.554-2.032l1.514 1.514a2 2 0 0 0 2.45 2.45l1.514 1.514A4 4 0 0 1 8 12"
+      clipRule="evenodd"
     />
-    <path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3" />
+    <path
+      fill="#7a7a7a"
+      d="M22.356 13.417a16 16 0 0 1-2.002 2.695L8.762 4.52A10.4 10.4 0 0 1 11.999 4c3.952 0 7.791 2.272 10.357 6.583.52.873.52 1.961 0 2.834"
+    />
   </svg>
 );
 
-export const LockOpenIcon = (props: IconProps) => (
+export const LockIcon = ({ solid = false, ...props }: SolidIconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
+    fill="currentColor"
     {...props}
   >
-    <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" />
-    <path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0" />
+    <path
+      fillRule="evenodd"
+      d="M12 2a5 5 0 0 0-5 5v2a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3V7a5 5 0 0 0-5-5m3 7V7a3 3 0 1 0-6 0v2zm-3 4a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0v-3a1 1 0 0 1 1-1"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+export const UnlockIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      d="M12 2a5 5 0 0 0-5 5v2a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3H9V7a3 3 0 0 1 5.906-.75 1 1 0 0 0 1.936-.5A5 5 0 0 0 12 2m0 11a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0v-3a1 1 0 0 1 1-1"
+      clipRule="evenodd"
+    />
   </svg>
 );
 
@@ -83,31 +74,32 @@ export const CircleHalfIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
+    fill="currentColor"
     {...props}
   >
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor" stroke="none" />
+    <path
+      fillRule="evenodd"
+      d="M12 20a8 8 0 1 0 0-16zm10-8c0 5.523-4.477 10-10 10q-.562 0-1.11-.061C5.89 21.386 2 17.148 2 12s3.89-9.386 8.89-9.939A10 10 0 0 1 12 2c5.523 0 10 4.477 10 10"
+      clipRule="evenodd"
+    />
   </svg>
 );
 
-export const SlidersHorizontalIcon = (props: IconProps) => (
+export const SettingsIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth={2.2}
     strokeLinecap="round"
     {...props}
   >
-    <path d="M3.5 8h17M3.5 16h17" />
-    <circle cx="9" cy="8" r="2.4" fill="#fff" />
-    <circle cx="15.5" cy="16" r="2.4" fill="#fff" />
+    <path strokeWidth="2" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+    <path
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M7.5 4.205c-.121.07-.182.105-.233.14a2 2 0 0 0-.78 2.336c.02.058.047.122.102.251l.178.419a7 7 0 0 0-1.412 2.441l-.45.055a5 5 0 0 0-.268.037 2 2 0 0 0-1.633 1.845c-.004.06-.004.13-.004.27s0 .21.004.271a2 2 0 0 0 1.633 1.846c.06.01.13.019.269.036l.449.055c.303.911.788 1.74 1.412 2.442l-.178.418a5 5 0 0 0-.103.251 2 2 0 0 0 .781 2.337c.051.034.112.07.233.14s.182.104.237.131a2 2 0 0 0 2.414-.492c.04-.046.082-.102.166-.214l.272-.362a7 7 0 0 0 2.822 0l.272.361c.084.112.126.168.166.215a2 2 0 0 0 2.415.492c.054-.027.115-.062.236-.132s.182-.105.233-.139a2 2 0 0 0 .78-2.337c-.02-.058-.047-.122-.102-.25l-.178-.419a7 7 0 0 0 1.412-2.442l.45-.055a5 5 0 0 0 .268-.036 2 2 0 0 0 1.633-1.845C21 12.21 21 12.14 21 12s0-.21-.004-.271a2 2 0 0 0-1.633-1.845 5 5 0 0 0-.269-.037l-.45-.055a7 7 0 0 0-1.411-2.441l.178-.419c.055-.128.082-.193.103-.25a2 2 0 0 0-.781-2.338 5 5 0 0 0-.233-.138c-.121-.07-.182-.105-.236-.133a2 2 0 0 0-2.415.493c-.04.046-.082.102-.166.214l-.272.362a7 7 0 0 0-2.821 0l-.273-.362c-.084-.112-.126-.168-.166-.214a2 2 0 0 0-2.414-.493 5 5 0 0 0-.237.132Z"
+    />
   </svg>
 );
 
@@ -117,13 +109,39 @@ export const InfoIcon = (props: IconProps) => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth={2.2}
+    strokeWidth={2}
     strokeLinecap="round"
     {...props}
   >
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 11v5.5" />
-    <circle cx="12" cy="7.6" r="1.1" fill="currentColor" stroke="none" />
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M11 11h1v5m9-4a9 9 0 1 1-18 0 9 9 0 0 1 18 0"
+    />
+    <path
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth=".5"
+      d="M12 7.25a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z"
+    />
+  </svg>
+);
+
+export const WarningIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    {...props}
+  >
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+    <path
+      fill="currentColor"
+      d="m11.157 12.256-.47-3.768a1.324 1.324 0 1 1 2.627 0l-.47 3.768a.85.85 0 0 1-1.687 0"
+    />
+    <circle cx="12" cy="15.8" r="1.2" fill="currentColor" />
   </svg>
 );
 
@@ -131,30 +149,176 @@ export const XIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.6}
-    strokeLinecap="round"
+    fill="currentColor"
     {...props}
   >
-    <path d="M6 6l12 12M18 6 6 18" />
+    <path
+      fillRule="evenodd"
+      d="M4.19 4.19a1.5 1.5 0 0 1 2.12 0L12 9.878l5.69-5.69a1.5 1.5 0 0 1 2.12 2.122L14.122 12l5.69 5.69a1.5 1.5 0 0 1-2.122 2.12L12 14.122l-5.69 5.69a1.5 1.5 0 0 1-2.12-2.122L9.878 12l-5.69-5.69a1.5 1.5 0 0 1 0-2.12"
+      clipRule="evenodd"
+    />
   </svg>
 );
 
-// The design system draws both carets in a single 24px box as one paired specimen,
-// which leaves each one off-center on its own. Shifted to the viewBox center here.
+export const PlusIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      fill-rule="evenodd"
+      d="M12 3a1 1 0 0 1 1 1v7h7a1 1 0 1 1 0 2h-7v7a1 1 0 1 1-2 0v-7H4a1 1 0 1 1 0-2h7V4a1 1 0 0 1 1-1"
+      clip-rule="evenodd"
+    />
+  </svg>
+);
+
+export const MinusIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      fill-rule="evenodd"
+      d="M3 12a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1"
+      clip-rule="evenodd"
+    />
+  </svg>
+);
+
+export const EditIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path
+      fill="currentColor"
+      d="m14 16 8-8-6-6-8.2 8.2 3 3C11.972 14.372 14 16 14 16"
+    />
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeWidth="2"
+      d="m7.8 10.2 3 3C11.972 14.372 14 16 14 16m-4 4L22 8l-6-6L4 14"
+    />
+    <path
+      fill="currentColor"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="m4 14-1 7 7-1z"
+    />
+  </svg>
+);
+
+export const DeleteIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      d="M7.23 5H3.5a1 1 0 0 0 0 2h.532l.842 12.206A3 3 0 0 0 7.867 22h8.266a3 3 0 0 0 2.993-2.794L19.968 7h.532a1 1 0 1 0 0-2h-3.73a5.001 5.001 0 0 0-9.54 0M9.4 5h5.198A3 3 0 0 0 9.4 5M10 10a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+export const UploadIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      d="M4 13.75a1 1 0 0 1 1 1V18a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.25a1 1 0 1 1 2 0V18a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-3.25a1 1 0 0 1 1-1"
+      clipRule="evenodd"
+    />
+    <path
+      fillRule="evenodd"
+      d="M12 3a1 1 0 0 1 .707.293l4.5 4.5a1 1 0 0 1-1.414 1.414L13 6.414v8.836a1 1 0 1 1-2 0V6.414L8.207 9.207a1 1 0 0 1-1.414-1.414l4.5-4.5A1 1 0 0 1 12 3"
+      clipRule="evenodd"
+    />
+  </svg>
+);
+
+export const UploadImageIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path
+      stroke="currentColor"
+      strokeWidth="2"
+      d="M14.5 11.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
+    />
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M11 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"
+    />
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="m11 15-1.586-1.586a2 2 0 0 0-2.828 0L4 16"
+    />
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeWidth="2"
+      d="M15 18h6M18 15v6"
+    />
+  </svg>
+);
+
+export const ClipboardIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeWidth="2"
+      d="M8 8v-.8c0-1.12 0-1.68.218-2.108a2 2 0 0 1 .874-.874C9.52 4 10.08 4 11.2 4h5.6c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874C20 5.52 20 6.08 20 7.2v5.6c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C18.48 16 17.92 16 16.8 16H16m0-4.8v5.6c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C14.48 20 13.92 20 12.8 20H7.2c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C4 18.48 4 17.92 4 16.8v-5.6c0-1.12 0-1.68.218-2.108a2 2 0 0 1 .874-.874C5.52 8 6.08 8 7.2 8h5.6c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874C16 9.52 16 10.08 16 11.2Z"
+    />
+  </svg>
+);
+
 export const CaretLeftIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="currentColor"
-    strokeWidth={2.2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
     {...props}
   >
-    <path d="M14.5 5l-5 7 5 7" />
+    <path
+      fill="currentColor"
+      fill-rule="evenodd"
+      d="M15.707 3.293a1 1 0 0 1 0 1.414l-6.585 6.586a1 1 0 0 0 0 1.414l6.585 6.586a1 1 0 0 1-1.414 1.414l-6.586-6.586a3 3 0 0 1 0-4.242l6.586-6.586a1 1 0 0 1 1.414 0"
+      clip-rule="evenodd"
+    />
   </svg>
 );
 
@@ -163,73 +327,14 @@ export const CaretRightIcon = (props: IconProps) => (
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="currentColor"
-    strokeWidth={2.2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
     {...props}
   >
-    <path d="M9.5 5l5 7-5 7" />
-  </svg>
-);
-
-export const WarningCircleIcon = (props: IconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.2}
-    strokeLinecap="round"
-    {...props}
-  >
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7.5v6" />
-    <circle cx="12" cy="16.8" r="1.1" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-export const PlusIcon = (props: IconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path d="M21 12a.75.75 0 0 1-.75.75h-7.5v7.5a.75.75 0 1 1-1.5 0v-7.5h-7.5a.75.75 0 1 1 0-1.5h7.5v-7.5a.75.75 0 1 1 1.5 0v7.5h7.5A.75.75 0 0 1 21 12" />
-  </svg>
-);
-
-export const PencilSimpleIcon = (props: IconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path d="m21.31 6.878-4.188-4.19a1.5 1.5 0 0 0-2.122 0L3.44 14.25A1.49 1.49 0 0 0 3 15.31v4.19A1.5 1.5 0 0 0 4.5 21h4.19a1.49 1.49 0 0 0 1.06-.44L21.31 9a1.5 1.5 0 0 0 0-2.122M4.81 15l7.94-7.94 1.565 1.565-7.94 7.939zm-.31 1.81 2.69 2.69H4.5zM9 19.19l-1.565-1.565 7.94-7.94 1.565 1.565zm9-9L13.81 6l2.25-2.25 4.19 4.189z" />
-  </svg>
-);
-
-export const TrashIcon = (props: IconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path d="M20.25 4.5H16.5v-.75a2.25 2.25 0 0 0-2.25-2.25h-4.5A2.25 2.25 0 0 0 7.5 3.75v.75H3.75a.75.75 0 0 0 0 1.5h.75v13.5A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V6h.75a.75.75 0 1 0 0-1.5M9 3.75A.75.75 0 0 1 9.75 3h4.5a.75.75 0 0 1 .75.75v.75H9zm9 15.75H6V6h12zm-7.5-9.75v6a.75.75 0 1 1-1.5 0v-6a.75.75 0 0 1 1.5 0m4.5 0v6a.75.75 0 1 1-1.5 0v-6a.75.75 0 1 1 1.5 0" />
-  </svg>
-);
-
-export const DownloadIcon = (props: IconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="currentColor"
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path d="M21 13.5v6a.75.75 0 0 1-.75.75H3.75A.75.75 0 0 1 3 19.5v-6a.75.75 0 1 1 1.5 0v5.25h15V13.5a.75.75 0 1 1 1.5 0M8.78 7.28l2.47-2.47v8.69a.75.75 0 1 0 1.5 0V4.81l2.47 2.47a.75.75 0 1 0 1.06-1.06l-3.75-3.75a.75.75 0 0 0-1.06 0L7.72 6.22a.75.75 0 0 0 1.06 1.06" />
+    <path
+      fill="currentColor"
+      fill-rule="evenodd"
+      d="M8.293 3.293a1 1 0 0 1 1.414 0l6.586 6.586a3 3 0 0 1 0 4.242l-6.586 6.586a1 1 0 0 1-1.414-1.414l6.586-6.586a1 1 0 0 0 0-1.414L8.293 4.707a1 1 0 0 1 0-1.414"
+      clip-rule="evenodd"
+    />
   </svg>
 );
 

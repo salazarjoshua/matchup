@@ -25,7 +25,7 @@ type TitleBarProps = ComponentPropsWithoutRef<"div"> & { actions?: ReactNode };
 const TitleBar = ({ className, actions, ...props }: TitleBarProps) => (
   <div
     className={cn(
-      "h-title-bar border-hairline flex items-center gap-2 border-b px-3",
+      "h-title-bar border-hairline flex items-center gap-2 border-b pl-3 pr-1.5",
       className,
     )}
     {...props}
@@ -34,9 +34,7 @@ const TitleBar = ({ className, actions, ...props }: TitleBarProps) => (
       <LogoIcon className="size-4" />
       <span>Matchup</span>
     </div>
-    {actions && (
-      <span className="ml-auto flex items-center gap-1">{actions}</span>
-    )}
+    {actions && <span className="ml-auto flex items-center">{actions}</span>}
   </div>
 );
 

@@ -1,4 +1,4 @@
-import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
+import type { PointerEvent as ReactPointerEvent, Ref } from "react";
 
 type OverlayProps = {
   src: string;
@@ -40,15 +40,16 @@ const Overlay = ({
     ref={ref}
     onPointerDown={draggable ? onPointerDown : undefined}
     style={{
-      position: 'fixed',
+      position: "fixed",
       left: `${x}px`,
       top: `${y}px`,
-      mixBlendMode: difference ? 'difference' : 'normal',
-      pointerEvents: draggable ? 'auto' : 'none',
-      cursor: draggable ? (dragging ? 'grabbing' : 'grab') : undefined,
-      touchAction: draggable ? 'none' : undefined,
+      mixBlendMode: difference ? "difference" : "normal",
+      pointerEvents: draggable ? "auto" : "none",
+      cursor: draggable ? (dragging ? "grabbing" : "grab") : undefined,
+      touchAction: draggable ? "none" : undefined,
       zIndex: 2147483646,
-    }}>
+    }}
+  >
     <img
       ref={imageRef}
       src={src}
@@ -56,11 +57,12 @@ const Overlay = ({
       draggable={false}
       onLoad={onLoad}
       style={{
-        display: 'block',
+        userSelect: "none",
+        display: "block",
         opacity: opacity / 100,
-        maxWidth: 'none',
+        maxWidth: "none",
         transform: `scale(${scale})`,
-        transformOrigin: 'top left',
+        transformOrigin: "top left",
       }}
     />
   </div>
