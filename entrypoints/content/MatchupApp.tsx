@@ -34,6 +34,22 @@ const swallowClick = (event: MouseEvent) => {
   event.preventDefault();
 };
 
+/**
+ * Whether the keystroke is going somewhere text is being typed — the layer rename
+ * field, or any input on the host page. `composedPath` because the listener sits on
+ * window, which only ever sees the shadow host as the target.
+ */
+const isEditable = (event: KeyboardEvent) => {
+  const target = event.composedPath()[0];
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.isContentEditable ||
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement
+  );
+};
+
 const readAsDataUrl = (file: File) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -226,17 +242,30 @@ export default function MatchupApp() {
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (!event.altKey) return;
-      const key = event.key.toLowerCase();
-      if (key === "v") patchLayer({ visible: !selectedRef.current?.visible });
-      else if (key === "l")
-        patchLayer({ locked: !selectedRef.current?.locked });
-      else if (key === "d")
-        patchLayer({ difference: !selectedRef.current?.difference });
-      else if (event.key === "[")
-        setState((c) => ({ ...c, page: Math.max(1, c.page - 1) }));
-      else if (event.key === "]") setState((c) => ({ ...c, page: c.page + 1 }));
-      else return;
+      if (!event.altKey || event.metaKey || event.ctrlKey) return;
+      if (isEditable(event)) return;
+      // Matched on `code`, the physical key, rather than `key`. On macOS Option
+      // is a compose modifier, so ⌥V arrives as "√", ⌥L as "¬" and ⌥[ as "“" —
+      // which is why none of these ever fired there.
+      switch (event.code) {
+        case "KeyV":
+          patchLayer({ visible: !selectedRef.current?.visible });
+          break;
+        case "KeyL":
+          patchLayer({ locked: !selectedRef.current?.locked });
+          break;
+        case "KeyD":
+          patchLayer({ difference: !selectedRef.current?.difference });
+          break;
+        case "BracketLeft":
+          setState((c) => ({ ...c, page: Math.max(1, c.page - 1) }));
+          break;
+        case "BracketRight":
+          setState((c) => ({ ...c, page: c.page + 1 }));
+          break;
+        default:
+          return;
+      }
       event.preventDefault();
     };
     const onPaste = (event: ClipboardEvent) => {
