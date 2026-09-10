@@ -11,11 +11,17 @@ type FieldProps = Omit<ComponentPropsWithoutRef<"div">, "onChange"> & {
   onChange?: (value: string) => void;
   /** Arrow-key increment; Shift multiplies it by ten. */
   step?: number;
+  /**
+   * Lower bound. Omitted for X and Y, which are legitimately negative; set for
+   * scale, where a negative multiplier mirrors the overlay on both axes and
+   * throws it off-screen, and where 0 is read as 1x by `Number(v) || 1`.
+   */
+  min?: number;
 };
 
 /** Keeps a partial entry like "-" or "1." usable while still rejecting non-numeric input. */
-const toNumeric = (raw: string) => {
-  const negative = raw.trimStart().startsWith("-");
+const toNumeric = (raw: string, allowNegative: boolean) => {
+  const negative = allowNegative && raw.trimStart().startsWith("-");
   const [whole, ...rest] = raw.replace(/[^0-9.]/g, "").split(".");
   return `${negative ? "-" : ""}${whole}${rest.length ? `.${rest.join("")}` : ""}`;
 };
@@ -27,11 +33,13 @@ const Field = ({
   disabled = false,
   onChange,
   step = 1,
+  min,
   className,
   ...props
 }: FieldProps) => {
   const [focused, setFocused] = useState(false);
   const interactive = editable && !disabled && Boolean(onChange);
+  const bounded = min !== undefined;
 
   return (
     <div
@@ -60,9 +68,23 @@ const Field = ({
         <input
           value={value}
           inputMode="decimal"
-          onChange={(event) => onChange?.(toNumeric(event.currentTarget.value))}
+          onChange={(event) =>
+            onChange?.(
+              toNumeric(event.currentTarget.value, !bounded || min < 0),
+            )
+          }
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onBlur={() => {
+            setFocused(false);
+            // Snapped on the way out rather than per keystroke, so typing "0.5"
+            // isn't fought character by character. An emptied field lands here
+            // too, which is why it is a floor and not just a negative check.
+            if (!bounded) return;
+            const entered = Number(value);
+            if (!Number.isFinite(entered) || entered < min) {
+              onChange?.(String(min));
+            }
+          }}
           onKeyDown={(event) => {
             // Up/Down step the value. Left/Right stay with the caret.
             const direction =
@@ -70,7 +92,8 @@ const Field = ({
             if (direction === 0) return;
             event.preventDefault();
             const delta = direction * step * (event.shiftKey ? 10 : 1);
-            const next = (Number(value) || 0) + delta;
+            const stepped = (Number(value) || 0) + delta;
+            const next = bounded ? Math.max(min, stepped) : stepped;
             // Trims float noise from decimal steps without losing real precision.
             onChange?.(String(Number(next.toFixed(4))));
           }}

@@ -301,6 +301,7 @@ const MatchupPanel = ({
                       disabled={positionDisabled}
                       onChange={onScaleChange}
                       step={0.1}
+                      min={0.01}
                     />
                   </div>
                 </div>

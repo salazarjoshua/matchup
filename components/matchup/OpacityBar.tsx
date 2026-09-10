@@ -128,6 +128,23 @@ const OpacityBar = ({
           }
           onBlur={commitDraft}
           onKeyDown={(event) => {
+            // Up/Down step the value, as they do in the X/Y/scale fields.
+            // Left/Right are left alone so they still move the caret.
+            const direction =
+              event.key === "ArrowUp" ? 1 : event.key === "ArrowDown" ? -1 : 0;
+            if (direction !== 0) {
+              event.preventDefault();
+              // Stepped from what is on screen, not the committed value, so a
+              // typed-but-uncommitted number is what gets nudged.
+              const from = draft.trim() === "" ? value : Number(draft);
+              const next = clampPercent(
+                from + direction * (event.shiftKey ? 10 : 1),
+              );
+              setDraft(String(next));
+              // Committed live, like the track's own arrow keys: the point of
+              // nudging opacity is watching the overlay change as you go.
+              onChange?.(next);
+            }
             if (event.key === "Enter") event.currentTarget.blur();
             if (event.key === "Escape") setEditing(false);
             // The track's arrow handling shouldn't fight the caret.
