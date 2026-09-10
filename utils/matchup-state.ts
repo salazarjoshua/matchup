@@ -25,8 +25,6 @@ export type MatchupState = {
   layers: MatchupLayer[];
   selectedId?: string;
   page: number;
-  /** Matchup is active on this tab at all. Toggled from the toolbar popup. */
-  open: boolean;
   /** The panel is expanded beside the rail. Toggled by the glove. */
   panelOpen: boolean;
 };
@@ -45,9 +43,26 @@ export const LAYER_DEFAULTS: LayerSettings = {
 export const MATCHUP_DEFAULTS: MatchupState = {
   layers: [],
   page: 1,
-  open: false,
   panelOpen: true,
 };
+
+/**
+ * Rebuilds stored state from only the keys this version knows about. `open` and
+ * `dock` used to live here before they became per-tab, and spreading the stored
+ * object would carry those dead keys forward and keep re-saving them.
+ */
+export const restoreState = (stored?: Partial<MatchupState>): MatchupState => ({
+  layers: Array.isArray(stored?.layers)
+    ? stored.layers
+    : MATCHUP_DEFAULTS.layers,
+  selectedId:
+    typeof stored?.selectedId === "string" ? stored.selectedId : undefined,
+  page: typeof stored?.page === "number" ? stored.page : MATCHUP_DEFAULTS.page,
+  panelOpen:
+    typeof stored?.panelOpen === "boolean"
+      ? stored.panelOpen
+      : MATCHUP_DEFAULTS.panelOpen,
+});
 
 export const ACCEPTED_TYPES = [
   "image/png",

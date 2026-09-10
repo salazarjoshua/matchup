@@ -1,7 +1,7 @@
 import Overlay from "@/components/Overlay";
 import { MatchupPanel } from "@/components/matchup";
 import { clamp } from "@/utils/clamp";
-import { readDock, writeDock } from "@/utils/matchup-dock";
+import { patchTab, readTab } from "@/utils/matchup-tab";
 import { SETTINGS_DEFAULTS, matchupSettings } from "@/utils/matchup-settings";
 import {
   ACCEPTED_TYPES,
@@ -9,6 +9,7 @@ import {
   LAYER_DEFAULTS,
   MATCHUP_DEFAULTS,
   matchupState,
+  restoreState,
 } from "@/utils/matchup-state";
 import {
   useCallback,
@@ -18,7 +19,7 @@ import {
   useState,
 } from "react";
 import { browser } from "wxt/browser";
-import type { Dock } from "@/utils/matchup-dock";
+import type { Dock } from "@/utils/matchup-tab";
 import type { MatchupSettings } from "@/utils/matchup-settings";
 import type { LayerSettings, MatchupState } from "@/utils/matchup-state";
 import type { PointerEvent as ReactPointerEvent } from "react";
@@ -83,10 +84,13 @@ export default function MatchupApp() {
   const [renamingId, setRenamingId] = useState<string>();
   const [error, setError] = useState<string>();
   const [hydrated, setHydrated] = useState(false);
-  // Read synchronously: sessionStorage is not async, and hydrating in an effect
-  // would flash the widget at the settings corner before it jumped to the
-  // dragged position.
-  const [dock, setDock] = useState<Dock | undefined>(readDock);
+  // Both read synchronously: sessionStorage is not async, and hydrating in an
+  // effect would flash the widget at the settings corner before it jumped to
+  // the dragged position.
+  const [open, setOpen] = useState(() => readTab().open);
+  const [dock, setDock] = useState<Dock | undefined>(() => readTab().dock);
+  const openRef = useRef(open);
+  openRef.current = open;
   const [prefs, setPrefs] = useState<MatchupSettings>(SETTINGS_DEFAULTS);
   const prefsRef = useRef(prefs);
   prefsRef.current = prefs;
@@ -138,7 +142,7 @@ export default function MatchupApp() {
   useEffect(() => {
     matchupState
       .getValue()
-      .then((stored) => setState({ ...MATCHUP_DEFAULTS, ...stored }))
+      .then((stored) => setState(restoreState(stored)))
       .catch(() => undefined)
       .finally(() => setHydrated(true));
   }, []);
@@ -250,14 +254,20 @@ export default function MatchupApp() {
   useEffect(() => {
     const onMessage = (message: unknown) => {
       if ((message as { type?: string })?.type === "matchup:toggle") {
-        setState((current) => ({ ...current, open: !current.open }));
+        const next = !openRef.current;
+        // Claimed on the ref immediately, so two clicks landing in one task
+        // can't both read the same pre-toggle value and cancel each other out.
+        openRef.current = next;
+        setOpen(next);
+        // Written here rather than from an effect on `open`, so that merely
+        // visiting a page never touches its sessionStorage: the content script
+        // runs on every URL, and only a deliberate toggle should leave a trace.
+        patchTab({ open: next });
       }
     };
     browser.runtime.onMessage.addListener(onMessage);
     return () => browser.runtime.onMessage.removeListener(onMessage);
   }, []);
-
-  const open = state.open;
 
   useEffect(() => {
     if (!open) return;
@@ -464,7 +474,7 @@ export default function MatchupApp() {
       if (!moved) return;
       // Persisted once on release, not on every move: this is a per-tab memory
       // for a reload, not a running log of the drag.
-      if (landed) writeDock(landed);
+      if (landed) patchTab({ dock: landed });
       // Swallow the click this release would otherwise fire on whatever was grabbed,
       // then drop the listener so it can never eat an unrelated click later.
       window.addEventListener("click", swallowClick, {
