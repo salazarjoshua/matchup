@@ -29,17 +29,6 @@ export type MatchupState = {
   open: boolean;
   /** The panel is expanded beside the rail. Toggled by the glove. */
   panelOpen: boolean;
-  /**
-   * Where the widget sits, stored as a distance from whichever edges it is nearest.
-   * Docking to an edge rather than to absolute x/y is what keeps it on screen when
-   * the panel expands, collapses, or the window resizes.
-   */
-  dock?: {
-    x: number;
-    y: number;
-    edgeX: "left" | "right";
-    edgeY: "top" | "bottom";
-  };
 };
 
 export const LAYER_DEFAULTS: LayerSettings = {

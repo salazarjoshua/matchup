@@ -1,6 +1,7 @@
 import Overlay from "@/components/Overlay";
 import { MatchupPanel } from "@/components/matchup";
 import { clamp } from "@/utils/clamp";
+import { readDock, writeDock } from "@/utils/matchup-dock";
 import { SETTINGS_DEFAULTS, matchupSettings } from "@/utils/matchup-settings";
 import {
   ACCEPTED_TYPES,
@@ -17,6 +18,7 @@ import {
   useState,
 } from "react";
 import { browser } from "wxt/browser";
+import type { Dock } from "@/utils/matchup-dock";
 import type { MatchupSettings } from "@/utils/matchup-settings";
 import type { LayerSettings, MatchupState } from "@/utils/matchup-state";
 import type { PointerEvent as ReactPointerEvent } from "react";
@@ -45,6 +47,10 @@ export default function MatchupApp() {
   const [renamingId, setRenamingId] = useState<string>();
   const [error, setError] = useState<string>();
   const [hydrated, setHydrated] = useState(false);
+  // Read synchronously: sessionStorage is not async, and hydrating in an effect
+  // would flash the widget at the settings corner before it jumped to the
+  // dragged position.
+  const [dock, setDock] = useState<Dock | undefined>(readDock);
   const [prefs, setPrefs] = useState<MatchupSettings>(SETTINGS_DEFAULTS);
   const prefsRef = useRef(prefs);
   prefsRef.current = prefs;
@@ -329,12 +335,10 @@ export default function MatchupApp() {
       ? Math.max(EDGE, viewport.h - widgetSize.h - EDGE)
       : Infinity;
   const corner = prefs.panelPosition;
-  const edgeX =
-    state.dock?.edgeX ?? (corner.endsWith("right") ? "right" : "left");
-  const edgeY =
-    state.dock?.edgeY ?? (corner.startsWith("bottom") ? "bottom" : "top");
-  const offsetX = state.dock?.x ?? EDGE;
-  const offsetY = state.dock?.y ?? EDGE;
+  const edgeX = dock?.edgeX ?? (corner.endsWith("right") ? "right" : "left");
+  const edgeY = dock?.edgeY ?? (corner.startsWith("bottom") ? "bottom" : "top");
+  const offsetX = dock?.x ?? EDGE;
+  const offsetY = dock?.y ?? EDGE;
 
   // Resolved from the docked edge, so the widget stays put relative to that edge
   // as it grows and shrinks rather than hanging off the bottom of the window.
@@ -354,6 +358,7 @@ export default function MatchupApp() {
     const startY = event.clientY;
     const from = { left: railLeft, top: railTop };
     let moved = false;
+    let landed: Dock | undefined;
 
     const onMove = (move: PointerEvent) => {
       if (!moved) {
@@ -375,24 +380,23 @@ export default function MatchupApp() {
         nextLeft + PANEL_WIDTH / 2 > viewport.w / 2 ? "right" : "left";
       const nextEdgeY =
         nextTop + widgetSize.h / 2 > viewport.h / 2 ? "bottom" : "top";
-      patch({
-        dock: {
-          edgeX: nextEdgeX,
-          edgeY: nextEdgeY,
-          x:
-            nextEdgeX === "left"
-              ? nextLeft
-              : viewport.w - PANEL_WIDTH - nextLeft,
-          y:
-            nextEdgeY === "top" ? nextTop : viewport.h - widgetSize.h - nextTop,
-        },
-      });
+      landed = {
+        edgeX: nextEdgeX,
+        edgeY: nextEdgeY,
+        x:
+          nextEdgeX === "left" ? nextLeft : viewport.w - PANEL_WIDTH - nextLeft,
+        y: nextEdgeY === "top" ? nextTop : viewport.h - widgetSize.h - nextTop,
+      };
+      setDock(landed);
     };
 
     const onUp = () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
       if (!moved) return;
+      // Persisted once on release, not on every move: this is a per-tab memory
+      // for a reload, not a running log of the drag.
+      if (landed) writeDock(landed);
       // Swallow the click this release would otherwise fire on whatever was grabbed,
       // then drop the listener so it can never eat an unrelated click later.
       window.addEventListener("click", swallowClick, {
