@@ -163,7 +163,7 @@ const MatchupPanel = ({
               accent="blue"
               on={visible}
               onClick={onToggleVisible}
-              title="Hide overlay (⌥V)"
+              title="Toggle Overlay (⌥V)"
               className="rounded-l-control"
             >
               {visible ? (
@@ -176,7 +176,7 @@ const MatchupPanel = ({
               accent="yellow"
               on={locked}
               onClick={onToggleLocked}
-              title="Lock position (⌥L)"
+              title="Toggle Lock (⌥L)"
             >
               {locked ? (
                 <LockIcon className="w-5" />
@@ -188,7 +188,7 @@ const MatchupPanel = ({
               accent="pink"
               on={difference}
               onClick={onToggleDifference}
-              title="Difference (⌥D)"
+              title="Toggle Difference (⌥D)"
               className="rounded-r-control"
             >
               <CircleHalfIcon className="w-5" />
