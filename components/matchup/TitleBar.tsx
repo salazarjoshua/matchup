@@ -1,6 +1,6 @@
 import { cn } from "@/utils/cn";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
-import { LogoIcon } from "../icons";
+import { LogoLockup } from "../icons";
 
 type IconButtonProps = ComponentPropsWithoutRef<"button"> & {
   children: ReactNode;
@@ -31,8 +31,7 @@ const TitleBar = ({ className, actions, ...props }: TitleBarProps) => (
     {...props}
   >
     <div className="flex items-center gap-1 text-panel-title text-ink font-sans">
-      <LogoIcon className="size-4" />
-      <span>Matchup</span>
+      <LogoLockup className="h-4 -mb-1" />
     </div>
     {actions && <span className="ml-auto flex items-center">{actions}</span>}
   </div>

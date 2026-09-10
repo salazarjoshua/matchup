@@ -16,35 +16,35 @@ export type MatchupSettings = {
 };
 
 export const PANEL_CORNERS: { value: PanelCorner; label: string }[] = [
-  { value: "top-left", label: "Top left" },
-  { value: "top-right", label: "Top right" },
-  { value: "bottom-left", label: "Bottom left" },
-  { value: "bottom-right", label: "Bottom right" },
+  { value: "top-left", label: "top left" },
+  { value: "top-right", label: "top right" },
+  { value: "bottom-left", label: "bottom left" },
+  { value: "bottom-right", label: "bottom right" },
 ];
 
 export const ANCHOR_LABELS = [
-  "Top left",
-  "Top center",
-  "Top right",
-  "Middle left",
-  "Center",
-  "Middle right",
-  "Bottom left",
-  "Bottom center",
-  "Bottom right",
+  "top left",
+  "top center",
+  "top right",
+  "middle left",
+  "center",
+  "middle right",
+  "bottom left",
+  "bottom center",
+  "bottom right",
 ];
 
 export const HOTKEYS = [
-  { keys: "⌥V", action: "Show or hide the overlay" },
-  { keys: "⌥L", action: "Lock the layer’s position" },
-  { keys: "⌥D", action: "Toggle difference blending" },
-  { keys: "⌥[", action: "Previous page of layers" },
-  { keys: "⌥]", action: "Next page of layers" },
-  { keys: "⌘V", action: "Paste an image from the clipboard" },
+  { keys: "⌥V", action: "Toggle visibility" },
+  { keys: "⌥L", action: "Toggle lock" },
+  { keys: "⌥D", action: "Toggle difference" },
+  { keys: "⌥[", action: "Previous page" },
+  { keys: "⌥]", action: "Next page" },
+  { keys: "⌘V", action: "Paste an image" },
 ];
 
 export const SETTINGS_DEFAULTS: MatchupSettings = {
-  panelPosition: "top-left",
+  panelPosition: "top-right",
   layerDefaults: LAYER_DEFAULTS,
 };
 
