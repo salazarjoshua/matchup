@@ -267,9 +267,6 @@ export default function MatchupApp() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey || event.metaKey || event.ctrlKey) return;
       if (isEditable(event)) return;
-      // Matched on `code`, the physical key, rather than `key`. On macOS Option
-      // is a compose modifier, so ⌥V arrives as "√", ⌥L as "¬" and ⌥[ as "“" —
-      // which is why none of these ever fired there.
       switch (event.code) {
         case "KeyV":
           patchLayer({ visible: !selectedRef.current?.visible });
@@ -280,7 +277,7 @@ export default function MatchupApp() {
         case "KeyD":
           patchLayer({ difference: !selectedRef.current?.difference });
           break;
-        case "Slash":
+        case "KeyS":
           setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
           break;
         case "KeyU":

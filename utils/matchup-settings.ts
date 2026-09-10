@@ -3,7 +3,10 @@ import { storage } from "wxt/utils/storage";
 import type { LayerSettings } from "./matchup-state";
 
 export type PanelCorner =
-  "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
 
 export type MatchupSettings = {
   /** Where the panel first appears, before it has been dragged anywhere. */
@@ -32,10 +35,10 @@ export const ANCHOR_LABELS = [
 ];
 
 export const HOTKEYS = [
+  { keys: "⌥S", action: "Toggle panel" },
   { keys: "⌥V", action: "Toggle visibility" },
   { keys: "⌥L", action: "Toggle lock" },
   { keys: "⌥D", action: "Toggle difference" },
-  { keys: "⌥/", action: "Toggle panel" },
   { keys: "⌥U", action: "Upload an image" },
   { keys: "⌘V", action: "Paste an image" },
 ];
