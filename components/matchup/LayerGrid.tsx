@@ -14,7 +14,7 @@ const LayerGrid = ({
   <div
     className={cn(
       "grid gap-3 p-3",
-      // Scrolls rather than paginates, which is what lets the AddTile always
+      // Scrolls rather than paginates, which is what lets the UploadTile always
       // have a cell to sit in however many layers there are.
       "max-h-layer-list scrollbar-panel overflow-y-auto",
       className,
@@ -31,7 +31,8 @@ const LayerGrid = ({
   </div>
 );
 
-const AddTile = ({
+/** The tile that opens the file picker. See .idea/VOCABULARY.md — Upload. */
+const UploadTile = ({
   className,
   ...props
 }: ComponentPropsWithoutRef<"button">) => (
@@ -56,5 +57,5 @@ const DropTarget = ({
   </div>
 );
 
-export { LayerGrid, AddTile, DropTarget };
+export { LayerGrid, UploadTile, DropTarget };
 export type { LayerGridProps };

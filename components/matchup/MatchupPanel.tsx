@@ -2,7 +2,7 @@ import { AnchorPad } from "./AnchorPad";
 import { EmptyState } from "./EmptyState";
 import { ErrorBanner } from "./ErrorBanner";
 import { Field } from "./Field";
-import { AddTile, LayerGrid } from "./LayerGrid";
+import { LayerGrid, UploadTile } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
 import { Rail } from "./Rail";
@@ -27,7 +27,12 @@ import type {
   PointerEvent as ReactPointerEvent,
 } from "react";
 
-type Layer = {
+/**
+ * The slice of a layer this panel needs. Deliberately structural rather than
+ * `MatchupLayer` so the panel stays renderable from a partial layer — but named
+ * so it can't be mistaken for a second definition of the layer itself.
+ */
+type LayerSummary = {
   id: string;
   name: string;
   src?: string;
@@ -35,7 +40,7 @@ type Layer = {
 };
 
 type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
-  layers: Layer[];
+  layers: LayerSummary[];
   selectedId?: string;
   visible: boolean;
   locked: boolean;
@@ -248,7 +253,7 @@ const MatchupPanel = ({
                   />
                 ))}
                 {/* Always has a cell now that the grid scrolls. */}
-                <AddTile
+                <UploadTile
                   aria-label="Upload an image"
                   title="Upload an image (⌥U)"
                   onClick={onUpload}
@@ -305,4 +310,4 @@ const MatchupPanel = ({
 };
 
 export { MatchupPanel };
-export type { MatchupPanelProps, Layer };
+export type { MatchupPanelProps, LayerSummary };
