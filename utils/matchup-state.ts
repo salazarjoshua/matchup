@@ -70,7 +70,15 @@ export const ACCEPTED_TYPES = [
   "image/webp",
   "image/svg+xml",
 ];
-export const LAYERS_PER_PAGE = 6;
+/**
+ * Layer grid layout — the knob for trying out panel densities. Columns drives
+ * the CSS grid, rows drives how tall a page is; change either and the grid, the
+ * pager and the page-jump after an upload all follow.
+ */
+export const LAYER_GRID = { columns: 3, rows: 2 } as const;
+
+/** Derived, never set by hand: one page is exactly one full grid. */
+export const LAYERS_PER_PAGE = LAYER_GRID.columns * LAYER_GRID.rows;
 
 export const matchupState = storage.defineItem<MatchupState>(
   "local:matchup-state",

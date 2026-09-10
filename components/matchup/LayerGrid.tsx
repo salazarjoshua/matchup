@@ -1,11 +1,26 @@
 import { cn } from "@/utils/cn";
+import { LAYER_GRID } from "@/utils/matchup-state";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { PlusIcon, UploadImageIcon } from "@/components/icons";
 
 type LayerGridProps = ComponentPropsWithoutRef<"div"> & { children: ReactNode };
 
-const LayerGrid = ({ className, children, ...props }: LayerGridProps) => (
-  <div className={cn("grid grid-cols-3 gap-3 p-3", className)} {...props}>
+const LayerGrid = ({
+  className,
+  style,
+  children,
+  ...props
+}: LayerGridProps) => (
+  <div
+    className={cn("grid gap-3 p-3", className)}
+    // Inline rather than a grid-cols-* class: the column count is configuration,
+    // and Tailwind can only generate classes it can actually see in the source.
+    style={{
+      gridTemplateColumns: `repeat(${LAYER_GRID.columns}, minmax(0, 1fr))`,
+      ...style,
+    }}
+    {...props}
+  >
     {children}
   </div>
 );
