@@ -128,6 +128,9 @@ const MatchupPanel = ({
   const start = (page - 1) * LAYERS_PER_PAGE;
   const visibleLayers = layers.slice(start, start + LAYERS_PER_PAGE);
   const canAdd = layers.length > 0 && visibleLayers.length < LAYERS_PER_PAGE;
+  // The footer only earns its space once the grid has filled up: below that the
+  // AddTile is still sitting in a spare cell and there is only ever one page.
+  const showFooter = layers.length >= LAYERS_PER_PAGE;
 
   return (
     <div
@@ -263,20 +266,21 @@ const MatchupPanel = ({
               </LayerGrid>
 
               {/*
-                One footer row: Add on the left, pager on the right. This button
-                is always here, so a page with no spare cell for the AddTile
-                above still has a way to add. Shown at a single page too, so the
-                row's height never changes.
+                One footer row: Add on the left, pager on the right. The button
+                is what a full page falls back to, now that there is no spare
+                cell for the AddTile above — so the two arrive together.
               */}
-              <div className="flex items-center justify-between px-3 pb-3">
-                <AddButton onClick={onUpload} />
-                <Pager
-                  page={page}
-                  pageCount={pageCount}
-                  onPrev={() => onPageChange?.(page - 1)}
-                  onNext={() => onPageChange?.(page + 1)}
-                />
-              </div>
+              {showFooter && (
+                <div className="flex items-center justify-between px-3 pb-3">
+                  <AddButton onClick={onUpload} />
+                  <Pager
+                    page={page}
+                    pageCount={pageCount}
+                    onPrev={() => onPageChange?.(page - 1)}
+                    onNext={() => onPageChange?.(page + 1)}
+                  />
+                </div>
+              )}
 
               <div className="border-hairline border-t p-3">
                 <div className="flex items-start gap-3">
