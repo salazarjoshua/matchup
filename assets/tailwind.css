@@ -43,9 +43,9 @@
   --text-tile-label--line-height: 1;
   --text-tile-label--font-weight: 700;
   --text-value: 14px;
-  --text-value--line-height: 1;
+  --text-value--line-height: 1.2;
   --text-micro: 10px;
-  --text-micro--line-height: 1;
+  --text-micro--line-height: 1.2;
 
   --radius-badge: 6px;
   --radius-icon: 10px;

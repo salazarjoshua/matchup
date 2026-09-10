@@ -42,7 +42,7 @@ const Overlay = ({
       top: `${y}px`,
       mixBlendMode: difference ? "difference" : "normal",
       pointerEvents: draggable ? "auto" : "none",
-      cursor: draggable ? (dragging ? "grabbing" : "grab") : undefined,
+      cursor: "move",
       touchAction: draggable ? "none" : undefined,
       zIndex: 2147483646,
     }}

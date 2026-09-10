@@ -19,6 +19,7 @@ import {
   SettingsIcon,
   PlusIcon,
   MinusIcon,
+  ScaleIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
 import { LAYERS_PER_PAGE } from "@/utils/matchup-state";
@@ -294,16 +295,7 @@ const MatchupPanel = ({
                       onChange={onYChange}
                     />
                     <Field
-                      label={
-                        <span
-                          className={cn(
-                            "border-[1.5px] block size-3.25 border-dashed",
-                            positionDisabled
-                              ? "border-disabled"
-                              : "border-muted",
-                          )}
-                        />
-                      }
+                      label={<ScaleIcon className="size-4 " />}
                       value={scale}
                       editable={!positionDisabled}
                       disabled={positionDisabled}
