@@ -59,9 +59,54 @@
   --spacing-title-bar: 40px;
   --spacing-anchor: 112px;
   --spacing-panel: 300px;
+  /* How tall the layer grid gets before it scrolls: two full rows plus half of
+     the third, so a longer list is visibly scrollable rather than looking cut
+     off. One row is 96px (64px thumb + 8px gap + label, plus the 12px grid
+     gap), and the grid's own padding adds 24px. */
+  --spacing-layer-list: 264px;
 
   --shadow-panel: 0 1px 3px rgb(0 0 0 / 0.06);
   --shadow-drag: 0 6px 16px rgb(0 0 0 / 0.24);
+}
+
+@layer components {
+  /*
+   * The layer grid's scrollbar, drawn from the palette: the UA default is a
+   * heavy slab that reads as part of the host page rather than of the panel.
+   *
+   * These pseudo-elements are the Blink/WebKit path, and they are what gives a
+   * *persistent* bar — it reserves its own 6px, where macOS's native overlay
+   * scrollbar fades out and hides the styling entirely.
+   */
+  .scrollbar-panel::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-panel::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-panel::-webkit-scrollbar-thumb {
+    background-color: var(--color-surface-track);
+    border-radius: 999px;
+  }
+
+  .scrollbar-panel:hover::-webkit-scrollbar-thumb {
+    background-color: var(--color-disabled);
+  }
+
+  /*
+   * Firefox has no ::-webkit-scrollbar, so it needs the standard properties —
+   * but they have to be gated, because Blink ignores the pseudo-elements above
+   * the moment either of these is set to anything but `auto`.
+   */
+  @supports not selector(::-webkit-scrollbar) {
+    .scrollbar-panel {
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-surface-track) transparent;
+    }
+  }
 }
 
 @layer base {

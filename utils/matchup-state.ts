@@ -24,7 +24,6 @@ export type MatchupLayer = LayerSettings & {
 export type MatchupState = {
   layers: MatchupLayer[];
   selectedId?: string;
-  page: number;
   /** The panel is expanded beside the rail. Toggled by the glove. */
   panelOpen: boolean;
 };
@@ -42,13 +41,12 @@ export const LAYER_DEFAULTS: LayerSettings = {
 
 export const MATCHUP_DEFAULTS: MatchupState = {
   layers: [],
-  page: 1,
   panelOpen: true,
 };
 
 /**
- * Rebuilds stored state from only the keys this version knows about. `open` and
- * `dock` used to live here before they became per-tab, and spreading the stored
+ * Rebuilds stored state from only the keys this version knows about. `open`, `dock` and
+ * `page` used to live here before they became per-tab or went away, and spreading the stored
  * object would carry those dead keys forward and keep re-saving them.
  */
 export const restoreState = (stored?: Partial<MatchupState>): MatchupState => ({
@@ -57,7 +55,6 @@ export const restoreState = (stored?: Partial<MatchupState>): MatchupState => ({
     : MATCHUP_DEFAULTS.layers,
   selectedId:
     typeof stored?.selectedId === "string" ? stored.selectedId : undefined,
-  page: typeof stored?.page === "number" ? stored.page : MATCHUP_DEFAULTS.page,
   panelOpen:
     typeof stored?.panelOpen === "boolean"
       ? stored.panelOpen
@@ -71,14 +68,11 @@ export const ACCEPTED_TYPES = [
   "image/svg+xml",
 ];
 /**
- * Layer grid layout — the knob for trying out panel densities. Columns drives
- * the CSS grid, rows drives how tall a page is; change either and the grid, the
- * pager and the page-jump after an upload all follow.
+ * Columns in the layer grid — the knob for trying out tile densities. There is
+ * no row limit: the grid scrolls, so it holds as many layers as you add.
+ * How tall it gets before scrolling is --spacing-layer-list in tailwind.css.
  */
-export const LAYER_GRID = { columns: 3, rows: 2 } as const;
-
-/** Derived, never set by hand: one page is exactly one full grid. */
-export const LAYERS_PER_PAGE = LAYER_GRID.columns * LAYER_GRID.rows;
+export const LAYER_COLUMNS = 3;
 
 export const matchupState = storage.defineItem<MatchupState>(
   "local:matchup-state",

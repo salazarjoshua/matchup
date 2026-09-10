@@ -6,7 +6,6 @@ export * from "./LayerGrid";
 export * from "./LayerTile";
 export * from "./MatchupPanel";
 export * from "./OpacityBar";
-export * from "./Pager";
 export * from "./Rail";
 export * from "./RailToggle";
 export * from "./TitleBar";

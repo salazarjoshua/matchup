@@ -67,6 +67,14 @@ const LayerTile = ({
   ...props
 }: LayerTileProps) => {
   const input = useRef<HTMLInputElement>(null);
+  const self = useRef<HTMLDivElement>(null);
+
+  // Replaces the old jump-to-page: the grid scrolls now, so the tile that just
+  // became selected brings itself into view. "nearest" is a no-op when it is
+  // already visible, so clicking a tile never scrolls the list under you.
+  useEffect(() => {
+    if (selected) self.current?.scrollIntoView({ block: "nearest" });
+  }, [selected]);
 
   useEffect(() => {
     if (renaming) {
@@ -76,14 +84,18 @@ const LayerTile = ({
   }, [renaming]);
 
   return (
-    <div className={cn("flex min-w-0 flex-col gap-2", className)} {...props}>
+    <div
+      ref={self}
+      className={cn("flex min-w-0 flex-col gap-2", className)}
+      {...props}
+    >
       <div
         role="button"
         tabIndex={0}
         aria-pressed={selected}
         aria-label={`Select ${name}`}
-        // Reordering stays inside the grid: the only drop targets are the tiles
-        // rendered on the current page.
+        // Reordering stays inside the grid, which now holds every layer, so any
+        // tile can be dropped on any other.
         draggable={Boolean(onDragStartLayer) && !renaming}
         onDragStart={(event) => {
           event.dataTransfer.effectAllowed = "move";

@@ -5,7 +5,6 @@ import { patchTab, readTab } from "@/utils/matchup-tab";
 import { SETTINGS_DEFAULTS, matchupSettings } from "@/utils/matchup-settings";
 import {
   ACCEPTED_TYPES,
-  LAYERS_PER_PAGE,
   LAYER_DEFAULTS,
   MATCHUP_DEFAULTS,
   matchupState,
@@ -211,19 +210,13 @@ export default function MatchupApp() {
         src: await readAsDataUrl(file),
       })),
     );
-    setState((current) => {
-      const layers = [...current.layers, ...decoded];
-      const selectedId = decoded[decoded.length - 1]?.id;
-      // The new layer is the selected one, so follow it onto its page.
-      const index = layers.findIndex((layer) => layer.id === selectedId);
-      return {
-        ...current,
-        layers,
-        selectedId,
-        page:
-          index < 0 ? current.page : Math.floor(index / LAYERS_PER_PAGE) + 1,
-      };
-    });
+    // Selecting the new layer is enough to reach it: the grid scrolls, and the
+    // tile scrolls itself into view when it becomes the selected one.
+    setState((current) => ({
+      ...current,
+      layers: [...current.layers, ...decoded],
+      selectedId: decoded[decoded.length - 1]?.id,
+    }));
   }, []);
 
   const pasteFromClipboard = useCallback(async () => {
@@ -289,12 +282,6 @@ export default function MatchupApp() {
           break;
         case "Slash":
           setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
-          break;
-        case "BracketLeft":
-          setState((c) => ({ ...c, page: Math.max(1, c.page - 1) }));
-          break;
-        case "BracketRight":
-          setState((c) => ({ ...c, page: c.page + 1 }));
           break;
         default:
           return;
@@ -499,10 +486,6 @@ export default function MatchupApp() {
   if (!hydrated || !open) return null;
 
   const settings: LayerSettings = selected ?? LAYER_DEFAULTS;
-  const pageCount = Math.max(
-    1,
-    Math.ceil(state.layers.length / LAYERS_PER_PAGE),
-  );
 
   return (
     <>
@@ -555,7 +538,6 @@ export default function MatchupApp() {
           x={settings.x}
           y={settings.y}
           scale={settings.scale}
-          page={Math.min(state.page, pageCount)}
           error={error}
           collapsed={!state.panelOpen}
           hasSelection={Boolean(selected)}
@@ -581,9 +563,6 @@ export default function MatchupApp() {
                     ...anchoredPosition(index, Number(settings.scale) || 1),
                   },
             )
-          }
-          onPageChange={(next) =>
-            patch({ page: Math.min(Math.max(1, next), pageCount) })
           }
           onUpload={() => fileInput.current?.click()}
           onPaste={() => void pasteFromClipboard()}

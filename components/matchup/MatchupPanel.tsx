@@ -2,10 +2,9 @@ import { AnchorPad } from "./AnchorPad";
 import { EmptyState } from "./EmptyState";
 import { ErrorBanner } from "./ErrorBanner";
 import { Field } from "./Field";
-import { AddButton, AddTile, LayerGrid } from "./LayerGrid";
+import { AddTile, LayerGrid } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
-import { Pager } from "./Pager";
 import { Rail } from "./Rail";
 import { RailToggle } from "./RailToggle";
 import { IconButton, TitleBar } from "./TitleBar";
@@ -22,7 +21,6 @@ import {
   ScaleIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
-import { LAYERS_PER_PAGE } from "@/utils/matchup-state";
 import { useState } from "react";
 import type {
   ComponentPropsWithoutRef,
@@ -48,7 +46,6 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   x: string | number;
   y: string | number;
   scale: string | number;
-  page?: number;
   error?: string;
   collapsed?: boolean;
   renamingId?: string;
@@ -57,7 +54,6 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onToggleDifference?: () => void;
   onOpacityChange?: (value: number) => void;
   onAnchorSelect?: (index: number) => void;
-  onPageChange?: (page: number) => void;
   onUpload?: () => void;
   onPaste?: () => void;
   onSelectLayer?: (id: string) => void;
@@ -88,7 +84,6 @@ const MatchupPanel = ({
   x,
   y,
   scale,
-  page = 1,
   error,
   collapsed = false,
   renamingId,
@@ -97,7 +92,6 @@ const MatchupPanel = ({
   onToggleDifference,
   onOpacityChange,
   onAnchorSelect,
-  onPageChange,
   onUpload,
   onPaste,
   onSelectLayer,
@@ -124,13 +118,6 @@ const MatchupPanel = ({
 
   const [draggingId, setDraggingId] = useState<string>();
   const [overId, setOverId] = useState<string>();
-  const pageCount = Math.max(1, Math.ceil(layers.length / LAYERS_PER_PAGE));
-  const start = (page - 1) * LAYERS_PER_PAGE;
-  const visibleLayers = layers.slice(start, start + LAYERS_PER_PAGE);
-  const canAdd = layers.length > 0 && visibleLayers.length < LAYERS_PER_PAGE;
-  // The footer only earns its space once the grid has filled up: below that the
-  // AddTile is still sitting in a spare cell and there is only ever one page.
-  const showFooter = layers.length >= LAYERS_PER_PAGE;
 
   return (
     <div
@@ -227,7 +214,7 @@ const MatchupPanel = ({
           {layers.length > 0 && (
             <>
               <LayerGrid>
-                {visibleLayers.map((layer) => (
+                {layers.map((layer) => (
                   <LayerTile
                     key={layer.id}
                     name={layer.name}
@@ -260,27 +247,9 @@ const MatchupPanel = ({
                     onDragEnter={() => setOverId(layer.id)}
                   />
                 ))}
-                {canAdd && (
-                  <AddTile aria-label="Add layer" onClick={onUpload} />
-                )}
+                {/* Always has a cell now that the grid scrolls. */}
+                <AddTile aria-label="Add layer" onClick={onUpload} />
               </LayerGrid>
-
-              {/*
-                One footer row: Add on the left, pager on the right. The button
-                is what a full page falls back to, now that there is no spare
-                cell for the AddTile above — so the two arrive together.
-              */}
-              {showFooter && (
-                <div className="flex items-center justify-between px-3 pb-3">
-                  <AddButton onClick={onUpload} />
-                  <Pager
-                    page={page}
-                    pageCount={pageCount}
-                    onPrev={() => onPageChange?.(page - 1)}
-                    onNext={() => onPageChange?.(page + 1)}
-                  />
-                </div>
-              )}
 
               <div className="border-hairline border-t p-3">
                 <div className="flex items-start gap-3">
