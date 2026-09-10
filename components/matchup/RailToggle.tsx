@@ -34,12 +34,13 @@ const RailToggle = ({
       "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
       "bg-rail-tile",
       props.disabled
-        ? // Design system §06: disabled controls drop to the surface with disabled text,
-          // which also stops them reading identically to a toggle that is merely off.
+        ? // Keeps the rail tile ground but refuses the pointer, so a disabled toggle
+          // never reads as one that is merely off. Unreachable today: MatchupPanel only
+          // renders the rail toggles once a layer is selected, and never disables them.
           "text-muted cursor-not-allowed"
         : on
           ? [accentFill[accent], accentGlyph[accent]]
-          : " hover:bg-rail-tile-hover text-muted",
+          : "hover:bg-rail-tile-hover text-muted",
       className,
     )}
     {...props}

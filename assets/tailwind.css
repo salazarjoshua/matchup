@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Matchup design system — see .idea/design/Design System.dc.html */
+/* Matchup design system — see design/Design System.dc.html */
 @theme {
   /* Accents are state signals, never decoration: one accent per control. */
   --color-accent-blue: #0a84ff;
@@ -8,25 +8,21 @@
   --color-accent-pink: #f64da6;
   --color-accent-red: #ff3b2f;
 
-  --color-rail: #0a0a0a;
   --color-ink: #111111;
   --color-muted: #6b6b6b;
   --color-disabled: #c9c9c7;
   --color-surface: #f5f5f5;
 
-  /* Derived from the nine above — not new colours. */
+  /* Derived from the eight above — not new colours. */
   --color-rail-tile: #1c1c1c;
   --color-rail-tile-hover: #2a2a2a;
   --color-surface-hover: #f0efec;
   --color-surface-track: #e6e6e5;
   --color-canvas: #fafaf9;
   --color-placeholder: #ababab;
-  /* Ground for the collapse control — sits between disabled and placeholder. */
   --color-error-bg: #ffecea;
   --color-error-icon: #d62d20;
-  --color-error-ink: #8e1c13;
   --color-hairline: rgb(0 0 0 / 0.08);
-  --color-hairline-dark: rgb(255 255 255 / 0.12);
 
   --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, Menlo, monospace;
@@ -38,8 +34,6 @@
   --text-tile-label: 13px;
   --text-tile-label--line-height: 1;
   --text-tile-label--font-weight: 700;
-  --text-helper: 11px;
-  --text-helper--line-height: 1;
   --text-value: 14px;
   --text-value--line-height: 1;
   --text-micro: 10px;
@@ -50,7 +44,6 @@
   --radius-control: 12px;
   --radius-panel: 16px;
 
-  --spacing-rail: 64px;
   --spacing-rail-tile: 40px;
   --spacing-control: 32px;
   --spacing-icon-btn: 28px;
@@ -61,7 +54,6 @@
 
   --shadow-panel: 0 1px 3px rgb(0 0 0 / 0.06);
   --shadow-drag: 0 6px 16px rgb(0 0 0 / 0.24);
-  --shadow-thumb-action: 0 1px 4px rgb(0 0 0 / 0.3);
 }
 
 @layer base {

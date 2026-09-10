@@ -1,7 +1,7 @@
 import { browser } from "wxt/browser";
 import { defineBackground } from "wxt/utils/define-background";
 
-const HELP_URL = 'https://joshuasalazar.me/';
+const HELP_URL = "https://joshuasalazar.me/";
 
 /** Pages where content scripts can't run, so there is nothing to toggle. */
 const RESTRICTED = [

@@ -13,7 +13,6 @@ type OverlayProps = {
   dragging?: boolean;
   onPointerDown?: (event: ReactPointerEvent) => void;
   onLoad?: () => void;
-  ref?: Ref<HTMLDivElement>;
   imageRef?: Ref<HTMLImageElement>;
 };
 
@@ -33,11 +32,9 @@ const Overlay = ({
   dragging = false,
   onPointerDown,
   onLoad,
-  ref,
   imageRef,
 }: OverlayProps) => (
   <div
-    ref={ref}
     onPointerDown={draggable ? onPointerDown : undefined}
     style={{
       position: "fixed",

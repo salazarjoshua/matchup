@@ -3,10 +3,7 @@ import type { ComponentPropsWithoutRef } from "react";
 /** Size comes from a width class on the call site, e.g. `<EyeIcon className="w-5" />`. */
 export type IconProps = ComponentPropsWithoutRef<"svg">;
 
-/** Rail icons flip to solid when their toggle is on. */
-type SolidIconProps = IconProps & { solid?: boolean };
-
-export const EyeIcon = ({ solid = true, ...props }: SolidIconProps) => (
+export const EyeIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
@@ -40,7 +37,7 @@ export const EyeSlashIcon = (props: IconProps) => (
   </svg>
 );
 
-export const LockIcon = ({ solid = false, ...props }: SolidIconProps) => (
+export const LockIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
@@ -109,7 +106,7 @@ export const InfoIcon = (props: IconProps) => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth={2}
+    strokeWidth="2"
     strokeLinecap="round"
     {...props}
   >
@@ -136,7 +133,7 @@ export const WarningIcon = (props: IconProps) => (
     fill="none"
     {...props}
   >
-    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
     <path
       fill="currentColor"
       d="m11.157 12.256-.47-3.768a1.324 1.324 0 1 1 2.627 0l-.47 3.768a.85.85 0 0 1-1.687 0"
@@ -169,9 +166,9 @@ export const PlusIcon = (props: IconProps) => (
   >
     <path
       fill="currentColor"
-      fill-rule="evenodd"
+      fillRule="evenodd"
       d="M12 3a1 1 0 0 1 1 1v7h7a1 1 0 1 1 0 2h-7v7a1 1 0 1 1-2 0v-7H4a1 1 0 1 1 0-2h7V4a1 1 0 0 1 1-1"
-      clip-rule="evenodd"
+      clipRule="evenodd"
     />
   </svg>
 );
@@ -185,9 +182,9 @@ export const MinusIcon = (props: IconProps) => (
   >
     <path
       fill="currentColor"
-      fill-rule="evenodd"
+      fillRule="evenodd"
       d="M3 12a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1"
-      clip-rule="evenodd"
+      clipRule="evenodd"
     />
   </svg>
 );
@@ -315,9 +312,9 @@ export const CaretLeftIcon = (props: IconProps) => (
   >
     <path
       fill="currentColor"
-      fill-rule="evenodd"
+      fillRule="evenodd"
       d="M15.707 3.293a1 1 0 0 1 0 1.414l-6.585 6.586a1 1 0 0 0 0 1.414l6.585 6.586a1 1 0 0 1-1.414 1.414l-6.586-6.586a3 3 0 0 1 0-4.242l6.586-6.586a1 1 0 0 1 1.414 0"
-      clip-rule="evenodd"
+      clipRule="evenodd"
     />
   </svg>
 );
@@ -331,9 +328,9 @@ export const CaretRightIcon = (props: IconProps) => (
   >
     <path
       fill="currentColor"
-      fill-rule="evenodd"
+      fillRule="evenodd"
       d="M8.293 3.293a1 1 0 0 1 1.414 0l6.586 6.586a3 3 0 0 1 0 4.242l-6.586 6.586a1 1 0 0 1-1.414-1.414l6.586-6.586a1 1 0 0 0 0-1.414L8.293 4.707a1 1 0 0 1 0-1.414"
-      clip-rule="evenodd"
+      clipRule="evenodd"
     />
   </svg>
 );

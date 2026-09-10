@@ -1,3 +1,4 @@
+import { clampPercent } from "@/utils/clamp";
 import { cn } from "@/utils/cn";
 import { useRef, useState } from "react";
 import type {
@@ -19,8 +20,6 @@ type OpacityBarProps = Omit<
 /** Every 10%, skipping the ends so nothing sits under the rounded corners. */
 const TICKS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
 
-const clamp = (n: number) => Math.min(100, Math.max(0, Math.round(n)));
-
 const OpacityBar = ({
   value,
   disabled = false,
@@ -35,14 +34,14 @@ const OpacityBar = ({
   const commitDraft = () => {
     setEditing(false);
     if (draft.trim() === "") return;
-    onChange?.(clamp(Number(draft)));
+    onChange?.(clampPercent(Number(draft)));
   };
 
   const setFromClientX = (clientX: number) => {
     const el = track.current;
     if (!el || disabled) return;
     const rect = el.getBoundingClientRect();
-    onChange?.(clamp(((clientX - rect.left) / rect.width) * 100));
+    onChange?.(clampPercent(((clientX - rect.left) / rect.width) * 100));
   };
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -68,7 +67,7 @@ const OpacityBar = ({
           : 0;
     if (delta === 0) return;
     event.preventDefault();
-    onChange?.(clamp(value + delta));
+    onChange?.(clampPercent(value + delta));
   };
 
   return (

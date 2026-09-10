@@ -5,6 +5,7 @@ import {
   SETTINGS_DEFAULTS,
   matchupSettings,
 } from "@/utils/matchup-settings";
+import { clampPercent } from "@/utils/clamp";
 import { useEffect, useState } from "react";
 import type { MatchupSettings } from "@/utils/matchup-settings";
 import type { LayerSettings } from "@/utils/matchup-state";
@@ -152,14 +153,9 @@ export default function App() {
               inputMode="numeric"
               onChange={(event) =>
                 patchLayer({
-                  opacity: Math.min(
-                    100,
-                    Math.max(
+                  opacity: clampPercent(
+                    Number(event.currentTarget.value.replace(/[^0-9]/g, "")) ||
                       0,
-                      Number(
-                        event.currentTarget.value.replace(/[^0-9]/g, ""),
-                      ) || 0,
-                    ),
                   ),
                 })
               }

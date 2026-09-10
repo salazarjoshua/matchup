@@ -2,8 +2,6 @@ import { cn } from "@/utils/cn";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { PlusIcon, UploadImageIcon } from "@/components/icons";
 
-const LAYERS_PER_PAGE = 6;
-
 type LayerGridProps = ComponentPropsWithoutRef<"div"> & { children: ReactNode };
 
 const LayerGrid = ({ className, children, ...props }: LayerGridProps) => (
@@ -37,5 +35,5 @@ const DropTarget = ({
   </div>
 );
 
-export { LayerGrid, AddTile, DropTarget, LAYERS_PER_PAGE };
+export { LayerGrid, AddTile, DropTarget };
 export type { LayerGridProps };

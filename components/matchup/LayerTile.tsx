@@ -17,10 +17,8 @@ type LayerTileProps = Omit<
   src?: string;
   selected?: boolean;
   locked?: boolean;
-  hidden?: boolean;
   lifted?: boolean;
   renaming?: boolean;
-  uploadProgress?: number;
   onSelect?: () => void;
   onStartRename?: () => void;
   onRename?: (name: string) => void;
@@ -55,10 +53,8 @@ const LayerTile = ({
   src,
   selected = false,
   locked = false,
-  hidden = false,
   lifted = false,
   renaming = false,
-  uploadProgress,
   onSelect,
   onStartRename,
   onRename,
@@ -138,21 +134,14 @@ const LayerTile = ({
             className="size-full object-cover select-none"
           />
         )}
-        {uploadProgress === undefined && (
-          <span className="rounded-control absolute inset-0 items-start justify-between p-1 gap-1 bg-black/40 backdrop-blur-xs hidden group-hover:flex">
-            <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
-              <EditIcon className="w-3 text-accent-blue" />
-            </ThumbAction>
-            <ThumbAction label={`Delete ${name}`} onClick={onDelete}>
-              <DeleteIcon className="w-3 text-accent-red" />
-            </ThumbAction>
-          </span>
-        )}
-        {uploadProgress !== undefined && (
-          <span className="text-micro text-ink absolute inset-0 grid place-items-center bg-white/72">
-            {`${uploadProgress}%`}
-          </span>
-        )}
+        <span className="rounded-control absolute inset-0 items-start justify-between p-1 gap-1 bg-black/40 backdrop-blur-xs hidden group-hover:flex">
+          <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
+            <EditIcon className="w-3 text-accent-blue" />
+          </ThumbAction>
+          <ThumbAction label={`Delete ${name}`} onClick={onDelete}>
+            <DeleteIcon className="w-3 text-accent-red" />
+          </ThumbAction>
+        </span>
       </div>
       {renaming ? (
         <input

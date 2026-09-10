@@ -25,43 +25,29 @@ const AnchorPad = ({
     )}
     {...props}
   >
-    {Array.from({ length: 9 }, (_, i) =>
-      i === selected ? (
+    {Array.from({ length: 9 }, (_, i) => {
+      const active = i === selected;
+      return (
         <button
           key={i}
           type="button"
           aria-label={`Anchor ${i + 1}`}
-          aria-pressed
+          aria-pressed={active}
           disabled={disabled}
           onClick={() => onSelect?.(i)}
           className="size-full grid place-items-center"
         >
+          {/* The active point grows into a rounded square; the rest stay dots. */}
           <span
             className={cn(
-              "size-4 rounded-md",
-              disabled ? "bg-accent-blue/40" : "bg-accent-blue",
+              active ? "size-4 rounded-md" : "size-1 rounded-full",
+              active && (disabled ? "bg-accent-blue/40" : "bg-accent-blue"),
+              !active && (disabled ? "bg-disabled/60" : "bg-placeholder"),
             )}
           />
         </button>
-      ) : (
-        <button
-          key={i}
-          type="button"
-          aria-label={`Anchor ${i + 1}`}
-          aria-pressed={false}
-          disabled={disabled}
-          onClick={() => onSelect?.(i)}
-          className="size-full grid place-items-center"
-        >
-          <span
-            className={cn(
-              "size-1 rounded-full",
-              disabled ? "bg-disabled/60" : "bg-placeholder",
-            )}
-          />
-        </button>
-      ),
-    )}
+      );
+    })}
   </div>
 );
 

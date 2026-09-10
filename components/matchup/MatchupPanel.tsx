@@ -2,7 +2,7 @@ import { AnchorPad } from "./AnchorPad";
 import { EmptyState } from "./EmptyState";
 import { ErrorBanner } from "./ErrorBanner";
 import { Field } from "./Field";
-import { AddTile, LayerGrid, LAYERS_PER_PAGE } from "./LayerGrid";
+import { AddTile, LayerGrid } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
 import { Pager } from "./Pager";
@@ -21,6 +21,7 @@ import {
   MinusIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
+import { LAYERS_PER_PAGE } from "@/utils/matchup-state";
 import { useState } from "react";
 import type {
   ComponentPropsWithoutRef,
@@ -32,7 +33,6 @@ type Layer = {
   name: string;
   src?: string;
   locked?: boolean;
-  uploadProgress?: number;
 };
 
 type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
@@ -148,7 +148,7 @@ const MatchupPanel = ({
             "bg-rail-tile hover:bg-rail-tile-hover text-muted",
             "transition-colors duration-120 ease-out",
             "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
-            !hasSelection && `flex-1`,
+            !hasSelection && "flex-1",
           )}
         >
           {collapsed ? (
@@ -179,7 +179,7 @@ const MatchupPanel = ({
               title="Lock position (⌥L)"
             >
               {locked ? (
-                <LockIcon className="w-5" solid />
+                <LockIcon className="w-5" />
               ) : (
                 <UnlockIcon className="w-5" />
               )}
@@ -230,8 +230,6 @@ const MatchupPanel = ({
                     src={layer.src}
                     selected={layer.id === selectedId}
                     locked={locked && layer.id === selectedId}
-                    hidden={!visible}
-                    uploadProgress={layer.uploadProgress}
                     renaming={layer.id === renamingId}
                     onSelect={() => onSelectLayer?.(layer.id)}
                     onStartRename={() => onStartRename?.(layer.id)}

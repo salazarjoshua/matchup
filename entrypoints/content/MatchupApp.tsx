@@ -1,5 +1,6 @@
 import Overlay from "@/components/Overlay";
 import { MatchupPanel } from "@/components/matchup";
+import { clamp } from "@/utils/clamp";
 import { SETTINGS_DEFAULTS, matchupSettings } from "@/utils/matchup-settings";
 import {
   ACCEPTED_TYPES,
@@ -25,9 +26,6 @@ const PANEL_WIDTH = 300;
 const EDGE = 8;
 const RAIL_HEIGHT = 40;
 const DRAG_THRESHOLD = 4;
-
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max);
 
 const swallowClick = (event: MouseEvent) => {
   event.stopPropagation();
@@ -56,8 +54,6 @@ export default function MatchupApp() {
   });
 
   const fileInput = useRef<HTMLInputElement>(null);
-  const dragOffset = useRef<{ dx: number; dy: number } | null>(null);
-  const overlay = useRef<HTMLDivElement>(null);
   const overlayImage = useRef<HTMLImageElement>(null);
   const [imageEpoch, setImageEpoch] = useState(0);
   const widget = useRef<HTMLDivElement>(null);
@@ -436,7 +432,6 @@ export default function MatchupApp() {
           dragging={draggingOverlay}
           onPointerDown={onOverlayPointerDown}
           onLoad={() => setImageEpoch((n) => n + 1)}
-          ref={overlay}
           imageRef={overlayImage}
         />
       )}
