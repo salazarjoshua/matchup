@@ -36,6 +36,7 @@ export const HOTKEYS = [
   { keys: "⌥L", action: "Toggle lock" },
   { keys: "⌥D", action: "Toggle difference" },
   { keys: "⌥/", action: "Toggle panel" },
+  { keys: "⌥U", action: "Upload an image" },
   { keys: "⌘V", action: "Paste an image" },
 ];
 

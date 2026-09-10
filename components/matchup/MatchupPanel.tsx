@@ -248,7 +248,11 @@ const MatchupPanel = ({
                   />
                 ))}
                 {/* Always has a cell now that the grid scrolls. */}
-                <AddTile aria-label="Add layer" onClick={onUpload} />
+                <AddTile
+                  aria-label="Upload an image"
+                  title="Upload an image (⌥U)"
+                  onClick={onUpload}
+                />
               </LayerGrid>
 
               <div className="border-hairline border-t p-3">

@@ -283,6 +283,11 @@ export default function MatchupApp() {
         case "Slash":
           setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
           break;
+        case "KeyU":
+          // A keydown carries user activation, which is what the file dialog
+          // needs; preventDefault below doesn't spend it.
+          fileInput.current?.click();
+          break;
         default:
           return;
       }
