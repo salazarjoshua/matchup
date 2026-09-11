@@ -88,8 +88,6 @@
 @layer base {
   :focus-visible {
     @apply ring-2 ring-focus outline-none;
-    /* outline: 1.5px solid var(--color-focus);
-    outline-offset: 1px; */
   }
 
   ::selection {
