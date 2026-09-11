@@ -1,11 +1,15 @@
 import { EditIcon, DeleteIcon } from "@/components/icons";
+
 import { cn } from "@/utils/cn";
+
 import { useEffect, useRef } from "react";
+
 import type { ComponentPropsWithoutRef } from "react";
 
 // Stand-in for absent thumbnail imagery, matching the design's placeholder weave.
 const PLACEHOLDER_WEAVE =
   "repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)";
+
 const PLACEHOLDER_WEAVE_SELECTED =
   "repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px)";
 
@@ -26,6 +30,7 @@ type LayerTileProps = Omit<
   onDragStartLayer?: () => void;
   onDropOnLayer?: () => void;
   onDragEndLayer?: () => void;
+
   /** True while another tile is being dragged over this one. */
   dropTarget?: boolean;
 };
@@ -33,14 +38,16 @@ type LayerTileProps = Omit<
 const ThumbAction = ({
   label,
   children,
+  className,
   ...props
 }: ComponentPropsWithoutRef<"button"> & { label: string }) => (
   <button
     type="button"
     aria-label={label}
-    // The scrim above is pointer-events-none so clicks fall through to select;
-    // the actions themselves have to opt back in.
-    className="text-ink pointer-events-auto grid size-6 place-items-center rounded-full bg-surface"
+    className={cn(
+      "relative grid size-6 place-items-center rounded-full bg-surface text-ink pointer-events-auto",
+      className,
+    )}
     {...props}
   >
     {children}
@@ -68,11 +75,10 @@ const LayerTile = ({
   const input = useRef<HTMLInputElement>(null);
   const self = useRef<HTMLDivElement>(null);
 
-  // Replaces the old jump-to-page: the grid scrolls now, so the tile that just
-  // became selected brings itself into view. "nearest" is a no-op when it is
-  // already visible, so clicking a tile never scrolls the list under you.
   useEffect(() => {
-    if (selected) self.current?.scrollIntoView({ block: "nearest" });
+    if (selected) {
+      self.current?.scrollIntoView({ block: "nearest" });
+    }
   }, [selected]);
 
   useEffect(() => {
@@ -88,19 +94,11 @@ const LayerTile = ({
       className={cn("flex min-w-0 flex-col gap-2", className)}
       {...props}
     >
-      {/*
-        The scrim and its actions are siblings of the select button, not children:
-        a button may not contain another button, and while nested they were both
-        invalid and unreachable by keyboard. `group` moves here so hover and focus
-        are tracked across the pair.
-      */}
-      <div className="group relative">
+      <div className="group relative h-thumb w-full rounded-control">
         <button
           type="button"
           aria-pressed={selected}
           aria-label={`Select ${name}`}
-          // Reordering stays inside the grid, which now holds every layer, so any
-          // tile can be dropped on any other.
           draggable={Boolean(onDragStartLayer) && !renaming}
           onDragStart={(event) => {
             event.dataTransfer.effectAllowed = "move";
@@ -109,6 +107,7 @@ const LayerTile = ({
           }}
           onDragOver={(event) => {
             if (!onDropOnLayer) return;
+
             event.preventDefault();
             event.dataTransfer.dropEffect = "move";
           }}
@@ -119,13 +118,13 @@ const LayerTile = ({
           onDragEnd={onDragEndLayer}
           onClick={onSelect}
           className={cn(
-            "h-thumb rounded-control relative w-full cursor-pointer overflow-hidden",
-            "duration-120 transition-all ease-out",
-            selected && "ring-accent-blue ring-2",
-            !selected && "hover:ring-accent-blue hover:ring-2",
+            "relative h-full w-full cursor-pointer overflow-hidden rounded-control",
+            "focus-visible:ring-2 focus-visible:ring-focus",
+            selected && "ring-2 ring-accent-blue",
+            !selected && "group-hover:ring-2 group-hover:ring-disabled/75",
             lifted &&
-              "shadow-drag ring-accent-blue z-10 -rotate-2 scale-[1.03] ring-2",
-            dropTarget && "ring-accent-blue ring-2 ring-offset-1",
+              "z-10 -rotate-2 scale-[1.03] shadow-drag ring-2 ring-accent-blue",
+            dropTarget && "ring-2 ring-offset-1 ring-accent-blue",
           )}
           style={
             src
@@ -141,24 +140,23 @@ const LayerTile = ({
             <img
               src={src}
               alt=""
-              className="size-full object-cover select-none"
+              className="size-full select-none object-cover"
             />
           )}
         </button>
-        {/*
-        `hidden` rather than transparent, so the actions stay out of the tab order
-        until the tile is reached — focusing the select button is what reveals
-        them, and the next Tab then lands on Rename.
-      */}
-        <span className="rounded-control pointer-events-none absolute inset-0 hidden items-start justify-between gap-1 bg-black/40 p-1 backdrop-blur-xs group-hover:flex group-has-[:focus-visible]:flex">
+
+        <div className="pointer-events-none absolute inset-0 p-1 items-start justify-between hidden group-hover:flex">
+          <div className="pointer-events-none absolute inset-0 rounded-control bg-black/20 p-1 backdrop-blur-xs" />
           <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
             <EditIcon className="w-3 text-accent-blue" />
           </ThumbAction>
+
           <ThumbAction label={`Delete ${name}`} onClick={onDelete}>
             <DeleteIcon className="w-3 text-accent-red" />
           </ThumbAction>
-        </span>
+        </div>
       </div>
+
       {renaming ? (
         <input
           ref={input}
@@ -170,12 +168,12 @@ const LayerTile = ({
             if (event.key === "Enter") event.currentTarget.blur();
             if (event.key === "Escape") onRename?.(name);
           }}
-          className="border-[1.5px] rounded-badge border-accent-blue text-micro text-ink h-4.5 w-full bg-white px-1.25"
+          className="h-4.5 w-full rounded-badge border-[1.5px] border-focus bg-white px-1.25 text-micro text-ink focus-visible:ring-0"
         />
       ) : (
         <div
           className={cn(
-            "text-micro truncate",
+            "truncate text-micro",
             selected ? "text-ink" : "text-muted",
           )}
           title={name}
@@ -188,4 +186,5 @@ const LayerTile = ({
 };
 
 export { LayerTile };
+
 export type { LayerTileProps };
