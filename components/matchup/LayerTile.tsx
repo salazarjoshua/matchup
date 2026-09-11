@@ -32,17 +32,16 @@ type LayerTileProps = Omit<
 
 const ThumbAction = ({
   label,
-  onClick,
   children,
+  ...props
 }: ComponentPropsWithoutRef<"button"> & { label: string }) => (
   <button
     type="button"
     aria-label={label}
-    onClick={(event) => {
-      event.stopPropagation();
-      onClick?.(event);
-    }}
-    className="text-ink grid size-6 place-items-center rounded-full bg-surface"
+    // The scrim above is pointer-events-none so clicks fall through to select;
+    // the actions themselves have to opt back in.
+    className="text-ink pointer-events-auto grid size-6 place-items-center rounded-full bg-surface"
+    {...props}
   >
     {children}
   </button>
@@ -89,62 +88,69 @@ const LayerTile = ({
       className={cn("flex min-w-0 flex-col gap-2", className)}
       {...props}
     >
-      <button
-        role="button"
-        aria-pressed={selected}
-        aria-label={`Select ${name}`}
-        // Reordering stays inside the grid, which now holds every layer, so any
-        // tile can be dropped on any other.
-        draggable={Boolean(onDragStartLayer) && !renaming}
-        onDragStart={(event) => {
-          event.dataTransfer.effectAllowed = "move";
-          event.dataTransfer.setData("text/plain", name);
-          onDragStartLayer?.();
-        }}
-        onDragOver={(event) => {
-          if (!onDropOnLayer) return;
-          event.preventDefault();
-          event.dataTransfer.dropEffect = "move";
-        }}
-        onDrop={(event) => {
-          event.preventDefault();
-          onDropOnLayer?.();
-        }}
-        onDragEnd={onDragEndLayer}
-        onClick={onSelect}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
+      {/*
+        The scrim and its actions are siblings of the select button, not children:
+        a button may not contain another button, and while nested they were both
+        invalid and unreachable by keyboard. `group` moves here so hover and focus
+        are tracked across the pair.
+      */}
+      <div className="group relative">
+        <button
+          type="button"
+          aria-pressed={selected}
+          aria-label={`Select ${name}`}
+          // Reordering stays inside the grid, which now holds every layer, so any
+          // tile can be dropped on any other.
+          draggable={Boolean(onDragStartLayer) && !renaming}
+          onDragStart={(event) => {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", name);
+            onDragStartLayer?.();
+          }}
+          onDragOver={(event) => {
+            if (!onDropOnLayer) return;
             event.preventDefault();
-            onSelect?.();
+            event.dataTransfer.dropEffect = "move";
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            onDropOnLayer?.();
+          }}
+          onDragEnd={onDragEndLayer}
+          onClick={onSelect}
+          className={cn(
+            "h-thumb rounded-control relative w-full cursor-pointer overflow-hidden",
+            "duration-120 transition-all ease-out",
+            selected && "ring-accent-blue ring-2",
+            !selected && "hover:ring-accent-blue hover:ring-2",
+            lifted &&
+              "shadow-drag ring-accent-blue z-10 -rotate-2 scale-[1.03] ring-2",
+            dropTarget && "ring-accent-blue ring-2 ring-offset-1",
+          )}
+          style={
+            src
+              ? undefined
+              : {
+                  backgroundImage: selected
+                    ? PLACEHOLDER_WEAVE_SELECTED
+                    : PLACEHOLDER_WEAVE,
+                }
           }
-        }}
-        className={cn(
-          "h-thumb rounded-control group relative cursor-pointer overflow-hidden",
-          "duration-120 transition-all ease-out",
-          selected && "ring-accent-blue ring-2",
-          !selected && "hover:ring-accent-blue hover:ring-2",
-          lifted &&
-            "shadow-drag ring-accent-blue z-10 -rotate-2 scale-[1.03] ring-2",
-          dropTarget && "ring-accent-blue ring-2 ring-offset-1",
-        )}
-        style={
-          src
-            ? undefined
-            : {
-                backgroundImage: selected
-                  ? PLACEHOLDER_WEAVE_SELECTED
-                  : PLACEHOLDER_WEAVE,
-              }
-        }
-      >
-        {src && (
-          <img
-            src={src}
-            alt=""
-            className="size-full object-cover select-none"
-          />
-        )}
-        <span className="rounded-control absolute inset-0 items-start justify-between p-1 gap-1 bg-black/40 backdrop-blur-xs hidden group-hover:flex">
+        >
+          {src && (
+            <img
+              src={src}
+              alt=""
+              className="size-full object-cover select-none"
+            />
+          )}
+        </button>
+        {/*
+        `hidden` rather than transparent, so the actions stay out of the tab order
+        until the tile is reached — focusing the select button is what reveals
+        them, and the next Tab then lands on Rename.
+      */}
+        <span className="rounded-control pointer-events-none absolute inset-0 hidden items-start justify-between gap-1 bg-black/40 p-1 backdrop-blur-xs group-hover:flex group-has-[:focus-visible]:flex">
           <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
             <EditIcon className="w-3 text-accent-blue" />
           </ThumbAction>
@@ -152,7 +158,7 @@ const LayerTile = ({
             <DeleteIcon className="w-3 text-accent-red" />
           </ThumbAction>
         </span>
-      </button>
+      </div>
       {renaming ? (
         <input
           ref={input}
