@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics=""><meta name="design_doc_mode" content="canvas"><style>
+body{margin:0;background:#f0eee9;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 "Helvetica Neue",Helvetica,Arial,sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 "Helvetica Neue",Helvetica,Arial,sans-serif;color:rgba(0,0,0,.55);max-width:400px}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+.dv-opt:target .dv-oid{background:#0a84ff;color:#fff}
+.dv-next{margin:22px 0 0;font:12px/1.5 "Helvetica Neue",Helvetica,Arial,sans-serif;color:rgba(0,0,0,.5)}
+.dv-note{max-width:400px;font:11px/1.5 ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)}
+a{color:#0a84ff}a:hover{color:#0060d0}
+</style></helmet>
+
+<header style="padding:40px 44px 26px;border-bottom:1px solid rgba(0,0,0,.08);max-width:900px">
+<div style="font:700 34px/1.02 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em;color:#111">Matchup — overlay extension panel</div>
+<p style="margin:16px 0 0;font:14px/1.6 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.62);max-width:640px;text-wrap:pretty">Read of the current panel: six stacked card groups compete for the same visual weight, so nothing reads as primary. The three source buttons are equal-size and equally quiet. Layers are large thumbnails but the state controls (show / lock / blend) sit detached below them. The nudge pad and the X / Y / scale fields do the same job in two places, and the ad block occupies roughly a fifth of the panel at full contrast.</p>
+<p style="margin:12px 0 0;font:14px/1.6 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.62);max-width:640px;text-wrap:pretty">Direction from the moodboard: neo-grotesk display type, black and grey grounds, saturated signage primaries used as flat fills rather than tints, rounded-square tiles, numbered badges, monospace for numerics. Turns 1–4 were drawn before the brand landed and still carry a placeholder name; turns 5–6 are Matchup, with 🥊 standing in for the real mark.</p>
+<div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+<span style="font:11px ui-monospace,Menlo,monospace;padding:5px 9px;background:#111;color:#fff;border-radius:6px">panel width 380px</span>
+<span style="font:11px ui-monospace,Menlo,monospace;padding:5px 9px;background:rgba(0,0,0,.07);border-radius:6px">Helvetica Now Display substitute</span>
+<span style="font:11px ui-monospace,Menlo,monospace;padding:5px 9px;background:rgba(0,0,0,.07);border-radius:6px">2 layers, 1 selected</span>
+</div>
+</header>
+
+<section class="dv-turn" id="t10">
+<div class="dv-thd"><a class="dv-tid" href="#t10">10</a><span class="dv-tname">State matrix — <a class="dv-oid" href="#9a">9a</a> with the drag grip, icon-only title bar and <a class="dv-oid" href="#1b">1b</a>-style opacity bar</span></div>
+<div class="dv-opts">
+<div class="dv-opt" id="10a">
+<div class="dv-olabel"><a class="dv-oid" href="#10a">10a</a><span style="display:block">Every state of one panel. Grip is a 3×2 dot block, Settings and Info are icons, opacity is a 32px filled bar, layers sit in a 3×2 grid at six per page, and layer hover follows <a href="#4c">4c</a> — scrim with rename and delete.</span></div>
+
+<div style="display:flex;flex-direction:column;gap:28px">
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font:600 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.12)">Open · hidden · collapsed</div>
+<div style="display:flex;flex-wrap:wrap;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">default — overlay on, unlocked</div><dc-import name="Matchup Panel" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">overlay hidden — all controls disabled</div><dc-import name="Matchup Panel" visible="{{ false }}" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">collapsed — rail only</div><dc-import name="Matchup Panel" mode="collapsed" hint-size="76px,300px"></dc-import></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font:600 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.12)">Rail controls, on and off</div>
+<div style="display:flex;flex-wrap:wrap;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">locked — position and scale frozen, badge on the layer</div><dc-import name="Matchup Panel" locked="{{ true }}" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">difference on — opacity stays live</div><dc-import name="Matchup Panel" diff="{{ true }}" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">locked + difference on</div><dc-import name="Matchup Panel" locked="{{ true }}" diff="{{ true }}" hint-size="396px,460px"></dc-import></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font:600 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.12)">Anchor</div>
+<div style="display:flex;flex-wrap:wrap;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">anchor set to centre — X / Y read-only</div><dc-import name="Matchup Panel" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">no anchor — X / Y editable, Y focused</div><dc-import name="Matchup Panel" anchor="{{ false }}" hint-size="396px,460px"></dc-import></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font:600 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.12)">Layer count and pagination</div>
+<div style="display:flex;flex-wrap:wrap;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">2 assets — no pagination, add tile in the grid</div><dc-import name="Matchup Panel" count="{{ 2 }}" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">7 assets, page 1 of 2 — ‹ disabled</div><dc-import name="Matchup Panel" count="{{ 7 }}" page="{{ 1 }}" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">7 assets, page 2 of 2 — › disabled, one tile</div><dc-import name="Matchup Panel" count="{{ 7 }}" page="{{ 2 }}" hint-size="396px,460px"></dc-import></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font:600 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.12)">Hover</div>
+<div style="display:flex;flex-wrap:wrap;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">rail icon — lifts to #2a2a2a, tooltip with shortcut</div><dc-import name="Matchup Panel" hover="lock" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">layer thumbnail — scrim with rename and delete</div><dc-import name="Matchup Panel" hover="layer" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">opacity bar — indicator thickens with a halo</div><dc-import name="Matchup Panel" hover="slider" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">next page arrow</div><dc-import name="Matchup Panel" count="{{ 7 }}" hover="next" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">settings icon</div><dc-import name="Matchup Panel" hover="settings" hint-size="396px,460px"></dc-import></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font:600 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.12)">States you didn’t list</div>
+<div style="display:flex;flex-wrap:wrap;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">renaming in place — name becomes a field</div><dc-import name="Matchup Panel" mode="renaming" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">reordering — lifted tile, dashed drop slot</div><dc-import name="Matchup Panel" mode="dragging" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">uploading — progress on the incoming tile</div><dc-import name="Matchup Panel" mode="uploading" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">rejected file</div><dc-import name="Matchup Panel" mode="error" hint-size="396px,200px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">empty — upload and paste</div><dc-import name="Matchup Panel" mode="empty" hint-size="396px,200px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">opacity at 100</div><dc-import name="Matchup Panel" opacity="{{ 100 }}" hint-size="396px,460px"></dc-import></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">opacity at 0</div><dc-import name="Matchup Panel" opacity="{{ 0 }}" hint-size="396px,460px"></dc-import></div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+<p class="dv-next">Try next: "give me the settings panel states" · "show the difference mode on a real screenshot" · "spec the disabled rules as a table"</p>
+</section>
+
+<section class="dv-turn" id="t9">
+<div class="dv-thd"><a class="dv-tid" href="#t9">9</a><span class="dv-tname"><a class="dv-oid" href="#8b">8b</a> open, tidied: settings and info in the title bar, 8px spacing grid, square 40px icons</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="9a">
+<div class="dv-olabel"><a class="dv-oid" href="#9a">9a</a>Three layers. Footer gone — Matchup, Settings and Info sit in the title bar. Everything is on an 8px grid: 12px panel padding, 12px gaps, 40×40 rail tiles, 12px radii.</div>
+<div style="display:flex;gap:12px;align-items:flex-start"><div class="dv-card" style="width:64px;border-radius:16px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div style="width:40px;height:40px;border-radius:12px;display:grid;place-items:center"><span style="font-size:18px;line-height:1;display:block;transform:scaleX(1)">🥊</span></div>
+    <div style="width:24px;height:1px;background:rgba(255,255,255,.16)"></div>
+    <div style="width:40px;height:40px;border-radius:12px;background:#0A84FF;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><ellipse cx="12" cy="12" rx="9.5" ry="6"></ellipse><circle cx="12" cy="12" r="2.6" fill="#fff"></circle></svg></div>
+    <div style="width:40px;height:40px;border-radius:12px;background:#FF8A00;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" fill="#111" stroke="none"></rect><path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3"></path></svg></div>
+    <div style="width:40px;height:40px;border-radius:12px;background:#FFC400;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="#111" stroke="none"></path></svg></div>
+  </div><div class="dv-card" style="width:320px;border-radius:16px;background:#fff">
+    <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-bottom:1px solid rgba(0,0,0,.08)">
+      <span style="font-size:15px;line-height:1">🥊</span>
+      <span style="font:600 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Matchup</span>
+      <span style="margin-left:auto;display:flex;align-items:center;gap:12px">
+        <span style="font:11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#6b6b6b">Settings</span>
+        <span style="font:11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#6b6b6b">Info</span>
+      </span>
+    </div>
+    <div style="display:flex;gap:12px;padding:12px">
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+        <div style="height:64px;border-radius:12px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);box-shadow:0 0 0 2px #0A84FF"></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+        <div style="height:64px;border-radius:12px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;color:#6b6b6b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">home-v3.png</div>
+      </div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+        <div style="height:64px;border-radius:12px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;color:#6b6b6b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">nav-fix.png</div>
+      </div>
+    </div>
+    
+    <div style="padding:12px;border-top:1px solid rgba(0,0,0,.08)">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:112px;height:112px;flex:none;border-radius:12px;background:#F5F5F5;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center">
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:16px;height:16px;border-radius:4px;background:#0A84FF"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+          <div style="height:32px;border-radius:12px;background:#F5F5F5;border:1px solid transparent;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="font:12px ui-monospace,Menlo,monospace;color:#6b6b6b;width:24px">X</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#6b6b6b">640</span></div>
+          <div style="height:32px;border-radius:12px;background:#F5F5F5;border:1px solid transparent;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="font:12px ui-monospace,Menlo,monospace;color:#6b6b6b;width:24px">Y</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#6b6b6b">312</span></div>
+          <div style="height:32px;border-radius:12px;background:#fff;border:1px solid #11111118;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="width:24px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed #6b6b6b;display:block"></span></span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px">
+      <div style="position:relative;height:8px;border-radius:4px;background:#E6E6E5;width:100%">
+        <div style="position:absolute;inset:0 50% 0 0;border-radius:4px;background:#0A84FF"></div>
+        <div style="position:absolute;left:50%;top:-8px;width:24px;height:24px;margin-left:-12px;border-radius:50%;background:#fff;border:3px solid #0A84FF;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+      </div>
+      <span style="font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+  </div></div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:400px">Spacing set: 12px padding and gaps everywhere, 8px inside a control, 40px tiles, 12px radii on tiles and fields, 16px on the two cards. Rail narrows to 64px because the tiles are square now.</div>
+</sc-if>
+</div>
+
+<div class="dv-opt" id="9b">
+<div class="dv-olabel"><a class="dv-oid" href="#9b">9b</a>Eight layers, page two. The pagination row only appears from seven up: page count left, arrows right, same 28px control size as the rest.</div>
+<div style="display:flex;gap:12px;align-items:flex-start"><div class="dv-card" style="width:64px;border-radius:16px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:12px 0;display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div style="width:40px;height:40px;border-radius:12px;display:grid;place-items:center"><span style="font-size:18px;line-height:1;display:block;transform:scaleX(1)">🥊</span></div>
+    <div style="width:24px;height:1px;background:rgba(255,255,255,.16)"></div>
+    <div style="width:40px;height:40px;border-radius:12px;background:#0A84FF;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><ellipse cx="12" cy="12" rx="9.5" ry="6"></ellipse><circle cx="12" cy="12" r="2.6" fill="#fff"></circle></svg></div>
+    <div style="width:40px;height:40px;border-radius:12px;background:#FF8A00;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" fill="#111" stroke="none"></rect><path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3"></path></svg></div>
+    <div style="width:40px;height:40px;border-radius:12px;background:#FFC400;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="#111" stroke="none"></path></svg></div>
+  </div><div class="dv-card" style="width:320px;border-radius:16px;background:#fff">
+    <div style="display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-bottom:1px solid rgba(0,0,0,.08)">
+      <span style="font-size:15px;line-height:1">🥊</span>
+      <span style="font:600 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Matchup</span>
+      <span style="margin-left:auto;display:flex;align-items:center;gap:12px">
+        <span style="font:11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#6b6b6b">Settings</span>
+        <span style="font:11px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#6b6b6b">Info</span>
+      </span>
+    </div>
+    <div style="display:flex;gap:12px;padding:12px">
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+        <div style="height:64px;border-radius:12px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;color:#6b6b6b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">pricing-b.png</div>
+      </div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+        <div style="height:64px;border-radius:12px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);box-shadow:0 0 0 2px #0A84FF"></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+        <div style="height:64px;border-radius:12px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;color:#6b6b6b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">footer-v2.png</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: flex-start; gap: 12px; padding: 0 12px 12px; justify-content: center; flex-direction: row">
+      
+      
+    <span style="margin-left: auto; display: flex; gap: 8px; text-align: center; align-items: center; justify-content: flex-start">
+        <span style="width:28px;height:28px;border-radius:10px;background:#F5F5F5;display:grid;place-items:center;font:13px ui-monospace,Menlo,monospace;color:#111">‹</span>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:#6b6b6b">2 / 3</span><span style="width:28px;height:28px;border-radius:10px;background:#F5F5F5;display:grid;place-items:center;font:13px ui-monospace,Menlo,monospace;color:#111">›</span>
+      </span></div>
+    <div style="padding:12px;border-top:1px solid rgba(0,0,0,.08)">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:112px;height:112px;flex:none;border-radius:12px;background:#F5F5F5;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center">
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:16px;height:16px;border-radius:4px;background:#0A84FF"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+          <div style="height:32px;border-radius:12px;background:#F5F5F5;border:1px solid transparent;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="font:12px ui-monospace,Menlo,monospace;color:#6b6b6b;width:24px">X</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#6b6b6b">640</span></div>
+          <div style="height:32px;border-radius:12px;background:#F5F5F5;border:1px solid transparent;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="font:12px ui-monospace,Menlo,monospace;color:#6b6b6b;width:24px">Y</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#6b6b6b">312</span></div>
+          <div style="height:32px;border-radius:12px;background:#fff;border:1px solid #11111118;display:flex;align-items:center;gap:8px;padding:0 12px"><span style="width:24px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed #6b6b6b;display:block"></span></span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px">
+      <div style="position:relative;height:8px;border-radius:4px;background:#E6E6E5;width:100%">
+        <div style="position:absolute;inset:0 50% 0 0;border-radius:4px;background:#0A84FF"></div>
+        <div style="position:absolute;left:50%;top:-8px;width:24px;height:24px;margin-left:-12px;border-radius:50%;background:#fff;border:3px solid #0A84FF;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+      </div>
+      <span style="font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+  </div></div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:400px">Three per page keeps the thumbnail big enough to recognise; the selected layer stays highlighted wherever it sits, and paging never changes which layer is active. ⌥1–3 selects within the page, ⌥[ / ⌥] pages.</div>
+</sc-if>
+</div>
+
+</div>
+<p class="dv-next">Try next: "show the Settings screen" · "make the title bar dark" · "add drag-to-reorder across pages"</p>
+</section>
+
+<section class="dv-turn" id="t8">
+<div class="dv-thd"><a class="dv-tid" href="#t8">8</a><span class="dv-tname">Where settings go — three placements, each shown open and hidden</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="8a">
+<div class="dv-olabel"><a class="dv-oid" href="#8a">8a</a>Settings in the rail, bottom slot. Separated from the layer states by a rule, so the rail reads as “panel · states · app”.</div>
+<div style="display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:7px">
+    <div style="font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#5c5c5c">OPEN</div>
+    <div style="display:flex;gap:12px;align-items:flex-start"><div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:17px;line-height:1;display:block;transform:scaleX(1)">🥊</span></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#0A84FF;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><ellipse cx="12" cy="12" rx="9.5" ry="6"></ellipse><circle cx="12" cy="12" r="2.6" fill="#fff"></circle></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FF8A00;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" fill="#111" stroke="none"></rect><path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3"></path></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FFC400;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="#111" stroke="none"></path></svg></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#e6e6e6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><line x1="4" y1="8.5" x2="20" y2="8.5"></line><line x1="4" y1="15.5" x2="20" y2="15.5"></line><circle cx="9" cy="8.5" r="2.4" fill="#e6e6e6"></circle><circle cx="15.5" cy="15.5" r="2.4" fill="#e6e6e6"></circle></svg></div>
+  </div><div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+    <div style="display:flex;gap:8px;padding:15px 15px 14px">
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #027BE5"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">home-v3.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">nav-fix.png</div>
+      </div>
+    </div>
+    <div style="padding:14px 15px 0;border-top:1px solid rgba(0,0,0,.1)">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:112px;height:112px;flex:none;border-radius:12px;background:#F5F5F5;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center">
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:16px;height:16px;border-radius:4px;background:#027BE5"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px"><span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">X</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">640</span></div>
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px"><span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">Y</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">312</span></div>
+          <div style="height:32px;border-radius:9px;background:#fff;border:1.5px solid #11111118;display:flex;align-items:center;padding:0 11px;gap:9px"><span style="width:26px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(0,0,0,.55);display:block"></span></span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span><span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">×</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px 15px 16px;display:flex;align-items:center;gap:16px">
+      <div style="position:relative;height:10px;border-radius:5px;background:#e6e6e5;width:100%">
+        <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#027BE5"></div>
+        <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #027BE5;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+      </div>
+      <span style="font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+  </div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:7px">
+    <div style="font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#5c5c5c">HIDDEN</div>
+    <div style="display:flex;gap:12px;align-items:flex-start"><div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:17px;line-height:1;display:block;transform:scaleX(-1)">🥊</span></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#0A84FF;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><ellipse cx="12" cy="12" rx="9.5" ry="6"></ellipse><circle cx="12" cy="12" r="2.6" fill="#fff"></circle></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FF8A00;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" fill="#111" stroke="none"></rect><path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3"></path></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FFC400;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="#111" stroke="none"></path></svg></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#e6e6e6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><line x1="4" y1="8.5" x2="20" y2="8.5"></line><line x1="4" y1="15.5" x2="20" y2="15.5"></line><circle cx="9" cy="8.5" r="2.4" fill="#e6e6e6"></circle><circle cx="15.5" cy="15.5" r="2.4" fill="#e6e6e6"></circle></svg></div>
+  </div><div style="display:flex;flex-direction:column;gap:9px;align-items:flex-start;padding-top:2px">
+    <div style="width:180px;font:11px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.6)">Hidden: rail only, glove flipped. Nothing else on the page.</div>
+  </div></div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:520px">Cheapest to hit and always visible — but it spends a permanent 40px slot on the least-used control, and the rail is meant to be the four things you press constantly. Best if you expect settings to matter early (dock side, shortcuts, ads).</div>
+</sc-if>
+</div>
+
+<div class="dv-opt" id="8b">
+<div class="dv-olabel"><a class="dv-oid" href="#8b">8b</a>Settings as a panel footer. A quiet grey strip under the controls: © 2026 on the left, Settings on the right, room for more later.</div>
+<div style="display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:7px">
+    <div style="font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#5c5c5c">OPEN</div>
+    <div style="display:flex;gap:12px;align-items:flex-start"><div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width: 44px; height: 40px; border-radius: 11px; display: grid; place-items: center; background-color: #1C1C1C00"><span style="font-size:17px;line-height:1;display:block;transform:scaleX(1)">🥊</span></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#0A84FF;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><ellipse cx="12" cy="12" rx="9.5" ry="6"></ellipse><circle cx="12" cy="12" r="2.6" fill="#fff"></circle></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FF8A00;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" fill="#111" stroke="none"></rect><path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3"></path></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FFC400;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="#111" stroke="none"></path></svg></div>
+  </div><div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+    <div style="display:flex;gap:8px;padding:15px 15px 14px">
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #027BE5"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">home-v3.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">nav-fix.png</div>
+      </div>
+    </div>
+    <div style="padding:14px 15px 0;border-top:1px solid rgba(0,0,0,.1)">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:112px;height:112px;flex:none;border-radius:12px;background:#F5F5F5;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center">
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:16px;height:16px;border-radius:4px;background:#027BE5"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px"><span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">X</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">640</span></div>
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px"><span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">Y</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">312</span></div>
+          <div style="height:32px;border-radius:9px;background:#fff;border:1.5px solid #11111118;display:flex;align-items:center;padding:0 11px;gap:9px"><span style="width:26px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(0,0,0,.55);display:block"></span></span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span><span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">×</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px 15px 16px;display:flex;align-items:center;gap:16px">
+      <div style="position:relative;height:10px;border-radius:5px;background:#e6e6e5;width:100%">
+        <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#027BE5"></div>
+        <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #027BE5;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+      </div>
+      <span style="font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;padding:10px 15px;border-top:1px solid rgba(0,0,0,.1);background:#FAFAFA;border-radius:0 0 13px 13px">
+      <span style="font:11px ui-monospace,Menlo,monospace;color:#6b6b6b">🥊 Matchup</span>
+      <span style="margin-left:auto;font:11px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Settings</span><div style="box-sizing: border-box; display: flex; flex-direction: row; gap: 9px; justify-content: normal; align-items: center"><span style="margin-left:auto;font:11px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Info</span></div>
+    </div>
+  </div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:7px">
+    <div style="font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#5c5c5c">HIDDEN</div>
+    <div style="display:flex;gap:12px;align-items:flex-start"><div class="dv-card" style="width: 68px; border-radius: 244px; background: #0a0a0a; border-color: rgba(255,255,255,.12); padding: 11px 0; display: flex; flex-direction: column; align-items: center; gap: 9px">
+    <div style="width: 44px; height: 44px; border-radius: 11px; display: grid; place-items: center; background-color: #1C1C1C00"><span style="font-size:17px;line-height:1;display:block;transform:scaleX(-1)">🥊</span></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width: 44px; height: 44px; border-radius: 244px; background: #0A84FF; display: grid; place-items: center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><ellipse cx="12" cy="12" rx="9.5" ry="6"></ellipse><circle cx="12" cy="12" r="2.6" fill="#fff"></circle></svg></div>
+    <div style="width: 44px; height: 44px; border-radius: 244px; background: #FF8A00; display: grid; place-items: center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" fill="#111" stroke="none"></rect><path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3"></path></svg></div>
+    <div style="width: 44px; height: 44px; border-radius: 244px; background: #FFC400; display: grid; place-items: center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="#111" stroke="none"></path></svg></div>
+  </div><div style="display:flex;flex-direction:column;gap:9px;align-items:flex-start;padding-top:2px">
+    <div style="width:180px;font:11px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.6)">Hidden: rail only, glove flipped. Nothing else on the page.</div>
+  </div></div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:520px">Rail stays purely per-layer, and the footer is a conventional place people already scan for preferences. Costs 44px of panel height and is unreachable while the panel is closed — fine, since settings are not something you change mid-comparison.</div>
+</sc-if>
+</div>
+
+<div class="dv-opt" id="8c">
+<div class="dv-olabel"><a class="dv-oid" href="#8c">8c</a>No permanent slot. Right-click or hold the 🥊 tile for a small menu: settings, shortcuts, dock side, turn off here.</div>
+<div style="display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap">
+  <div style="display:flex;flex-direction:column;gap:7px">
+    <div style="font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#5c5c5c">OPEN</div>
+    <div style="display:flex;gap:12px;align-items:flex-start"><div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:17px;line-height:1;display:block;transform:scaleX(1)">🥊</span></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#0A84FF;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><ellipse cx="12" cy="12" rx="9.5" ry="6"></ellipse><circle cx="12" cy="12" r="2.6" fill="#fff"></circle></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FF8A00;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" fill="#111" stroke="none"></rect><path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3"></path></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FFC400;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="#111" stroke="none"></path></svg></div>
+  </div><div class="dv-card" style="width:200px;border-radius:12px;background:#fff;padding:6px;align-self:flex-start">
+    <div style="display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;background:#F5F5F5"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><line x1="4" y1="8.5" x2="20" y2="8.5"></line><line x1="4" y1="15.5" x2="20" y2="15.5"></line><circle cx="9" cy="8.5" r="2.4" fill="#111"></circle><circle cx="15.5" cy="15.5" r="2.4" fill="#111"></circle></svg><span style="font:12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Settings</span></div>
+    <div style="display:flex;align-items:center;gap:9px;padding:8px 9px"><span style="font:11px ui-monospace,Menlo,monospace;color:#6b6b6b;width:14px">⌥/</span><span style="font:12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Shortcuts</span></div>
+    <div style="display:flex;align-items:center;gap:9px;padding:8px 9px"><span style="font:11px ui-monospace,Menlo,monospace;color:#6b6b6b;width:14px">◨</span><span style="font:12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Dock left</span></div>
+    <div style="height:1px;background:rgba(0,0,0,.08);margin:4px 9px"></div>
+    <div style="display:flex;align-items:center;gap:9px;padding:8px 9px"><span style="font:11px ui-monospace,Menlo,monospace;color:#6b6b6b;width:14px">✕</span><span style="font:12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Turn off on this site</span></div>
+  </div><div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+    <div style="display:flex;gap:8px;padding:15px 15px 14px">
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #027BE5"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">home-v3.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px);"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">nav-fix.png</div>
+      </div>
+    </div>
+    <div style="padding:14px 15px 0;border-top:1px solid rgba(0,0,0,.1)">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:112px;height:112px;flex:none;border-radius:12px;background:#F5F5F5;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center">
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:16px;height:16px;border-radius:4px;background:#027BE5"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px"><span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">X</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">640</span></div>
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px"><span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">Y</span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">312</span></div>
+          <div style="height:32px;border-radius:9px;background:#fff;border:1.5px solid #11111118;display:flex;align-items:center;padding:0 11px;gap:9px"><span style="width:26px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(0,0,0,.55);display:block"></span></span><span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span><span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">×</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px 15px 16px;display:flex;align-items:center;gap:16px">
+      <div style="position:relative;height:10px;border-radius:5px;background:#e6e6e5;width:100%">
+        <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#027BE5"></div>
+        <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #027BE5;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+      </div>
+      <span style="font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+  </div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:7px">
+    <div style="font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#5c5c5c">HIDDEN</div>
+    <div style="display:flex;gap:12px;align-items:flex-start"><div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:17px;line-height:1;display:block;transform:scaleX(-1)">🥊</span></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#0A84FF;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><ellipse cx="12" cy="12" rx="9.5" ry="6"></ellipse><circle cx="12" cy="12" r="2.6" fill="#fff"></circle></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FF8A00;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" fill="#111" stroke="none"></rect><path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3"></path></svg></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#FFC400;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="#111" stroke="none"></path></svg></div>
+  </div><div style="display:flex;flex-direction:column;gap:9px;align-items:flex-start;padding-top:2px">
+    <div style="width:180px;font:11px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.6)">Hidden: rail only, glove flipped. Nothing else on the page.</div>
+  </div></div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:520px">Cleanest UI and the menu can hold more than one item, but it is discoverable only by trying — needs a tooltip on first run. My pick for a one-layer tool: it keeps both rail and panel free of anything you touch monthly. If you want it obvious instead, take <a class="dv-oid" href="#8b">8b</a>.</div>
+</sc-if>
+</div>
+</div>
+<p class="dv-note" style="max-width:520px;margin:18px 0 0">Icons here are geometric stand-ins at Phosphor Bold's weight and 21px box — swap in the real ph-eye, ph-lock-simple, ph-circle-half and ph-sliders in the build (the icon font can't load in this preview). The glove stays emoji and drops its white tile — the panel being open or shut already says the state. Three layers means no pagination: the row only appears at seven or more, and the red + is gone (⌘V, drop, or the empty-state tiles add layers).</p>
+<p class="dv-next">Try next: "go with <a class="dv-oid" href="#8c">8c</a> and show the settings screen" · "show the first-run tooltip" · "hidden state should keep 👁 and ◐ visible"</p>
+</section>
+
+<section class="dv-turn" id="t6">
+<div class="dv-thd"><a class="dv-tid" href="#t6">6</a><span class="dv-tname">Title bar + <a class="dv-oid" href="#1b">1b</a> colour tiles for the empty state</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="6a">
+<div class="dv-olabel"><a class="dv-oid" href="#6a">6a</a>Empty state. Two signage tiles, red upload and yellow paste, glyph top-left and label bottom-left like the reference. Panel gets a real title bar: grip, mark, collapse and close.</div>
+<div style="display:flex;gap:12px;align-items:flex-start">
+  <div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width:44px;height:40px;border-radius:11px;background:#fff;display:grid;place-items:center"><span style="font-size:15px;color:#111;line-height:1">◧</span></div>
+  </div>
+  <div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+    <div style="display:flex;align-items:center;gap:9px;height:34px;padding:0 10px 0 12px;background:#F5F5F5;border-bottom:1px solid #11111118;cursor:grab">
+      <span style="display:flex;flex-direction:column;gap:2px">
+        <span style="display:flex;gap:2px"><span style="width:2px;height:2px;border-radius:50%;background:#ABABAB"></span><span style="width:2px;height:2px;border-radius:50%;background:#ABABAB"></span></span>
+        <span style="display:flex;gap:2px"><span style="width:2px;height:2px;border-radius:50%;background:#ABABAB"></span><span style="width:2px;height:2px;border-radius:50%;background:#ABABAB"></span></span>
+        <span style="display:flex;gap:2px"><span style="width:2px;height:2px;border-radius:50%;background:#ABABAB"></span><span style="width:2px;height:2px;border-radius:50%;background:#ABABAB"></span></span>
+      </span>
+      <span style="font-size:13px;line-height:1">🥊</span>
+      <span style="font:600 12px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Matchup</span>
+      <span style="margin-left:auto;display:flex;gap:4px">
+        <span style="width:22px;height:22px;border-radius:7px;background:#fff;border:1px solid #11111118;display:grid;place-items:center;font-size:11px;line-height:1">⚙️</span>
+        <span style="width:22px;height:22px;border-radius:7px;background:#fff;border:1px solid #11111118;display:grid;place-items:center;font:11px ui-monospace,Menlo,monospace;color:#111">–</span>
+        <span style="width:22px;height:22px;border-radius:7px;background:#fff;border:1px solid #11111118;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace;color:#111">✕</span>
+      </span>
+    </div>
+    <div style="display:flex;gap:10px;padding:14px 15px 12px">
+      <div style="flex:1;aspect-ratio:1/1;border-radius:12px;background:#FF3B2F;padding:12px;display:flex;flex-direction:column;justify-content:space-between">
+        <span style="font:400 26px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">↑</span>
+        <span style="font:700 13px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">Upload</span>
+      </div>
+      <div style="flex:1;aspect-ratio:1/1;border-radius:12px;background:#FFC400;padding:12px;display:flex;flex-direction:column;justify-content:space-between">
+        <span style="font:400 24px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">⌘V</span>
+        <span style="font:700 13px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Paste</span>
+      </div>
+    </div>
+    <div style="padding:0 0 3px"></div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="6b">
+<div class="dv-olabel"><a class="dv-oid" href="#6b">6b</a>Loaded, no title bar. The 🥊 tile opens and closes the panel (glove flips with the state), 👁 is show / hide. Pagination pared back to a count and two arrows.</div>
+<div style="display:flex;gap:12px;align-items:flex-start">
+  <div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width:44px;height:40px;border-radius:11px;background:#fff;display:grid;place-items:center"><span style="font-size:17px;line-height:1">🥊</span></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#027BE5;display:grid;place-items:center"><span style="font-size:15px;line-height:1">👁</span></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center;font-size:14px;line-height:1">🔒</div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#ffc400;display:grid;place-items:center"><span style="font-size:14px;color:#111;line-height:1">◐</span></div>
+  </div>
+  <div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+    <div style="display:flex;gap:8px;padding:14px 15px 12px">
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #027BE5"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">home-v3.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">nav-fix.png</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:0 15px 14px">
+      <span style="font:11px ui-monospace,Menlo,monospace;color:#6b6b6b">1 / 3</span>
+      <span style="font:13px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3)">‹</span>
+      <span style="font:13px ui-monospace,Menlo,monospace;color:#111">›</span>
+      <span style="margin-left:auto;width:26px;height:26px;border-radius:8px;background:#FF3B2F;display:grid;place-items:center;font-size:12px;color:#fff">+</span>
+    </div>
+    <div style="padding:14px 15px 0;border-top:1px solid rgba(0,0,0,.1)">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:112px;height:112px;flex:none;border-radius:12px;background:#F5F5F5;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center">
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:16px;height:16px;border-radius:4px;background:#027BE5"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">X</span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">640</span>
+          </div>
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">Y</span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">312</span>
+          </div>
+          <div style="height:32px;border-radius:9px;background:#fff;border:1.5px solid #11111118;display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="width:26px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(0,0,0,.55);display:block"></span></span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span>
+            <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">×</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px 15px 16px;display:flex;align-items:center;gap:16px">
+      <div style="position:relative;height:10px;border-radius:5px;background:#e6e6e5;width:100%">
+        <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#027BE5"></div>
+        <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #027BE5;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+      </div>
+      <span style="font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:400px">With the title bar gone the panel is all content — but settings, drag and close now have nowhere to live. Turn <a class="dv-oid" href="#8a">8</a> puts three options for that side by side.</div>
+</sc-if>
+</div>
+
+</div>
+<p class="dv-next">Try next: "make the title bar dark" · "show the ⚙️ settings panel" · "add a red delete tile to the layer hover"</p>
+</section>
+
+<section class="dv-turn" id="t5">
+<div class="dv-thd"><a class="dv-tid" href="#t5">5</a><span class="dv-tname">Matchup — <a class="dv-oid" href="#3a">3a</a> styling applied: closed state, two-box empty state, layer actions</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="5a">
+<div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a>Closed. Rail only, 68px, docked to the page edge. Top slot opens and closes the panel; below it the three per-layer states — visible, lock, diff.</div>
+<div style="display:flex;gap:16px;align-items:flex-start">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+    <div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:15px;color:rgba(255,255,255,.8);line-height:1">◨</span></div>
+      <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+      <div style="width:44px;height:40px;border-radius:11px;background:#027BE5;display:grid;place-items:center"><span style="font-size:14px;color:#fff;line-height:1">◉</span></div>
+      <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center;font-size:14px;line-height:1">🔒</div>
+      <div style="width:44px;height:40px;border-radius:11px;background:#ffc400;display:grid;place-items:center"><span style="font-size:14px;color:#111;line-height:1">◐</span></div>
+    </div>
+    <div style="width:68px;display:flex;flex-direction:column;align-items:center;gap:5px">
+      <div style="width:52px;height:36px;border-radius:8px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #027BE5"></div>
+      <div style="width:68px;font:10px/1.3 ui-monospace,Menlo,monospace;color:rgba(0,0,0,.68);text-align:center">cover · 50%</div>
+    </div>
+  </div>
+  <div style="width:240px;padding-top:2px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:9px;background:#111;width:max-content;max-width:100%">
+      <span style="font:10px ui-monospace,Menlo,monospace;color:#5aa9ff">cover.png</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.65)">centre · 0.50× · 50%</span>
+    </div>
+    <div style="font:11px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.65)">Hover read-out, so the closed rail still tells you what you're checking against. ⌥P closes and opens the panel, ⌥O kills the overlay entirely.</div>
+    <div style="font:11px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.65)">Rail is controls only: panel, then the three per-layer states — visible, lock, diff. No master switch: with one active layer, ◉ already is the on/off, and killing the extension outright is the toolbar icon's job. Settings moved into the panel (top-right ⚙️); the 🥊 mark appears in the panel header and the empty state only.</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="5b">
+<div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a>Empty state. Two square targets, upload and paste, nothing else. ⌘V still works without touching either. URL removed.</div>
+<div style="display:flex;gap:12px;align-items:flex-start">
+  <div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width:44px;height:40px;border-radius:11px;background:#fff;display:grid;place-items:center"><span style="font-size:15px;color:#111;line-height:1">◧</span></div>
+  </div>
+
+  <div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+    <div style="display:flex;align-items:center;gap:9px;padding:14px 15px 12px">
+      <span style="font-size:16px;line-height:1">🥊</span>
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em;color:#111">Matchup</span>
+      <span style="margin-left:auto;width:26px;height:26px;border-radius:8px;background:#F5F5F5;display:grid;place-items:center;font-size:12px;line-height:1">⚙️</span>
+    </div>
+    <div style="display:flex;gap:10px;padding:0 15px 14px">
+      <div style="flex:1;aspect-ratio:1/1;border-radius:14px;background:#F5F5F5;border:1.5px solid #11111118;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px">
+        <span style="font-size:26px;line-height:1;color:#111">⬆</span>
+        <span style="font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Upload</span>
+      </div>
+      <div style="flex:1;aspect-ratio:1/1;border-radius:14px;background:#F5F5F5;border:1.5px solid #11111118;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px">
+        <span style="font-size:24px;line-height:1;color:#111">⧉</span>
+        <span style="font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Paste</span>
+      </div>
+    </div>
+    <div style="padding:0 15px 16px;display:flex;justify-content:center">
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">or press ⌘V anywhere on the page</span>
+    </div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:400px">Placement and opacity sections are simply absent until a layer exists — a whole panel of dimmed controls reads as broken. The rail is dynamic the same way: the per-layer states (visible, lock, diff) don't exist yet, so the rail is just the panel toggle, and grows when the first layer lands. Brand and settings sit in the panel.</div>
+</sc-if>
+</div>
+
+<div class="dv-opt" id="5c">
+<div class="dv-olabel"><a class="dv-oid" href="#5c">5c</a>Layer actions, <a class="dv-oid" href="#3a">3a</a> styling. Hover a thumbnail for two circular buttons — rename and delete. Second tile shows the rename in place; delete drops an undo strip. Strip pages three at a time once you have more than three.</div>
+<div style="display:flex;gap:12px;align-items:flex-start">
+  <div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width:44px;height:40px;border-radius:11px;background:#fff;display:grid;place-items:center"><span style="font-size:15px;color:#111;line-height:1">◧</span></div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#027BE5;display:grid;place-items:center"><span style="font-size:14px;color:#fff;line-height:1">◉</span></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center;font-size:14px;line-height:1">🔒</div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#ffc400;display:grid;place-items:center"><span style="font-size:14px;color:#111;line-height:1">◐</span></div>
+  </div>
+
+  <div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+    <div style="display:flex;align-items:center;justify-content:flex-end;padding:11px 15px 0">
+      <span style="width:26px;height:26px;border-radius:8px;background:#F5F5F5;display:grid;place-items:center;font-size:12px;line-height:1">⚙️</span>
+    </div>
+    <div style="display:flex;gap:8px;padding:10px 15px 14px">
+      <div style="width:86px;flex:none">
+        <div style="position:relative;height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #027BE5;overflow:hidden">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;gap:8px">
+            <div style="width:28px;height:28px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:12px;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.3)">✎</div>
+            <div style="width:28px;height:28px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:12px;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.3)">✕</div>
+          </div>
+        </div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)"></div>
+        <div style="margin-top:5px;height:17px;border-radius:4px;border:1.5px solid #027BE5;display:flex;align-items:center;padding:0 4px;background:#fff">
+          <span style="font:10px ui-monospace,Menlo,monospace;color:#111">home-v3</span>
+          <span style="width:1px;height:11px;background:#027BE5;margin-left:1px"></span>
+        </div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">nav-fix.png</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:0 15px 14px">
+      <div style="width:26px;height:26px;border-radius:8px;background:#F5F5F5;display:grid;place-items:center;font-size:11px;color:rgba(0,0,0,.35)">‹</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px">
+        <div style="width:6px;height:6px;border-radius:50%;background:#027BE5"></div>
+        <div style="width:6px;height:6px;border-radius:50%;background:#ABABAB"></div>
+        <div style="width:6px;height:6px;border-radius:50%;background:#ABABAB"></div>
+        <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5);margin-left:5px">1 / 3 · 8 layers</span>
+      </div>
+      <div style="width:26px;height:26px;border-radius:8px;background:#F5F5F5;display:grid;place-items:center;font-size:11px;color:#111">›</div>
+      <div style="width:26px;height:26px;border-radius:8px;background:#111;display:grid;place-items:center;font-size:12px;color:#fff">+</div>
+    </div>
+    <div style="padding:0 15px 14px">
+      <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:#111">
+        <span style="flex:1;font:11px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">“pricing.png” deleted</span>
+        <span style="font:600 10px ui-monospace,Menlo,monospace;color:#5aa9ff">UNDO ⌘Z</span>
+      </div>
+    </div>
+    <div style="padding:14px 15px 0;border-top:1px solid rgba(0,0,0,.1)">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:112px;height:112px;flex:none;border-radius:12px;background:#F5F5F5;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center">
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:16px;height:16px;border-radius:4px;background:#027BE5"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#ABABAB"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">X</span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">640</span>
+          </div>
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">Y</span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">312</span>
+          </div>
+          <div style="height:32px;border-radius:9px;background:#fff;border:1.5px solid #11111118;display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="width:26px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(0,0,0,.55);display:block"></span></span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span>
+            <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">×</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:16px 15px 16px;display:flex;align-items:center;gap:16px">
+      <div style="position:relative;height:10px;border-radius:5px;background:#e6e6e5;width:100%">
+        <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#027BE5"></div>
+        <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #027BE5;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+      </div>
+      <span style="font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:400px">Reset: with the section headers gone there's no header to hang it on, so it belongs on the anchor pad — clicking the selected dot again clears the anchor, and the × in the scale field clears scale. If you want an explicit control, a small RESET in the ⚙️ menu is the least noisy place left.</div>
+</sc-if>
+</div>
+
+</div>
+<p class="dv-next">Try next: "make the two boxes in <a class="dv-oid" href="#5b">5b</a> dark like the reference" · "show the ⚙️ settings panel" · "add the drag-to-reorder state"</p>
+</section>
+
+<section class="dv-turn" id="t4">
+<div class="dv-thd"><a class="dv-tid" href="#t4">4</a><span class="dv-tname">States on the <a class="dv-oid" href="#3a">3a</a> layout — closed, paste-first source, layer hover</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="4a">
+<div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>Closed. The panel folds away, the rail stays docked to the page edge. Rail keeps the overlay controls you use while looking at the page, and a one-line read-out of the active layer on hover.</div>
+<div style="display:flex;gap:14px;align-items:flex-start">
+  <div style="display:flex;flex-direction:column;gap:9px;align-items:center">
+    <div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="width:44px;height:40px;border-radius:11px;background:#00923f;display:grid;place-items:center;font:700 13px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">ON</div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.03em;color:#25c46b">OVERLAY</div>
+      </div>
+      <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:15px;color:rgba(255,255,255,.8);line-height:1">◨</span></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.05em;color:rgba(255,255,255,.68)">PANEL</div>
+      </div>
+      <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="width:44px;height:40px;border-radius:11px;background:#0a84ff;display:grid;place-items:center"><span style="font-size:14px;color:#fff;line-height:1">◉</span></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.05em;color:#5aa9ff">VISIBLE</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:14px;color:rgba(255,255,255,.8);line-height:1">⌷</span></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.03em;color:rgba(255,255,255,.68)">LOCK</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="width:44px;height:40px;border-radius:11px;background:#ffc400;display:grid;place-items:center"><span style="font-size:14px;color:#111;line-height:1">◐</span></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.03em;color:#ffc400">DIFF</div>
+      </div>
+      <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:14px;color:rgba(255,255,255,.7);line-height:1">⚙</span></div>
+        <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.05em;color:rgba(255,255,255,.68)">MORE</div>
+      </div>
+    </div>
+    <div style="width:68px;display:flex;flex-direction:column;align-items:center;gap:5px">
+      <div style="width:52px;height:36px;border-radius:8px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #0a84ff"></div>
+      <div style="width:68px;font:10px/1.3 ui-monospace,Menlo,monospace;color:rgba(0,0,0,.68);text-align:center">cover · 50%</div>
+    </div>
+  </div>
+  <div style="width:230px;padding-top:2px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:9px;background:#111;color:#fff;font:11px/1.35 'Helvetica Neue',Helvetica,Arial,sans-serif;width:max-content;max-width:100%">
+      <span style="font:10px ui-monospace,Menlo,monospace;color:#5aa9ff">cover.png</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.55)">centre · 0.50× · 50%</span>
+    </div>
+    <div style="font:11px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.6)">Rail sticks to the right edge, 68px wide, the panel slides out from it. The active layer's thumbnail stays pinned under the rail so you can see which comp you're checking against without reopening. ⌥O toggles the overlay, ⌥P the panel.</div>
+    <div style="font:11px/1.5 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.6)">Fully hidden is the extension icon in the browser toolbar — no floating chrome left on the page.</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="4b">
+<div class="dv-olabel"><a class="dv-oid" href="#4b">4b</a>Paste-first source. One large target that takes a paste, a drop, or a click — the three separate buttons collapse into it. Reset lives in the Placement header, per-section, not global.</div>
+<div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px 11px">
+    <span style="font:600 17px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em;color:#111">Layers</span>
+    <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">0</span>
+  </div>
+  <div style="padding:0 15px 14px">
+    <div style="border:1.5px dashed rgba(0,0,0,.22);border-radius:12px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:9px;background:#fafafa">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font:600 12px ui-monospace,Menlo,monospace;padding:5px 9px;border-radius:7px;background:#111;color:#fff">⌘V</span>
+        <span style="font:600 15px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Paste a screenshot</span>
+      </div>
+      <div style="font:11px/1.4 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.5);text-align:center">or drop a file here</div>
+      <div style="display:flex;gap:7px;padding-top:3px">
+        <span style="font:11px 'Helvetica Neue',Helvetica,Arial,sans-serif;padding:6px 11px;border-radius:8px;border:1px solid rgba(0,0,0,.16);color:#111">Choose file</span>
+        <span style="font:11px 'Helvetica Neue',Helvetica,Arial,sans-serif;padding:6px 11px;border-radius:8px;border:1px solid rgba(0,0,0,.16);color:#111">From URL</span>
+      </div>
+    </div>
+  </div>
+  <div style="padding:0 15px 14px">
+    <div style="display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:9px;background:#eef5ff">
+      <span style="font:10px ui-monospace,Menlo,monospace;color:#0a84ff">TIP</span>
+      <span style="font:11px/1.35 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.6);flex:1">⌘V works anywhere on the page while the overlay is on — you never have to open this panel to add a layer.</span>
+    </div>
+  </div>
+  <div style="padding:14px 15px 0;border-top:1px solid rgba(0,0,0,.1);opacity:.4">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:12px">
+      <div style="width:22px;height:22px;border-radius:50%;background:#ff5fa2;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#111">01</div>
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Placement</span>
+      <span style="margin-left:auto;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">RESET</span>
+    </div>
+    <div style="height:112px;border-radius:12px;border:2px dashed rgba(0,0,0,.15)"></div>
+  </div>
+  <div style="padding:16px 15px 16px;opacity:.4">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:12px">
+      <div style="width:22px;height:22px;border-radius:50%;background:#0a84ff;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#fff">02</div>
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Opacity</span>
+      <span style="margin-left:auto;font:14px ui-monospace,Menlo,monospace;color:#111">—</span>
+    </div>
+    <div style="height:10px;border-radius:5px;background:#eaeaea"></div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:320px">Reset: one per section, in the section header, resetting only that section — a global reset next to two very different value sets is what makes people afraid to press it. Placement RESET clears anchor + X/Y + scale; Opacity's returns to 50%.</div>
+</sc-if>
+</div>
+
+<div class="dv-opt" id="4c">
+<div class="dv-olabel"><a class="dv-oid" href="#4c">4c</a>Layer hover and rename. Two circular buttons on the thumbnail — pencil renames in place, cross deletes with an undo strip. Nothing else appears until you hover.</div>
+<div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px 11px">
+    <span style="font:600 17px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em;color:#111">Layers</span>
+    <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">2 · ⌥1–9</span>
+  </div>
+  <div style="display:flex;gap:8px;padding:0 15px 14px">
+    <div style="width:86px;flex:none">
+      <div style="position:relative;height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #0a84ff;overflow:hidden">
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:12px;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.3)">✎</div>
+          <div style="width:28px;height:28px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:12px;color:#111;box-shadow:0 1px 4px rgba(0,0,0,.3)">✕</div>
+        </div>
+      </div>
+      <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+    </div>
+    <div style="width:86px;flex:none">
+      <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)"></div>
+      <div style="margin-top:5px;height:17px;border-radius:4px;border:1.5px solid #0a84ff;display:flex;align-items:center;padding:0 4px;background:#fff">
+        <span style="font:10px ui-monospace,Menlo,monospace;color:#111">home-v3</span>
+        <span style="width:1px;height:11px;background:#0a84ff;margin-left:1px"></span>
+      </div>
+    </div>
+    <div style="width:86px;flex:none">
+      <div style="height:60px;border-radius:9px;border:1px dashed rgba(0,0,0,.25);display:grid;place-items:center;font-size:17px;color:rgba(0,0,0,.4)">+</div>
+      <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">add</div>
+    </div>
+  </div>
+  <div style="padding:0 15px 14px">
+    <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;background:#111">
+      <span style="flex:1;font:11px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">“pricing.png” deleted</span>
+      <span style="font:600 10px ui-monospace,Menlo,monospace;color:#5aa9ff">UNDO ⌘Z</span>
+    </div>
+  </div>
+  <div style="padding:14px 15px 0;border-top:1px solid rgba(0,0,0,.1)">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:12px">
+      <div style="width:22px;height:22px;border-radius:50%;background:#ff5fa2;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#111">01</div>
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Placement</span>
+      <span style="margin-left:auto;font:10px ui-monospace,Menlo,monospace;color:#ff5fa2">RESET</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <div style="width:112px;height:112px;flex:none;border-radius:12px;border:2px solid #111;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center">
+        <div style="width:15px;height:15px;border-radius:50%;background:#0a84ff;box-shadow:0 0 0 3px rgba(10,132,255,.2)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px">
+          <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">X</span>
+          <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">0</span>
+          <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.25)">px</span>
+        </div>
+        <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px">
+          <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">Y</span>
+          <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">0</span>
+          <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.25)">px</span>
+        </div>
+        <div style="height:32px;border-radius:9px;background:#fff;border:1.5px solid #111;display:flex;align-items:center;padding:0 11px;gap:9px">
+          <span style="width:26px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(0,0,0,.55);display:block"></span></span>
+          <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span>
+          <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">×</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:16px 15px 16px">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:12px">
+      <div style="width:22px;height:22px;border-radius:50%;background:#0a84ff;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#fff">02</div>
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Opacity</span>
+      <span style="margin-left:auto;font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+    <div style="position:relative;height:10px;border-radius:5px;background:#e6e6e5">
+      <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#0a84ff"></div>
+      <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #0a84ff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+    </div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:320px">Second tile shows the rename state: the caption becomes the input, so the name is edited where it is read. Delete is immediate with a 5-second undo strip instead of a confirm dialog.</div>
+</sc-if>
+</div>
+
+</div>
+<p class="dv-next">Try next: "put the paste target inline above the layer strip once layers exist" · "show MORE / settings" · "drag-to-reorder state for the layer strip"</p>
+</section>
+
+<section class="dv-turn" id="t3">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname"><a class="dv-oid" href="#2a">2a</a> refined — black rail, white panel, anchor and X/Y mutually exclusive</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="3a">
+<div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Anchor mode. An anchor is selected, so X / Y are locked and show the resolved values as read-outs. Rail is annotated below.</div>
+<div style="display:flex;gap:12px;align-items:flex-start">
+  
+
+  <div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      
+      
+    </div>
+    
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#fff;display:grid;place-items:center"><span style="font-size:15px;color:#111;line-height:1">◧</span></div>
+      
+    </div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#0a84ff;display:grid;place-items:center"><span style="font-size:14px;color:#fff;line-height:1">◉</span></div>
+      
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:14px;color:rgba(255,255,255,.8);line-height:1" data-om-label="🔒">🔒</span></div>
+      
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#ffc400;display:grid;place-items:center"><span style="font-size:14px;color:#111;line-height:1">◐</span></div>
+      
+    </div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center"><span style="font-size:14px;color:rgba(255,255,255,.7);line-height:1">⚙️</span></div>
+      
+    </div>
+  </div><div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px 11px">
+      
+      
+    </div>
+    <div style="display:flex;gap:8px;padding:0 15px 14px">
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #0a84ff"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">bilpo.ver…</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;border:1px dashed rgba(0,0,0,.25);display:grid;place-items:center;font-size:17px;color:rgba(0,0,0,.4)">+</div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">add</div>
+      </div>
+    </div>
+
+    <div style="padding:14px 15px 0;border-top:1px solid rgba(0,0,0,.1)">
+      
+      
+      
+    <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width: 112px; height: 112px; flex: none; border-radius: 12px; border: 2px solid #111; display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); place-items: center; background-color: #F5F5F5; border-style: none">
+          <div style="width: 4px; height: 4px; border-radius: 50%; border: 2px solid rgba(0,0,0,.28); border-color: #ABABAB; background-color: #ABABAB"></div><div style="width: 4px; height: 4px; border-radius: 50%; border: 2px solid rgba(0,0,0,.28); border-color: #ABABAB; background-color: #ABABAB"></div><div style="width: 4px; height: 4px; border-radius: 50%; border: 2px solid rgba(0,0,0,.28); border-color: #ABABAB; background-color: #ABABAB"></div><div style="width: 4px; height: 4px; border-radius: 50%; border: 2px solid rgba(0,0,0,.28); border-color: #ABABAB; background-color: #ABABAB"></div><div style="width: 16px; height: 16px; border-radius: 4px; border: 2px solid rgba(0,0,0,.28); border-color: #ABABAB; background-color: #027BE5; border-style: none"></div><div style="width: 4px; height: 4px; border-radius: 50%; border: 2px solid rgba(0,0,0,.28); border-color: #ABABAB; background-color: #ABABAB"></div><div style="width: 4px; height: 4px; border-radius: 50%; border: 2px solid rgba(0,0,0,.28); border-color: #ABABAB; background-color: #ABABAB"></div><div style="width: 4px; height: 4px; border-radius: 50%; border: 2px solid rgba(0,0,0,.28); border-color: #ABABAB; background-color: #ABABAB"></div><div style="width: 4px; height: 4px; border-radius: 50%; border: 2px solid rgba(0,0,0,.28); border-color: #ABABAB; background-color: #ABABAB"></div>
+          
+          
+          
+          
+          
+          
+          
+          
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">X</span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">640</span>
+            
+          </div>
+          <div style="height:32px;border-radius:9px;background:#f3f3f2;border:1px solid rgba(0,0,0,.06);display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3);width:26px">Y</span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">312</span>
+            
+          </div>
+          <div style="height: 32px; border-radius: 9px; background: #fff; border: 1.5px solid #111; display: flex; align-items: center; padding: 0 11px; gap: 9px; border-color: #11111118">
+            <span style="width:26px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(0,0,0,.55);display:block"></span></span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span>
+            <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">×</span>
+          </div>
+        </div>
+      </div></div>
+
+    <div style="padding: 16px 15px 16px; display: flex; justify-content: flex-start; align-items: center; gap: 16px">
+      
+        
+        
+        
+      
+      <div style="position: relative; height: 10px; border-radius: 5px; background: #e6e6e5; width: 100%">
+        <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#0a84ff"></div>
+        <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #0a84ff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+      </div><span style="margin-left:auto;font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+  </div>
+
+  <div style="width:250px;padding-top:4px;display:flex;flex-direction:column;gap:9px">
+    <div style="font:10px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:rgba(0,0,0,.45)">RAIL — WHAT EACH ONE DOES</div>
+    <div style="display:flex;gap:9px"><span style="flex:none;width:52px;font:10px ui-monospace,Menlo,monospace;color:#00923f;padding-top:1px">OVERLAY</span><span style="font:11px/1.45 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.65)">Master on / off for the whole overlay. Off = the page is untouched, settings kept.</span></div>
+    <div style="display:flex;gap:9px"><span style="flex:none;width:52px;font:10px ui-monospace,Menlo,monospace;color:#111;padding-top:1px">PANEL</span><span style="font:11px/1.45 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.65)">Collapse / show this panel. The rail always stays — this replaces the old “Collapse” link at the bottom.</span></div>
+    <div style="display:flex;gap:9px"><span style="flex:none;width:52px;font:10px ui-monospace,Menlo,monospace;color:#0a84ff;padding-top:1px">VISIBLE</span><span style="font:11px/1.45 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.65)">Show / hide the <em>selected layer</em> only. Blue = shown.</span></div>
+    <div style="display:flex;gap:9px"><span style="flex:none;width:52px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.6);padding-top:1px">LOCK</span><span style="font:11px/1.45 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.65)">Freeze the layer's position and scale so a stray drag or nudge can't move it.</span></div>
+    <div style="display:flex;gap:9px"><span style="flex:none;width:52px;font:10px ui-monospace,Menlo,monospace;color:#c99700;padding-top:1px">DIFF</span><span style="font:11px/1.45 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.65)">Blend mode toggle: Normal ⇄ Difference. Matching pixels go black, so any mismatch glows.</span></div>
+    <div style="display:flex;gap:9px"><span style="flex:none;width:52px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.6);padding-top:1px">MORE</span><span style="font:11px/1.45 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.65)">Settings: shortcuts, theme, dock side, account, ads. Everything that isn't per-layer.</span></div>
+    <div style="margin-top:4px;padding:9px 11px;border-radius:9px;background:#f3f3f2;font:11px/1.45 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.6)">Dropped from <a class="dv-oid" href="#2a">2a</a>: “PLACE” (placement lives in the panel, it needed no tab) and the unlabelled ≡ (folded into MORE). “A” was just the logo — now the on/off switch, since that's the one thing you reach for constantly.</div>
+  </div>
+</div>
+</div>
+
+<div class="dv-opt" id="3b">
+<div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Custom X / Y mode. Same panel with no anchor: the pad dims and X / Y are live inputs. Clearing X / Y hands control back to the pad.</div>
+<div class="dv-card" style="width:320px;border-radius:14px;background:#fff">
+  <div style="padding:14px 15px 0">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:12px">
+      <div style="width:22px;height:22px;border-radius:50%;background:#ff5fa2;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#111">01</div>
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Placement</span>
+      <span style="margin-left:auto;font:10px ui-monospace,Menlo,monospace;color:#ff5fa2">CLEAR X / Y</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <div style="width:112px;height:112px;flex:none;border-radius:12px;border:2px dashed rgba(0,0,0,.18);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center;opacity:.45">
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+        <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(0,0,0,.28)"></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="height:32px;border-radius:9px;background:#fff;border:1.5px solid #0a84ff;display:flex;align-items:center;padding:0 11px;gap:9px">
+          <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);width:26px">X</span>
+          <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">248</span>
+          <span style="width:1px;height:16px;background:#0a84ff"></span>
+          <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">px</span>
+        </div>
+        <div style="height:32px;border-radius:9px;background:#fff;border:1.5px solid rgba(0,0,0,.2);display:flex;align-items:center;padding:0 11px;gap:9px">
+          <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);width:26px">Y</span>
+          <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">96</span>
+          <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">px</span>
+        </div>
+        <div style="height:32px;border-radius:9px;background:#fff;border:1.5px solid rgba(0,0,0,.2);display:flex;align-items:center;padding:0 11px;gap:9px">
+          <span style="width:26px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(0,0,0,.55);display:block"></span></span>
+          <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#111">0.50</span>
+          <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">×</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;margin-top:10px;padding:8px 10px;border-radius:9px;background:#f3f3f2">
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">CUSTOM</span>
+      <span style="font:11px/1.35 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.6);flex:1">Anchors are off while X / Y are set. Clear them to snap again.</span>
+    </div>
+  </div>
+  <div style="padding:16px 15px 16px">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:12px">
+      <div style="width:22px;height:22px;border-radius:50%;background:#0a84ff;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#fff">02</div>
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Opacity</span>
+      <span style="margin-left:auto;font:14px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+    <div style="position:relative;height:10px;border-radius:5px;background:#e6e6e5">
+      <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#0a84ff"></div>
+      <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #0a84ff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+    </div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="max-width:320px">One rule, two directions: whichever you touched last owns the position, the other greys out with a one-line reason. Last custom X / Y is remembered, so clearing the anchor restores them rather than jumping to 0.</div>
+</sc-if>
+</div>
+
+</div>
+<p class="dv-next">Try next: "show what MORE opens" · "add the nudge arrows around the anchor pad" · "make the panel light but keep the layer strip dark"</p>
+</section>
+
+<section class="dv-turn" id="t2" style="background:#141412">
+<div class="dv-thd"><a class="dv-tid" href="#t2" style="background:#fff;color:#111">2</a><span class="dv-tname" style="color:#fff"><a class="dv-oid" href="#1b" style="background:rgba(255,255,255,.14);color:#fff">1b</a> colour on <a class="dv-oid" href="#1d" style="background:rgba(255,255,255,.14);color:#fff">1d</a> structure — with a 9-point anchor pad</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a">
+<div class="dv-olabel" style="color:rgba(255,255,255,.6)"><a class="dv-oid" href="#2a" style="background:rgba(255,255,255,.14);color:#fff">2a</a>Rail + flyout, signage palette. The rail now holds the three layer states (visible / lock / blend) and nothing unexplained. Anchor pad sets the corner, X / Y offset from it, scale independent.</div>
+<div style="display:flex;gap:12px;align-items:flex-start">
+  <div class="dv-card" style="width:68px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:11px 0;display:flex;flex-direction:column;align-items:center;gap:9px">
+    <div style="width:34px;height:34px;border-radius:9px;background:#0a84ff;display:grid;place-items:center;font:700 13px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">A</div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#fff;display:grid;place-items:center">
+        <span style="font-size:15px;color:#111;line-height:1">▤</span>
+      </div>
+      <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.03em;color:#fff">LAYERS</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center">
+        <span style="font-size:15px;color:rgba(255,255,255,.8);line-height:1">✛</span>
+      </div>
+      <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.03em;color:rgba(255,255,255,.68)">PLACE</div>
+    </div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#00923f;display:grid;place-items:center">
+        <span style="font-size:14px;color:#fff;line-height:1">◉</span>
+      </div>
+      <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.05em;color:#25c46b">VISIBLE</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center">
+        <span style="font-size:14px;color:rgba(255,255,255,.8);line-height:1">⌷</span>
+      </div>
+      <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.03em;color:rgba(255,255,255,.68)">LOCK</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="width:44px;height:40px;border-radius:11px;background:#ffc400;display:grid;place-items:center">
+        <span style="font-size:14px;color:#111;line-height:1">◐</span>
+      </div>
+      <div style="font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:-.03em;color:#ffc400">DIFF</div>
+    </div>
+    <div style="width:34px;height:1px;background:rgba(255,255,255,.15);margin:1px 0"></div>
+    <div style="width:44px;height:40px;border-radius:11px;background:#1c1c1c;display:grid;place-items:center">
+      <span style="font-size:14px;color:rgba(255,255,255,.65);line-height:1">≡</span>
+    </div>
+  </div>
+
+  <div class="dv-card" style="width:320px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px 11px">
+      <span style="font:600 17px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.02em;color:#fff">Layers</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">2 · ⌥1–9</span>
+    </div>
+    <div style="display:flex;gap:8px;padding:0 15px 12px">
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#4a4a4a 0 4px,#5c5c5c 4px 8px);border:2px solid #0a84ff"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;background:repeating-linear-gradient(135deg,#333 0 4px,#414141 4px 8px)"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">bilpo.ver…</div>
+      </div>
+      <div style="width:86px;flex:none">
+        <div style="height:60px;border-radius:9px;border:1px dashed rgba(255,255,255,.28);display:grid;place-items:center;font-size:17px;color:rgba(255,255,255,.4)">+</div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">add</div>
+      </div>
+    </div>
+
+    <div style="padding:14px 15px 0;border-top:1px solid rgba(255,255,255,.1)">
+      <div style="display:flex;align-items:center;gap:9px;padding-bottom:12px">
+        <div style="width:22px;height:22px;border-radius:50%;background:#ff5fa2;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#111">01</div>
+        <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#fff">Placement</span>
+        <span style="margin-left:auto;font:10px ui-monospace,Menlo,monospace;color:#ff5fa2">RESET</span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:112px;height:112px;flex:none;border-radius:12px;border:2px solid rgba(255,255,255,.22);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center">
+          <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35)"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35)"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35)"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35)"></div>
+          <div style="width:15px;height:15px;border-radius:50%;background:#0a84ff;box-shadow:0 0 0 3px rgba(10,132,255,.25)"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35)"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35)"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35)"></div>
+          <div style="width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.35)"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+          <div style="height:32px;border-radius:9px;background:#1c1c1c;display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.45);width:26px">X</span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#fff">0</span>
+            <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">px</span>
+          </div>
+          <div style="height:32px;border-radius:9px;background:#1c1c1c;display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.45);width:26px">Y</span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#fff">0</span>
+            <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">px</span>
+          </div>
+          <div style="height:32px;border-radius:9px;background:#1c1c1c;display:flex;align-items:center;padding:0 11px;gap:9px">
+            <span style="width:26px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(255,255,255,.5);display:block"></span></span>
+            <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#fff">0.50</span>
+            <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">×</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:9px 0 0">
+        <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">anchor: centre · offset from anchor</span>
+        <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">⌥← 1px · ⇧ 10px</span>
+      </div>
+    </div>
+
+    <div style="padding:16px 15px 16px">
+      <div style="display:flex;align-items:center;gap:9px;padding-bottom:12px">
+        <div style="width:22px;height:22px;border-radius:50%;background:#0a84ff;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#fff">02</div>
+        <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#fff">Opacity</span>
+        <span style="margin-left:auto;font:14px ui-monospace,Menlo,monospace;color:#fff">50%</span>
+      </div>
+      <div style="position:relative;height:10px;border-radius:5px;background:#1c1c1c">
+        <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#0a84ff"></div>
+        <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #0a84ff"></div>
+      </div>
+    </div>
+    <div style="padding:10px 15px;border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between">
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">overlay on · ⌥O</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:#0a84ff">Collapse</span>
+    </div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="color:rgba(255,255,255,.45)">Anchor pad and the numeric fields now do different jobs: the pad picks which of the nine reference points the image snaps to, X / Y is the offset from that point, scale is separate. Every rail icon is labelled, so nothing is a guess.</div>
+</sc-if>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel" style="color:rgba(255,255,255,.6)"><a class="dv-oid" href="#2b" style="background:rgba(255,255,255,.14);color:#fff">2b</a>Same content, one flat panel instead of rail + flyout — for when the extension can't dock to the page edge. Anchor pad enlarged to a live preview of the frame.</div>
+<div class="dv-card" style="width:340px;border-radius:16px;background:#0a0a0a;border-color:rgba(255,255,255,.12)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 16px 12px">
+    <span style="font:700 20px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.03em;color:#fff">ALIGN</span>
+    <div style="display:flex;gap:6px">
+      <div style="height:26px;padding:0 10px;border-radius:7px;background:#00923f;display:grid;place-items:center;font:600 10px ui-monospace,Menlo,monospace;color:#fff">VISIBLE</div>
+      <div style="height:26px;padding:0 10px;border-radius:7px;background:#1c1c1c;display:grid;place-items:center;font:600 10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.6)">LOCK</div>
+      <div style="height:26px;padding:0 10px;border-radius:7px;background:#ffc400;display:grid;place-items:center;font:600 10px ui-monospace,Menlo,monospace;color:#111">DIFF</div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:7px;padding:0 16px 14px">
+    <div style="flex:1;height:34px;border-radius:9px;background:#ff3b2f;display:flex;align-items:center;justify-content:center;gap:6px;font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff"><span style="font-size:13px">↑</span>Upload</div>
+    <div style="flex:1;height:34px;border-radius:9px;background:#1c1c1c;display:grid;place-items:center;font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(255,255,255,.8)">URL</div>
+    <div style="flex:1;height:34px;border-radius:9px;background:#1c1c1c;display:grid;place-items:center;font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(255,255,255,.8)">Paste</div>
+  </div>
+
+  <div style="display:flex;gap:8px;padding:0 16px 16px">
+    <div style="flex:1">
+      <div style="height:52px;border-radius:9px;background:repeating-linear-gradient(135deg,#4a4a4a 0 4px,#5c5c5c 4px 8px);border:2px solid #0a84ff"></div>
+      <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+    </div>
+    <div style="flex:1">
+      <div style="height:52px;border-radius:9px;background:repeating-linear-gradient(135deg,#333 0 4px,#414141 4px 8px)"></div>
+      <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">bilpo.ver…</div>
+    </div>
+    <div style="flex:1">
+      <div style="height:52px;border-radius:9px;border:1px dashed rgba(255,255,255,.28);display:grid;place-items:center;font-size:17px;color:rgba(255,255,255,.4)">+</div>
+      <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">add</div>
+    </div>
+  </div>
+
+  <div style="padding:0 16px">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:11px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px">
+      <div style="width:22px;height:22px;border-radius:50%;background:#ff5fa2;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#111">01</div>
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">Placement</span>
+      <span style="margin-left:auto;font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.45)">top-left</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:stretch">
+      <div style="width:130px;height:96px;flex:none;border-radius:10px;background:#1c1c1c;border:1px solid rgba(255,255,255,.14);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);place-items:center;position:relative">
+        <div style="width:14px;height:14px;border-radius:4px;background:#0a84ff"></div>
+        <div style="width:11px;height:11px;border-radius:4px;background:rgba(255,255,255,.22)"></div>
+        <div style="width:11px;height:11px;border-radius:4px;background:rgba(255,255,255,.22)"></div>
+        <div style="width:11px;height:11px;border-radius:4px;background:rgba(255,255,255,.22)"></div>
+        <div style="width:11px;height:11px;border-radius:4px;background:rgba(255,255,255,.22)"></div>
+        <div style="width:11px;height:11px;border-radius:4px;background:rgba(255,255,255,.22)"></div>
+        <div style="width:11px;height:11px;border-radius:4px;background:rgba(255,255,255,.22)"></div>
+        <div style="width:11px;height:11px;border-radius:4px;background:rgba(255,255,255,.22)"></div>
+        <div style="width:11px;height:11px;border-radius:4px;background:rgba(255,255,255,.22)"></div>
+        <div style="position:absolute;left:8px;top:8px;width:40px;height:28px;border:1.5px dashed #0a84ff;border-radius:3px"></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="flex:1;border-radius:9px;background:#1c1c1c;display:flex;align-items:center;padding:0 11px;gap:8px">
+          <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.45);width:22px">X</span>
+          <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#fff">24</span>
+          <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">px</span>
+        </div>
+        <div style="flex:1;border-radius:9px;background:#1c1c1c;display:flex;align-items:center;padding:0 11px;gap:8px">
+          <span style="font:12px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.45);width:22px">Y</span>
+          <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#fff">16</span>
+          <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">px</span>
+        </div>
+        <div style="flex:1;border-radius:9px;background:#1c1c1c;display:flex;align-items:center;padding:0 11px;gap:8px">
+          <span style="width:22px;display:flex;align-items:center"><span style="width:13px;height:13px;border:1.5px dashed rgba(255,255,255,.5);display:block"></span></span>
+          <span style="flex:1;font:14px ui-monospace,Menlo,monospace;color:#fff">0.50</span>
+          <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">×</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;padding:10px 0 0">
+      <div style="flex:1;height:26px;border-radius:7px;background:#1c1c1c;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.65)">FIT</div>
+      <div style="flex:1;height:26px;border-radius:7px;background:#1c1c1c;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.65)">100%</div>
+      <div style="flex:1;height:26px;border-radius:7px;background:#1c1c1c;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.65)">WIDTH</div>
+      <div style="flex:1;height:26px;border-radius:7px;background:#1c1c1c;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.65)">LOCK ⇄</div>
+    </div>
+  </div>
+
+  <div style="padding:16px">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:12px">
+      <div style="width:22px;height:22px;border-radius:50%;background:#0a84ff;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#fff">02</div>
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">Opacity</span>
+      <span style="margin-left:auto;font:14px ui-monospace,Menlo,monospace;color:#fff">50%</span>
+    </div>
+    <div style="position:relative;height:10px;border-radius:5px;background:#1c1c1c">
+      <div style="position:absolute;inset:0 50% 0 0;border-radius:5px;background:#0a84ff"></div>
+      <div style="position:absolute;left:50%;top:-8px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#fff;border:3px solid #0a84ff"></div>
+    </div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note" style="color:rgba(255,255,255,.45)">Here the pad doubles as a frame preview — the dashed rectangle shows where the image sits at the current anchor + offset, and the FIT / 100% / WIDTH row covers the common scale jumps.</div>
+</sc-if>
+</div>
+
+</div>
+<p class="dv-next" style="color:rgba(255,255,255,.45)">Try next: "make the pad in <a class="dv-oid" href="#2a" style="background:rgba(255,255,255,.14);color:#fff">2a</a> a live frame preview like <a class="dv-oid" href="#2b" style="background:rgba(255,255,255,.14);color:#fff">2b</a>" · "show the rail's other tabs" · "add nudge arrows back alongside the anchor pad"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Four takes: structural cleanup → signage → data-dense → docked rail</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Same features, Swiss grid. Layers become rows with the state controls attached to the selected one; one section rule instead of six cards.</div>
+<div class="dv-card" style="width:380px;border-radius:14px;background:#fff">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#111">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div style="width:20px;height:20px;border-radius:5px;background:#0a84ff"></div>
+      <span style="font:700 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#fff">ALIGN</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.45)">3.1</span>
+    </div>
+    <div style="display:flex;gap:6px">
+      <div style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:12px;color:#fff">◐</div>
+      <div style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:12px;color:#fff">≡</div>
+    </div>
+  </div>
+
+  <div style="padding:16px 16px 6px;display:flex;gap:8px">
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;height:38px;border-radius:9px;background:#111;color:#fff;font:600 13px 'Helvetica Neue',Helvetica,Arial,sans-serif" style-hover="opacity:.85"><span style="font-size:14px">↑</span>Upload</div>
+    <div style="width:44px;height:38px;border-radius:9px;border:1px solid rgba(0,0,0,.16);display:grid;place-items:center;font-size:14px;color:#333">⧉</div>
+    <div style="width:44px;height:38px;border-radius:9px;border:1px solid rgba(0,0,0,.16);display:grid;place-items:center;font-size:14px;color:#333">⌘V</div>
+  </div>
+
+  <div style="padding:18px 16px 0">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #111;padding-bottom:6px">
+      <span style="font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#111">01 LAYERS</span>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">2 / 3 free</span>
+    </div>
+  </div>
+
+  <div style="padding:8px 16px 0;display:flex;flex-direction:column;gap:2px">
+    <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:9px;background:#f2f6ff;box-shadow:inset 3px 0 0 #0a84ff">
+      <div style="width:44px;height:30px;border-radius:4px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px)"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font:600 13px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">cover.png</div>
+        <div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">1440×900 · 50%</div>
+      </div>
+      <div style="font-size:13px;color:#0a84ff">◉</div>
+    </div>
+    <div style="display:flex;gap:6px;padding:0 8px 8px 62px">
+      <div style="height:28px;padding:0 11px;border-radius:7px;background:#111;color:#fff;font:600 11px 'Helvetica Neue',Helvetica,Arial,sans-serif;display:grid;place-items:center">Visible</div>
+      <div style="height:28px;padding:0 11px;border-radius:7px;border:1px solid rgba(0,0,0,.16);font:600 11px 'Helvetica Neue',Helvetica,Arial,sans-serif;display:grid;place-items:center;color:#333">Lock</div>
+      <div style="height:28px;padding:0 11px;border-radius:7px;border:1px solid rgba(0,0,0,.16);font:600 11px 'Helvetica Neue',Helvetica,Arial,sans-serif;display:flex;align-items:center;gap:5px;color:#333">Normal <span style="font-size:9px;opacity:.5">▾</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:9px">
+      <div style="width:44px;height:30px;border-radius:4px;background:repeating-linear-gradient(135deg,#d4d4d4 0 4px,#e8e8e8 4px 8px)"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font:600 13px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">bilpo.vercel.app</div>
+        <div style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">1280×1024 · hidden</div>
+      </div>
+      <div style="font-size:13px;color:rgba(0,0,0,.3)">◎</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:9px;border-radius:9px;border:1px dashed rgba(0,0,0,.2)">
+      <div style="width:44px;height:30px;border-radius:4px;background:#ffc400;display:grid;place-items:center;font:700 11px 'Helvetica Neue',Helvetica,Arial,sans-serif">PRO</div>
+      <div style="flex:1;font:12px/1.35 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.6)">Unlimited layers &amp; presets</div>
+      <div style="font-size:12px;color:rgba(0,0,0,.4)">→</div>
+    </div>
+  </div>
+
+  <div style="padding:20px 16px 0">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #111;padding-bottom:6px">
+      <span style="font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#111">02 POSITION</span>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:#0a84ff">RESET</span>
+    </div>
+    <div style="display:flex;gap:14px;padding-top:12px;align-items:flex-start">
+      <div style="display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:3px">
+        <div></div><div style="border-radius:6px;background:#ececeb;display:grid;place-items:center;font-size:12px;color:#333">↑</div><div></div>
+        <div style="border-radius:6px;background:#ececeb;display:grid;place-items:center;font-size:12px;color:#333">←</div>
+        <div style="border-radius:6px;background:#111;display:grid;place-items:center;font-size:11px;color:#fff">✛</div>
+        <div style="border-radius:6px;background:#ececeb;display:grid;place-items:center;font-size:12px;color:#333">→</div>
+        <div></div><div style="border-radius:6px;background:#ececeb;display:grid;place-items:center;font-size:12px;color:#333">↓</div><div></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:6px">
+          <div style="flex:1;height:32px;border-radius:8px;background:#f3f3f2;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">X</span><span style="font:13px ui-monospace,Menlo,monospace;color:#111">0</span></div>
+          <div style="flex:1;height:32px;border-radius:8px;background:#f3f3f2;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">Y</span><span style="font:13px ui-monospace,Menlo,monospace;color:#111">0</span></div>
+        </div>
+        <div style="height:32px;border-radius:8px;background:#f3f3f2;display:flex;align-items:center;justify-content:space-between;padding:0 10px"><span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.4)">SCALE</span><span style="font:13px ui-monospace,Menlo,monospace;color:#111">0.15×</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:20px 16px 18px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #111;padding-bottom:6px">
+      <span style="font:11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#111">03 OPACITY</span>
+      <span style="font:13px ui-monospace,Menlo,monospace;color:#111">50%</span>
+    </div>
+    <div style="padding-top:16px;position:relative;height:6px;border-radius:3px;background:#e4e4e3">
+      <div style="position:absolute;left:0;top:16px;height:6px;width:50%;border-radius:3px;background:#111"></div>
+      <div style="position:absolute;left:50%;top:9px;width:20px;height:20px;margin-left:-10px;border-radius:6px;background:#fff;border:2px solid #111"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding-top:12px">
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">0</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">difference mode ⌥D</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">100</span>
+    </div>
+  </div>
+
+  <sc-if value="{{ showAdSlot }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:#f6f5f2;border-top:1px solid rgba(0,0,0,.08)">
+    <div style="width:34px;height:24px;border-radius:4px;background:repeating-linear-gradient(135deg,#cfcfcf 0 4px,#e2e2e2 4px 8px)"></div>
+    <div style="flex:1;font:11px/1.35 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(0,0,0,.55)"><span style="font-weight:600;color:#111">Privacy-first CAPTCHA.</span> Stop bots everywhere.</div>
+    <div style="font:9px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.35)">AD ✕</div>
+  </div>
+  </sc-if>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note">Lowest-risk. Nothing moves conceptually — the ad drops to a 44px strip and the pad + fields sit on one row, freeing about 240px of height.</div>
+</sc-if>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Signage. Black ground, numbered badges, source actions as flat colour tiles, arrows as directional tiles straight off the moodboard.</div>
+<div class="dv-card" style="width:380px;border-radius:16px;background:#0a0a0a;border-color:rgba(255,255,255,.1)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px 14px">
+    <span style="font:700 22px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.03em;color:#fff">ALIGN</span>
+    <div style="display:flex;gap:6px">
+      <div style="width:28px;height:28px;border-radius:8px;background:#1c1c1c;display:grid;place-items:center;color:#fff;font-size:12px">◐</div>
+      <div style="width:28px;height:28px;border-radius:8px;background:#1c1c1c;display:grid;place-items:center;color:#fff;font-size:12px">≡</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 18px">
+    <div style="height:70px;border-radius:12px;background:#ff3b2f;padding:9px;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font:600 22px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">↑</span>
+      <span style="font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">Upload</span>
+    </div>
+    <div style="height:70px;border-radius:12px;background:#0a84ff;padding:9px;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font:600 22px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">⧉</span>
+      <span style="font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">URL</span>
+    </div>
+    <div style="height:70px;border-radius:12px;background:#ffc400;padding:9px;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font:600 22px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">⌘</span>
+      <span style="font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111">Paste</span>
+    </div>
+  </div>
+
+  <div style="padding:20px 18px 0">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.16)">
+      <div style="width:22px;height:22px;border-radius:50%;background:#ffc400;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#111">01</div>
+      <span style="font:600 17px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#fff">Layers</span>
+      <span style="margin-left:auto;font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.45)">2</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;padding-top:10px">
+      <div style="display:flex;align-items:center;gap:11px;padding:9px;border-radius:11px;background:#1c1c1c;border:1.5px solid #ff3b2f">
+        <div style="width:46px;height:32px;border-radius:5px;background:repeating-linear-gradient(135deg,#4a4a4a 0 4px,#5c5c5c 4px 8px)"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font:600 13px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">cover.png</div>
+          <div style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.45)">1440×900</div>
+        </div>
+        <div style="width:26px;height:26px;border-radius:7px;background:#ff3b2f;display:grid;place-items:center;font-size:11px;color:#fff">◉</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:11px;padding:9px;border-radius:11px;background:#141414">
+        <div style="width:46px;height:32px;border-radius:5px;background:repeating-linear-gradient(135deg,#3a3a3a 0 4px,#484848 4px 8px)"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font:600 13px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(255,255,255,.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">bilpo.vercel.app</div>
+          <div style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.3)">hidden</div>
+        </div>
+        <div style="width:26px;height:26px;border-radius:7px;background:#242424;display:grid;place-items:center;font-size:11px;color:rgba(255,255,255,.5)">◎</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;padding-top:8px">
+      <div style="flex:1;height:32px;border-radius:9px;background:#00923f;color:#fff;font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;display:grid;place-items:center">Show</div>
+      <div style="flex:1;height:32px;border-radius:9px;background:#1c1c1c;color:rgba(255,255,255,.7);font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;display:grid;place-items:center">Lock</div>
+      <div style="flex:1;height:32px;border-radius:9px;background:#1c1c1c;color:rgba(255,255,255,.7);font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:5px">Normal <span style="font-size:9px;opacity:.6">▾</span></div>
+    </div>
+  </div>
+
+  <div style="padding:20px 18px 0">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.16)">
+      <div style="width:22px;height:22px;border-radius:50%;background:#ff5fa2;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#111">02</div>
+      <span style="font:600 17px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#fff">Origin</span>
+      <span style="margin-left:auto;font:11px ui-monospace,Menlo,monospace;color:#ff5fa2">RESET</span>
+    </div>
+    <div style="display:flex;gap:10px;padding-top:12px">
+      <div style="display:grid;grid-template-columns:repeat(3,34px);grid-template-rows:repeat(3,34px);gap:4px">
+        <div></div><div style="border-radius:9px;background:#ff3b2f;display:grid;place-items:center;font:600 15px sans-serif;color:#fff">↑</div><div></div>
+        <div style="border-radius:9px;background:#ffc400;display:grid;place-items:center;font:600 15px sans-serif;color:#111">←</div>
+        <div style="border-radius:9px;background:#fff;display:grid;place-items:center;font:600 12px sans-serif;color:#111">✛</div>
+        <div style="border-radius:9px;background:#00923f;display:grid;place-items:center;font:600 15px sans-serif;color:#fff">→</div>
+        <div></div><div style="border-radius:9px;background:#0a84ff;display:grid;place-items:center;font:600 15px sans-serif;color:#fff">↓</div><div></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+        <div style="flex:1;border-radius:9px;background:#1c1c1c;display:flex;align-items:center;justify-content:space-between;padding:0 12px"><span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">X</span><span style="font:15px ui-monospace,Menlo,monospace;color:#fff">0</span></div>
+        <div style="flex:1;border-radius:9px;background:#1c1c1c;display:flex;align-items:center;justify-content:space-between;padding:0 12px"><span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">Y</span><span style="font:15px ui-monospace,Menlo,monospace;color:#fff">0</span></div>
+        <div style="flex:1;border-radius:9px;background:#1c1c1c;display:flex;align-items:center;justify-content:space-between;padding:0 12px"><span style="font:10px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.4)">SCALE</span><span style="font:15px ui-monospace,Menlo,monospace;color:#fff">0.15</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:20px 18px 20px">
+    <div style="display:flex;align-items:center;gap:9px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.16)">
+      <div style="width:22px;height:22px;border-radius:50%;background:#0a84ff;display:grid;place-items:center;font:700 10px ui-monospace,Menlo,monospace;color:#fff">03</div>
+      <span style="font:600 17px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#fff">Opacity</span>
+      <span style="margin-left:auto;font:700 26px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.03em;color:#fff">50</span>
+    </div>
+    <div style="position:relative;height:34px;border-radius:10px;background:#1c1c1c;margin-top:12px;overflow:hidden">
+      <div style="position:absolute;inset:0 50% 0 0;background:#0a84ff"></div>
+      <div style="position:absolute;left:50%;top:4px;bottom:4px;width:4px;border-radius:2px;background:#fff"></div>
+    </div>
+  </div>
+
+  <sc-if value="{{ showAdSlot }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;align-items:center;gap:10px;padding:11px 18px;background:#141414;border-top:1px solid rgba(255,255,255,.1)">
+    <div style="width:34px;height:24px;border-radius:4px;background:repeating-linear-gradient(135deg,#3a3a3a 0 4px,#484848 4px 8px)"></div>
+    <div style="flex:1;font:11px/1.35 'Helvetica Neue',Helvetica,Arial,sans-serif;color:rgba(255,255,255,.55)"><span style="font-weight:600;color:#fff">Privacy-first CAPTCHA.</span> Stop bots everywhere.</div>
+    <div style="font:9px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.35)">AD ✕</div>
+  </div>
+  </sc-if>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note">Most on-brand. Colour carries meaning instead of decorating: red = destructive-ish source replace, green = visible, blue = numeric. Risk: five hues in 380px needs discipline — cap it at these five.</div>
+</sc-if>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Instrument panel. Grey ground, hairline rules, monospace everywhere, shortcuts exposed. For someone nudging by 1px all day.</div>
+<div class="dv-card" style="width:380px;border-radius:4px;background:#d8d8d6;border-color:rgba(0,0,0,.25)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #111">
+    <span style="font:700 13px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.14em;color:#111">ALIGN</span>
+    <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">OVERLAY ON · 2 LAYERS · ⌥ TO NUDGE</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #111">
+    <div style="padding:9px 0;text-align:center;font:11px ui-monospace,Menlo,monospace;color:#111;border-right:1px solid rgba(0,0,0,.25)">UPLOAD <span style="opacity:.45">⌥U</span></div>
+    <div style="padding:9px 0;text-align:center;font:11px ui-monospace,Menlo,monospace;color:#111;border-right:1px solid rgba(0,0,0,.25)">URL <span style="opacity:.45">⌥L</span></div>
+    <div style="padding:9px 0;text-align:center;font:11px ui-monospace,Menlo,monospace;color:#111">PASTE <span style="opacity:.45">⌘V</span></div>
+  </div>
+
+  <div style="padding:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:#c9c9c7;border-bottom:1px solid rgba(0,0,0,.25)">
+      <span style="font:10px ui-monospace,Menlo,monospace;letter-spacing:.1em;color:#111">LAYERS</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">+ NEW · GRID</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;padding:7px 12px;background:#0a84ff;border-bottom:1px solid rgba(0,0,0,.25)">
+      <span style="font:11px ui-monospace,Menlo,monospace;color:#fff">▸</span>
+      <div style="width:30px;height:22px;background:repeating-linear-gradient(135deg,#a8c8f0 0 4px,#c2d8f4 4px 8px)"></div>
+      <span style="flex:1;font:11px ui-monospace,Menlo,monospace;color:#fff">cover.png</span>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(255,255,255,.8)">50%</span>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:#fff">◉ ⌷</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;padding:7px 12px;border-bottom:1px solid rgba(0,0,0,.25)">
+      <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.3)">▹</span>
+      <div style="width:30px;height:22px;background:repeating-linear-gradient(135deg,#bfbfbd 0 4px,#d0d0ce 4px 8px)"></div>
+      <span style="flex:1;font:11px ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">bilpo.vercel.app</span>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">100%</span>
+      <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">◎ ⌷</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;padding:7px 12px;border-bottom:1px solid #111;background:#ffc400">
+      <span style="flex:1;font:10px ui-monospace,Menlo,monospace;color:#111">PRO — UNLIMITED LAYERS</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:#111">UPGRADE →</span>
+    </div>
+  </div>
+
+  <div style="display:flex;border-bottom:1px solid #111">
+    <div style="flex:1;padding:12px;border-right:1px solid rgba(0,0,0,.25)">
+      <div style="font:10px ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(0,0,0,.55);padding-bottom:8px">TRANSFORM</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;border:1px solid #111;background:#eaeae8">
+          <span style="width:26px;text-align:center;font:11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.55);border-right:1px solid rgba(0,0,0,.25)">X</span>
+          <span style="flex:1;padding:5px 8px;font:13px ui-monospace,Menlo,monospace;color:#111">0</span>
+          <span style="padding:0 7px;font:9px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5);border-left:1px solid rgba(0,0,0,.25)">−+</span>
+        </div>
+        <div style="display:flex;align-items:center;border:1px solid #111;background:#eaeae8">
+          <span style="width:26px;text-align:center;font:11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.55);border-right:1px solid rgba(0,0,0,.25)">Y</span>
+          <span style="flex:1;padding:5px 8px;font:13px ui-monospace,Menlo,monospace;color:#111">0</span>
+          <span style="padding:0 7px;font:9px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5);border-left:1px solid rgba(0,0,0,.25)">−+</span>
+        </div>
+        <div style="display:flex;align-items:center;border:1px solid #111;background:#eaeae8">
+          <span style="width:26px;text-align:center;font:11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.55);border-right:1px solid rgba(0,0,0,.25)">S</span>
+          <span style="flex:1;padding:5px 8px;font:13px ui-monospace,Menlo,monospace;color:#111">0.150</span>
+          <span style="padding:0 7px;font:9px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5);border-left:1px solid rgba(0,0,0,.25)">−+</span>
+        </div>
+      </div>
+    </div>
+    <div style="width:132px;padding:12px">
+      <div style="font:10px ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(0,0,0,.55);padding-bottom:8px">SNAP</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:1px;background:#111;border:1px solid #111;height:76px">
+        <div style="background:#eaeae8"></div><div style="background:#eaeae8;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace">↑</div><div style="background:#eaeae8"></div>
+        <div style="background:#eaeae8;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace">←</div>
+        <div style="background:#111;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace;color:#fff">✛</div>
+        <div style="background:#eaeae8;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace">→</div>
+        <div style="background:#eaeae8"></div><div style="background:#eaeae8;display:grid;place-items:center;font:10px ui-monospace,Menlo,monospace">↓</div><div style="background:#eaeae8"></div>
+      </div>
+      <div style="padding-top:6px;font:9px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">STEP 1PX · ⇧ = 10PX</div>
+    </div>
+  </div>
+
+  <div style="padding:12px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <span style="font:10px ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(0,0,0,.55)">OPACITY</span>
+      <span style="font:13px ui-monospace,Menlo,monospace;color:#111">050 %</span>
+    </div>
+    <div style="margin-top:9px;height:18px;border:1px solid #111;background:#eaeae8;position:relative">
+      <div style="position:absolute;inset:0 50% 0 0;background:#111"></div>
+      <div style="position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:#ff3b2f"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding-top:5px;font:9px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">
+      <span>000</span><span>025</span><span>050</span><span>075</span><span>100</span>
+    </div>
+    <div style="display:flex;gap:5px;padding-top:10px">
+      <div style="flex:1;padding:6px 0;text-align:center;border:1px solid #111;font:10px ui-monospace,Menlo,monospace">NORMAL</div>
+      <div style="flex:1;padding:6px 0;text-align:center;border:1px solid #111;font:10px ui-monospace,Menlo,monospace">DIFF</div>
+      <div style="flex:1;padding:6px 0;text-align:center;border:1px solid #111;font:10px ui-monospace,Menlo,monospace">FLIP ⌥F</div>
+    </div>
+  </div>
+
+  <sc-if value="{{ showAdSlot }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid #111;background:#c9c9c7">
+    <span style="font:9px ui-monospace,Menlo,monospace;padding:2px 4px;background:#111;color:#fff">AD</span>
+    <span style="flex:1;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.65)">PRIVACY-FIRST CAPTCHA — TRY THE DEMO</span>
+    <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">✕</span>
+  </div>
+  </sc-if>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note">Densest — full panel fits without scrolling. Two-column transform/snap block removes the duplicate-control problem by pairing them. Colour reduced to blue = selection, red = current value, yellow = upsell.</div>
+</sc-if>
+</div>
+
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Structural rethink: a 52px rail pinned to the page edge, with one flyout at a time. The panel stops covering the design being checked.</div>
+<div style="display:flex;gap:12px;align-items:flex-start">
+  <div class="dv-card" style="width:52px;border-radius:14px;background:#0a0a0a;border-color:rgba(255,255,255,.12);padding:10px 0;display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div style="width:32px;height:32px;border-radius:9px;background:#0a84ff;display:grid;place-items:center;font:700 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#fff">A</div>
+    <div style="width:24px;height:1px;background:rgba(255,255,255,.15)"></div>
+    <div style="width:36px;height:36px;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:15px;color:#111">▤</div>
+    <div style="width:36px;height:36px;border-radius:10px;background:#1c1c1c;display:grid;place-items:center;font-size:15px;color:rgba(255,255,255,.75)">✛</div>
+    <div style="width:36px;height:36px;border-radius:10px;background:#1c1c1c;display:grid;place-items:center;font-size:13px;color:rgba(255,255,255,.75)">◐</div>
+    <div style="width:36px;height:36px;border-radius:10px;background:#1c1c1c;display:grid;place-items:center;font-size:15px;color:rgba(255,255,255,.75)">↑</div>
+    <div style="width:24px;height:1px;background:rgba(255,255,255,.15)"></div>
+    <div style="width:36px;height:36px;border-radius:10px;background:#1c1c1c;display:grid;place-items:center;font-size:14px;color:rgba(255,255,255,.5)">≡</div>
+    <div style="margin-top:4px;font:9px ui-monospace,Menlo,monospace;color:#00923f">ON</div>
+  </div>
+
+  <div class="dv-card" style="width:300px;border-radius:14px;background:#fff">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid rgba(0,0,0,.1)">
+      <span style="font:600 15px/1 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.01em;color:#111">Layers</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">2 · ⌥1–9</span>
+    </div>
+    <div style="display:flex;gap:8px;padding:12px 14px;overflow:hidden">
+      <div style="width:82px;flex:none">
+        <div style="height:58px;border-radius:8px;background:repeating-linear-gradient(135deg,#c9c9c9 0 4px,#dedede 4px 8px);border:2px solid #0a84ff"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">cover.png</div>
+      </div>
+      <div style="width:82px;flex:none">
+        <div style="height:58px;border-radius:8px;background:repeating-linear-gradient(135deg,#d6d6d6 0 4px,#e8e8e8 4px 8px);opacity:.55"></div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">bilpo.ver…</div>
+      </div>
+      <div style="width:82px;flex:none">
+        <div style="height:58px;border-radius:8px;border:1px dashed rgba(0,0,0,.25);display:grid;place-items:center;font-size:16px;color:rgba(0,0,0,.35)">+</div>
+        <div style="padding-top:5px;font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.5)">add</div>
+      </div>
+    </div>
+
+    <div style="padding:0 14px 12px">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#f3f3f2">
+        <span style="font:600 13px 'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111;flex:1">cover.png</span>
+        <span style="font:11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">1440×900</span>
+      </div>
+      <div style="display:flex;gap:6px;padding-top:8px">
+        <div style="flex:1;height:34px;border-radius:9px;background:#00923f;color:#fff;font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;display:grid;place-items:center">Visible</div>
+        <div style="flex:1;height:34px;border-radius:9px;background:#ececeb;color:#333;font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;display:grid;place-items:center">Lock</div>
+        <div style="flex:1;height:34px;border-radius:9px;background:#ececeb;color:#333;font:600 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:5px">Normal <span style="font-size:9px;opacity:.5">▾</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding-top:14px">
+        <span style="font:10px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:rgba(0,0,0,.5)">OPACITY</span>
+        <div style="flex:1;height:6px;border-radius:3px;background:#e4e4e3;position:relative">
+          <div style="position:absolute;inset:0 50% 0 0;border-radius:3px;background:#111"></div>
+          <div style="position:absolute;left:50%;top:-6px;width:18px;height:18px;margin-left:-9px;border-radius:6px;background:#fff;border:2px solid #111"></div>
+        </div>
+        <span style="font:12px ui-monospace,Menlo,monospace;color:#111">50%</span>
+      </div>
+    </div>
+    <div style="padding:10px 14px;border-top:1px solid rgba(0,0,0,.1);display:flex;justify-content:space-between">
+      <span style="font:10px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)">⌥←→ nudge · ⌥D difference</span>
+      <span style="font:10px ui-monospace,Menlo,monospace;color:#0a84ff">Collapse</span>
+    </div>
+  </div>
+</div>
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div class="dv-note">Biggest behaviour change: sections become rail tabs, so only one is on screen. Also where the ad slot goes — into the menu / a paid-tier prompt rather than the working surface. Needs a call on whether ad revenue can move.</div>
+</sc-if>
+</div>
+
+</div>
+<p class="dv-next">Try next: "take <a class="dv-oid" href="#1b">1b</a>'s colour tiles into <a class="dv-oid" href="#1a">1a</a>" · "show <a class="dv-oid" href="#1d">1d</a>'s other three tabs" · "one more, but the whole panel horizontal along the bottom"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showAdSlot&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;showNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showAdSlot: this.props.showAdSlot ?? true,
+      showNotes: this.props.showNotes ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>
