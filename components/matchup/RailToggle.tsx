@@ -31,7 +31,6 @@ const RailToggle = ({
     aria-pressed={on}
     className={cn(
       "h-rail-tile duration-120 grid flex-1 place-items-center transition-colors ease-out",
-      "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
       "bg-rail-tile",
       props.disabled
         ? // Keeps the rail tile ground but refuses the pointer, so a disabled toggle

@@ -46,7 +46,7 @@ const Field = ({
       className={cn(
         "h-control rounded-control duration-120 flex items-center gap-2 transition-colors ease-out",
         focused && interactive
-          ? "border-[1.5px] border-accent-blue bg-white px-[11.5px]"
+          ? "border-[1.5px] border-focus bg-white px-[11.5px]"
           : editable && !disabled
             ? "border-hairline border bg-white px-3"
             : "bg-surface border border-transparent px-3",
@@ -97,7 +97,7 @@ const Field = ({
             // Trims float noise from decimal steps without losing real precision.
             onChange?.(String(Number(next.toFixed(4))));
           }}
-          className="text-value text-ink min-w-0 flex-1 bg-transparent tabular-nums outline-none"
+          className="text-value text-ink min-w-0 flex-1 tabular-nums outline-none focus-visible:ring-0"
         />
       ) : (
         <span

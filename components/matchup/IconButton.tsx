@@ -11,7 +11,7 @@ const IconButton = ({ className, children, ...props }: IconButtonProps) => (
     type="button"
     className={cn(
       "size-icon-btn rounded-icon text-muted duration-120 grid place-items-center transition-colors ease-out",
-      "hover:bg-surface-hover focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
+      "hover:bg-surface-hover",
       className,
     )}
     {...props}

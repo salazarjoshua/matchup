@@ -38,12 +38,13 @@ const UploadTile = ({
 }: ComponentPropsWithoutRef<"button">) => (
   <button
     type="button"
-    className={cn("flex min-w-0 flex-col gap-2 text-left", className)}
+    className={cn(
+      "border-[1.5px] h-thumb rounded-control border-placeholder text-placeholder grid place-items-center border-dashed",
+      className,
+    )}
     {...props}
   >
-    <div className="border-[1.5px] h-thumb rounded-control border-placeholder text-placeholder grid place-items-center border-dashed">
-      <UploadImageIcon className="w-6" />
-    </div>
+    <UploadImageIcon className="w-6" />
   </button>
 );
 

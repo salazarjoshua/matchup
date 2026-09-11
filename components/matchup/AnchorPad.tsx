@@ -35,7 +35,7 @@ const AnchorPad = ({
           aria-pressed={active}
           disabled={disabled}
           onClick={() => onSelect?.(i)}
-          className="size-full grid place-items-center"
+          className="size-full grid place-items-center rounded-control"
         >
           {/* The active point grows into a rounded square; the rest stay dots. */}
           <span

@@ -11,13 +11,11 @@ type OpacityBarProps = Omit<
   ComponentPropsWithoutRef<"div">,
   "children" | "onChange"
 > & {
-  /** 0–100. */
   value: number;
   disabled?: boolean;
   onChange?: (value: number) => void;
 };
 
-/** Every 10%, skipping the ends so nothing sits under the rounded corners. */
 const TICKS = [10, 20, 30, 40, 50, 60, 70, 80, 90];
 
 const OpacityBar = ({
@@ -86,7 +84,6 @@ const OpacityBar = ({
         onKeyDown={onKeyDown}
         className={cn(
           "h-control rounded-control bg-surface group relative flex-1 overflow-hidden",
-          "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
           !disabled && "cursor-pointer",
         )}
       >
@@ -101,8 +98,6 @@ const OpacityBar = ({
           TICKS.map((tick) => (
             <span
               key={tick}
-              // Each tick colours itself for the ground it sits on, so the blue fill
-              // and the grey track both stay legible without clipping tricks.
               className={cn(
                 "pointer-events-none absolute top-1/2 h-2.5 w-px -translate-y-1/2 rounded-full",
                 "opacity-0 transition-opacity duration-120 ease-out",
@@ -128,29 +123,22 @@ const OpacityBar = ({
           }
           onBlur={commitDraft}
           onKeyDown={(event) => {
-            // Up/Down step the value, as they do in the X/Y/scale fields.
-            // Left/Right are left alone so they still move the caret.
             const direction =
               event.key === "ArrowUp" ? 1 : event.key === "ArrowDown" ? -1 : 0;
             if (direction !== 0) {
               event.preventDefault();
-              // Stepped from what is on screen, not the committed value, so a
-              // typed-but-uncommitted number is what gets nudged.
               const from = draft.trim() === "" ? value : Number(draft);
               const next = clampPercent(
                 from + direction * (event.shiftKey ? 10 : 1),
               );
               setDraft(String(next));
-              // Committed live, like the track's own arrow keys: the point of
-              // nudging opacity is watching the overlay change as you go.
               onChange?.(next);
             }
             if (event.key === "Enter") event.currentTarget.blur();
             if (event.key === "Escape") setEditing(false);
-            // The track's arrow handling shouldn't fight the caret.
             event.stopPropagation();
           }}
-          className="text-value text-ink w-10 bg-transparent text-right tabular-nums outline-none"
+          className="text-value text-ink w-10 bg-transparent text-right tabular-nums rounded-sm"
         />
       ) : (
         <button
@@ -162,8 +150,7 @@ const OpacityBar = ({
             setEditing(true);
           }}
           className={cn(
-            "text-value w-10 text-right tabular-nums",
-            "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue rounded-[3px] focus-visible:outline-none",
+            "text-value w-10 text-right tabular-nums rounded-sm",
             disabled ? "text-disabled" : "text-ink hover:text-accent-blue",
           )}
         >

@@ -145,7 +145,6 @@ const MatchupPanel = ({
             "size-rail-tile rounded-control grid place-items-center relative",
             "bg-rail-tile hover:bg-rail-tile-hover text-muted",
             "transition-colors duration-120 ease-out",
-            "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
             !hasSelection && "flex-1",
           )}
         >
@@ -255,11 +254,13 @@ const MatchupPanel = ({
                   />
                 ))}
                 {/* Always has a cell now that the grid scrolls. */}
-                <UploadTile
-                  aria-label="Upload an image"
-                  title="Upload an image (⌥U)"
-                  onClick={onUpload}
-                />
+                <div className="flex flex-col">
+                  <UploadTile
+                    aria-label="Upload an image"
+                    title="Upload an image (⌥U)"
+                    onClick={onUpload}
+                  />
+                </div>
               </LayerGrid>
 
               <div className="border-hairline border-t p-3">

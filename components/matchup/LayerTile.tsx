@@ -89,9 +89,8 @@ const LayerTile = ({
       className={cn("flex min-w-0 flex-col gap-2", className)}
       {...props}
     >
-      <div
+      <button
         role="button"
-        tabIndex={0}
         aria-pressed={selected}
         aria-label={`Select ${name}`}
         // Reordering stays inside the grid, which now holds every layer, so any
@@ -122,7 +121,6 @@ const LayerTile = ({
         className={cn(
           "h-thumb rounded-control group relative cursor-pointer overflow-hidden",
           "duration-120 transition-all ease-out",
-          "focus-visible:ring-[1.5px] focus-visible:ring-accent-blue focus-visible:outline-none",
           selected && "ring-accent-blue ring-2",
           !selected && "hover:ring-accent-blue hover:ring-2",
           lifted &&
@@ -154,7 +152,7 @@ const LayerTile = ({
             <DeleteIcon className="w-3 text-accent-red" />
           </ThumbAction>
         </span>
-      </div>
+      </button>
       {renaming ? (
         <input
           ref={input}
@@ -166,7 +164,7 @@ const LayerTile = ({
             if (event.key === "Enter") event.currentTarget.blur();
             if (event.key === "Escape") onRename?.(name);
           }}
-          className="border-[1.5px] rounded-badge border-accent-blue text-micro text-ink h-4.5 w-full bg-white px-1.25 outline-none"
+          className="border-[1.5px] rounded-badge border-accent-blue text-micro text-ink h-4.5 w-full bg-white px-1.25"
         />
       ) : (
         <div
