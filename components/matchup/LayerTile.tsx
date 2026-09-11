@@ -94,7 +94,7 @@ const LayerTile = ({
       className={cn("flex min-w-0 flex-col gap-2", className)}
       {...props}
     >
-      <div className="group relative h-thumb w-full rounded-control">
+      <div className="group relative w-full rounded-control">
         <button
           type="button"
           aria-pressed={selected}
@@ -118,7 +118,7 @@ const LayerTile = ({
           onDragEnd={onDragEndLayer}
           onClick={onSelect}
           className={cn(
-            "relative h-full w-full cursor-pointer overflow-hidden rounded-control",
+            "relative w-full aspect-4/3 cursor-pointer overflow-hidden rounded-control",
             "focus-visible:ring-2 focus-visible:ring-focus",
             selected && "ring-2 ring-accent-blue",
             !selected && "group-hover:ring-2 group-hover:ring-disabled/75",
@@ -145,8 +145,8 @@ const LayerTile = ({
           )}
         </button>
 
-        <div className="pointer-events-none absolute inset-0 p-1 items-start justify-between hidden group-hover:flex">
-          <div className="pointer-events-none absolute inset-0 rounded-control bg-black/20 p-1 backdrop-blur-xs" />
+        <div className="pointer-events-none aspect-4/3 absolute inset-0 p-1 items-start justify-between hidden group-hover:flex">
+          <div className="pointer-events-none absolute inset-0 rounded-control bg-black/15 backdrop-blur-[2px]" />
           <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
             <EditIcon className="w-3 text-accent-blue" />
           </ThumbAction>
