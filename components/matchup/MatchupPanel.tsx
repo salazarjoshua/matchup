@@ -80,6 +80,9 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onGripPointerDown?: (event: ReactPointerEvent) => void;
 };
 
+/** Shared by the rail and the title bar, the panel's two drag grips. */
+const gripClass = "cursor-grab touch-none select-none";
+
 const MatchupPanel = ({
   layers,
   selectedId,
@@ -131,10 +134,7 @@ const MatchupPanel = ({
       className={cn("flex flex-col items-start gap-1 font-sans", className)}
       {...props}
     >
-      <Rail
-        onPointerDown={onGripPointerDown}
-        className="cursor-grab touch-none select-none"
-      >
+      <Rail onPointerDown={onGripPointerDown} className={gripClass}>
         <button
           type="button"
           onClick={onTogglePanel}
@@ -198,7 +198,7 @@ const MatchupPanel = ({
         <div className="w-panel rounded-panel border-hairline shadow-panel flex-none overflow-hidden border bg-white">
           <TitleBar
             onPointerDown={onGripPointerDown}
-            className="cursor-grab touch-none select-none"
+            className={gripClass}
             actions={
               <>
                 <IconButton aria-label="About" onClick={onOpenHelp}>

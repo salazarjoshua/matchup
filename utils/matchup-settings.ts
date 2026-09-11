@@ -93,7 +93,7 @@ const PUNCTUATION_LABELS: Record<string, string> = {
 };
 
 /** "KeyV" → "V", "Digit1" → "1", "Slash" → "/". */
-export const keyLabel = (code: string) =>
+const keyLabel = (code: string) =>
   PUNCTUATION_LABELS[code] ??
   (code.startsWith("Key")
     ? code.slice(3)

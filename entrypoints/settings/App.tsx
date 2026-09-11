@@ -58,6 +58,9 @@ const Row = ({
   </label>
 );
 
+const listClass =
+  "rounded-control bg-surface flex flex-col divide-y divide-black/5";
+
 const kbdClass =
   "text-value text-muted rounded-badge min-w-12 px-2 py-0.5 text-center";
 
@@ -290,7 +293,7 @@ export default function App() {
           title="Shortcuts"
           hint="Every shortcut is ⌥ plus the key shown."
         >
-          <ul className="rounded-control bg-surface flex flex-col divide-y divide-black/5">
+          <ul className={listClass}>
             {IMAGE_SHORTCUTS.map(({ action, label }) => (
               <ShortcutRow
                 key={action}
@@ -316,7 +319,7 @@ export default function App() {
             ))}
           </ul>
 
-          <ul className="rounded-control bg-surface flex flex-col divide-y divide-black/5">
+          <ul className={listClass}>
             {LAYER_SHORTCUTS.map(({ action, label }) => (
               <ShortcutRow
                 key={action}

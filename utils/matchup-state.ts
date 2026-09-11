@@ -24,7 +24,7 @@ export type MatchupLayer = LayerSettings & {
 export type MatchupState = {
   layers: MatchupLayer[];
   selectedId?: string;
-  /** The panel is expanded beside the rail. Toggled by the glove. */
+  /** The panel shows its content. Collapsed, only the rail remains. */
   panelOpen: boolean;
 };
 

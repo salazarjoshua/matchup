@@ -5,7 +5,7 @@ import { browser } from "wxt/browser";
  * face on the *host page's* document, and a page that asks for Inter itself
  * should keep getting its own copy rather than ours.
  */
-export const INTER_FAMILY = "Matchup Inter";
+const INTER_FAMILY = "Matchup Inter";
 
 /**
  * The two Google-Fonts subsets of Inter's variable face, self-hosted so the panel
