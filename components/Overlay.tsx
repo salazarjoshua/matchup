@@ -10,7 +10,6 @@ type OverlayProps = {
   difference: boolean;
   /** Locking the layer hands clicks back to the page underneath. */
   draggable?: boolean;
-  dragging?: boolean;
   onPointerDown?: (event: ReactPointerEvent) => void;
   onLoad?: () => void;
   imageRef?: Ref<HTMLImageElement>;
@@ -29,7 +28,6 @@ const Overlay = ({
   opacity,
   difference,
   draggable = false,
-  dragging = false,
   onPointerDown,
   onLoad,
   imageRef,

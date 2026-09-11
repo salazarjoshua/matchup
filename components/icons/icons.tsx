@@ -303,38 +303,6 @@ export const ClipboardIcon = (props: IconProps) => (
   </svg>
 );
 
-export const CaretLeftIcon = (props: IconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    {...props}
-  >
-    <path
-      fill="currentColor"
-      fillRule="evenodd"
-      d="M15.707 3.293a1 1 0 0 1 0 1.414l-6.585 6.586a1 1 0 0 0 0 1.414l6.585 6.586a1 1 0 0 1-1.414 1.414l-6.586-6.586a3 3 0 0 1 0-4.242l6.586-6.586a1 1 0 0 1 1.414 0"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
-export const CaretRightIcon = (props: IconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    {...props}
-  >
-    <path
-      fill="currentColor"
-      fillRule="evenodd"
-      d="M8.293 3.293a1 1 0 0 1 1.414 0l6.586 6.586a3 3 0 0 1 0 4.242l-6.586 6.586a1 1 0 0 1-1.414-1.414l6.586-6.586a1 1 0 0 0 0-1.414L8.293 4.707a1 1 0 0 1 0-1.414"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
 export const ScaleIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"

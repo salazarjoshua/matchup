@@ -1,7 +1,7 @@
 import { cn } from "@/utils/cn";
 import { LAYER_COLUMNS } from "@/utils/matchup-state";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
-import { PlusIcon, UploadImageIcon } from "@/components/icons";
+import { UploadImageIcon } from "@/components/icons";
 
 type LayerGridProps = ComponentPropsWithoutRef<"div"> & { children: ReactNode };
 
@@ -49,15 +49,5 @@ const UploadTile = ({
   </button>
 );
 
-const DropTarget = ({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<"div">) => (
-  <div className={cn("flex min-w-0 flex-col gap-2", className)} {...props}>
-    <div className="border-[1.5px] h-thumb rounded-control border-accent-blue bg-accent-blue/5 border-dashed" />
-    <div className="text-micro text-muted truncate">drop here</div>
-  </div>
-);
-
-export { LayerGrid, UploadTile, DropTarget };
+export { LayerGrid, UploadTile };
 export type { LayerGridProps };

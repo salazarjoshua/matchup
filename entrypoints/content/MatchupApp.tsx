@@ -107,7 +107,6 @@ export default function MatchupApp() {
   const [imageEpoch, setImageEpoch] = useState(0);
   const widget = useRef<HTMLDivElement>(null);
   const overlayDrag = useRef<{ dx: number; dy: number } | null>(null);
-  const [draggingOverlay, setDraggingOverlay] = useState(false);
   const [widgetSize, setWidgetSize] = useState({
     w: PANEL_WIDTH,
     h: RAIL_HEIGHT,
@@ -366,7 +365,6 @@ export default function MatchupApp() {
       dx: event.clientX - (Number(layer.x) || 0),
       dy: event.clientY - (Number(layer.y) || 0),
     };
-    setDraggingOverlay(true);
     const onMove = (move: PointerEvent) => {
       if (!overlayDrag.current) return;
       patchLayer({
@@ -377,7 +375,6 @@ export default function MatchupApp() {
     };
     const onUp = () => {
       overlayDrag.current = null;
-      setDraggingOverlay(false);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
     };
@@ -510,7 +507,6 @@ export default function MatchupApp() {
           opacity={settings.opacity}
           difference={settings.difference}
           draggable={!settings.locked}
-          dragging={draggingOverlay}
           onPointerDown={onOverlayPointerDown}
           onLoad={() => setImageEpoch((n) => n + 1)}
           imageRef={overlayImage}
