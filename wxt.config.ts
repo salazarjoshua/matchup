@@ -7,6 +7,7 @@ export default defineConfig({
   vite: () => ({
     plugins: [tailwindcss()],
   }),
+  zip: { artifactTemplate: "matchup.zip" },
   manifest: {
     name: "Matchup",
     // Declared with no popup so the icon fires action.onClicked instead.

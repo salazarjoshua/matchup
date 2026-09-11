@@ -6,7 +6,7 @@ Matchup is a simple tool for comparing your design with your website. Drop your 
 
 ## Install
 
-1. Download the ZIP from **Code → Download ZIP**.
+1. [Download Matchup](https://github.com/salazarjoshua/matchup/releases/latest/download/matchup.zip).
 2. Unzip it.
 3. Open `chrome://extensions`.
 4. Turn on **Developer mode**.
