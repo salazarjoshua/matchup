@@ -46,10 +46,10 @@ export type ShortcutAction =
 export type Shortcuts = Record<ShortcutAction, string>;
 
 export const SHORTCUT_DEFAULTS: Shortcuts = {
-  togglePanel: "KeyS",
-  toggleVisible: "KeyV",
-  toggleLocked: "KeyL",
-  toggleDifference: "KeyD",
+  togglePanel: "Backquote",
+  toggleVisible: "Digit1",
+  toggleLocked: "Digit2",
+  toggleDifference: "Digit3",
   upload: "KeyU",
 };
 
