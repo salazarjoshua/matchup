@@ -13,6 +13,8 @@ export type MatchupSettings = {
   panelPosition: PanelCorner;
   /** Applied to every newly added layer. */
   layerDefaults: LayerSettings;
+  /** Action → physical key. The ⌥ modifier is fixed. */
+  shortcuts: Shortcuts;
 };
 
 export const PANEL_CORNERS: { value: PanelCorner; label: string }[] = [
@@ -34,19 +36,102 @@ export const ANCHOR_LABELS = [
   "bottom right",
 ];
 
-export const HOTKEYS = [
-  { keys: "⌥S", action: "Toggle panel" },
-  { keys: "⌥V", action: "Toggle visibility" },
-  { keys: "⌥L", action: "Toggle lock" },
-  { keys: "⌥D", action: "Toggle difference" },
-  { keys: "⌥U", action: "Upload an image" },
-  { keys: "⌘V", action: "Paste an image" },
+export type ShortcutAction =
+  | "togglePanel"
+  | "toggleVisible"
+  | "toggleLocked"
+  | "toggleDifference"
+  | "upload";
+
+export type Shortcuts = Record<ShortcutAction, string>;
+
+export const SHORTCUT_DEFAULTS: Shortcuts = {
+  togglePanel: "KeyS",
+  toggleVisible: "KeyV",
+  toggleLocked: "KeyL",
+  toggleDifference: "KeyD",
+  upload: "KeyU",
+};
+
+export const LAYER_SHORTCUTS: { action: ShortcutAction; label: string }[] = [
+  { action: "togglePanel", label: "Toggle panel" },
+  { action: "toggleVisible", label: "Toggle visibility" },
+  { action: "toggleLocked", label: "Toggle lock" },
+  { action: "toggleDifference", label: "Toggle difference" },
 ];
+
+export const IMAGE_SHORTCUTS: { action: ShortcutAction; label: string }[] = [
+  { action: "upload", label: "Upload image" },
+];
+
+/** Action → its label, derived so the groups above stay the single source. */
+export const SHORTCUT_LABELS = Object.fromEntries(
+  [...IMAGE_SHORTCUTS, ...LAYER_SHORTCUTS].map(({ action, label }) => [
+    action,
+    label,
+  ]),
+) as Record<ShortcutAction, string>;
+
+/**
+ * Not rebindable: pasting is a `paste` event rather than a keydown, so the
+ * browser owns the chord. Listed so the settings page can still show it.
+ */
+export const FIXED_SHORTCUTS = [{ keys: "⌘V", label: "Paste image" }];
+
+const PUNCTUATION_LABELS: Record<string, string> = {
+  Slash: "/",
+  Backslash: "\\",
+  BracketLeft: "[",
+  BracketRight: "]",
+  Semicolon: ";",
+  Quote: "'",
+  Comma: ",",
+  Period: ".",
+  Minus: "-",
+  Equal: "=",
+  Backquote: "`",
+};
+
+/** "KeyV" → "V", "Digit1" → "1", "Slash" → "/". */
+export const keyLabel = (code: string) =>
+  PUNCTUATION_LABELS[code] ??
+  (code.startsWith("Key")
+    ? code.slice(3)
+    : code.startsWith("Digit")
+      ? code.slice(5)
+      : code);
+
+/** The chord as the user sees it. ⌥ is fixed — see `isBindableKey`. */
+export const shortcutLabel = (code: string) => `⌥${keyLabel(code)}`;
+
+/**
+ * Which physical keys may be bound. Letters, digits and common punctuation
+ * only: the modifier stays ⌥, so anything needing a different one (arrows,
+ * function keys, Tab) is out of scope and would collide with the browser.
+ */
+export const isBindableKey = (code: string) =>
+  /^Key[A-Z]$/.test(code) ||
+  /^Digit[0-9]$/.test(code) ||
+  code in PUNCTUATION_LABELS;
 
 export const SETTINGS_DEFAULTS: MatchupSettings = {
   panelPosition: "top-right",
   layerDefaults: LAYER_DEFAULTS,
+  shortcuts: SHORTCUT_DEFAULTS,
 };
+
+/**
+ * Merges stored settings over the defaults one level deep. A plain spread would
+ * drop keys inside `layerDefaults` and `shortcuts` whenever storage predates a
+ * newly added one, leaving an action with no key at all.
+ */
+export const restoreSettings = (
+  stored?: Partial<MatchupSettings>,
+): MatchupSettings => ({
+  panelPosition: stored?.panelPosition ?? SETTINGS_DEFAULTS.panelPosition,
+  layerDefaults: { ...LAYER_DEFAULTS, ...stored?.layerDefaults },
+  shortcuts: { ...SHORTCUT_DEFAULTS, ...stored?.shortcuts },
+});
 
 export const matchupSettings = storage.defineItem<MatchupSettings>(
   "local:matchup-settings",

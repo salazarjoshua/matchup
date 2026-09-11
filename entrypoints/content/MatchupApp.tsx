@@ -2,7 +2,11 @@ import Overlay from "@/components/Overlay";
 import { MatchupPanel } from "@/components/matchup";
 import { clamp } from "@/utils/clamp";
 import { patchTab, readTab } from "@/utils/matchup-tab";
-import { SETTINGS_DEFAULTS, matchupSettings } from "@/utils/matchup-settings";
+import {
+  SETTINGS_DEFAULTS,
+  matchupSettings,
+  restoreSettings,
+} from "@/utils/matchup-settings";
 import {
   ACCEPTED_TYPES,
   LAYER_DEFAULTS,
@@ -19,7 +23,7 @@ import {
 } from "react";
 import { browser } from "wxt/browser";
 import type { Dock } from "@/utils/matchup-tab";
-import type { MatchupSettings } from "@/utils/matchup-settings";
+import type { MatchupSettings, ShortcutAction } from "@/utils/matchup-settings";
 import type { LayerSettings, MatchupState } from "@/utils/matchup-state";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
@@ -130,10 +134,10 @@ export default function MatchupApp() {
   useEffect(() => {
     matchupSettings
       .getValue()
-      .then((stored) => setPrefs({ ...SETTINGS_DEFAULTS, ...stored }))
+      .then((stored) => setPrefs(restoreSettings(stored)))
       .catch(() => undefined);
     const unwatch = matchupSettings.watch((next) =>
-      setPrefs({ ...SETTINGS_DEFAULTS, ...next }),
+      setPrefs(restoreSettings(next)),
     );
     return unwatch;
   }, []);
@@ -267,20 +271,26 @@ export default function MatchupApp() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey || event.metaKey || event.ctrlKey) return;
       if (isEditable(event)) return;
-      switch (event.code) {
-        case "KeyV":
+      // Read from settings rather than hardcoded, and from the ref so a rebind
+      // takes effect without re-subscribing this listener.
+      const bindings = prefsRef.current.shortcuts;
+      const action = (Object.keys(bindings) as ShortcutAction[]).find(
+        (candidate) => bindings[candidate] === event.code,
+      );
+      switch (action) {
+        case "toggleVisible":
           patchLayer({ visible: !selectedRef.current?.visible });
           break;
-        case "KeyL":
+        case "toggleLocked":
           patchLayer({ locked: !selectedRef.current?.locked });
           break;
-        case "KeyD":
+        case "toggleDifference":
           patchLayer({ difference: !selectedRef.current?.difference });
           break;
-        case "KeyS":
+        case "togglePanel":
           setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
           break;
-        case "KeyU":
+        case "upload":
           // A keydown carries user activation, which is what the file dialog
           // needs; preventDefault below doesn't spend it.
           fileInput.current?.click();
