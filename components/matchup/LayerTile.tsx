@@ -135,9 +135,8 @@ const LayerTile = ({
           onClick={onSelect}
           className={cn(
             "relative block w-full aspect-4/3 cursor-pointer overflow-hidden rounded-xl",
-            "focus-visible:ring-2 focus-visible:ring-focus",
+            "ring-2 ring-surface focus-visible:ring-2 focus-visible:ring-focus",
             selected && "ring-2 ring-accent-blue",
-            !selected && "group-hover:ring-2 group-hover:ring-disabled/75",
             lifted &&
               "z-10 -rotate-2 transition-[scale] scale-[1.05] shadow-drag ring-2 ring-accent-blue",
           )}
@@ -155,6 +154,7 @@ const LayerTile = ({
             <img
               src={src}
               alt=""
+              draggable={false}
               className="size-full select-none object-cover"
             />
           )}
