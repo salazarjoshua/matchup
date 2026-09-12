@@ -163,7 +163,12 @@ const LayerTile = ({
           )}
         </button>
 
-        <div className="pointer-events-none aspect-4/3 absolute inset-0 p-1 items-start justify-between hidden group-hover:flex">
+        <div
+          className={cn(
+            "pointer-events-none aspect-4/3 absolute inset-0 p-1 items-start justify-between hidden group-hover:flex",
+            lifted && `opacity-0`,
+          )}
+        >
           <div className="pointer-events-none absolute inset-0 rounded-xl bg-black/15 backdrop-blur-[2px]" />
           <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
             <EditIcon className="w-3 text-accent-blue" />
