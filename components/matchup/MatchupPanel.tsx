@@ -220,7 +220,7 @@ const MatchupPanel = ({
 
           {layers.length > 0 && (
             <>
-              <LayerGrid>
+              <LayerGrid order={layers.map((layer) => layer.id).join()}>
                 {layers.map((layer) => (
                   <LayerTile
                     key={layer.id}
