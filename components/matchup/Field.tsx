@@ -44,7 +44,7 @@ const Field = ({
   return (
     <div
       className={cn(
-        "h-control rounded-control duration-120 flex items-center gap-2 transition-colors ease-out",
+        "h-8 rounded-xl duration-120 flex items-center gap-2 transition-colors ease-out",
         focused && interactive
           ? "border-[1.5px] border-focus bg-white px-[11.5px]"
           : editable && !disabled

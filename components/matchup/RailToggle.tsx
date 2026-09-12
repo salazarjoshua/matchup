@@ -30,8 +30,8 @@ const RailToggle = ({
   <button
     aria-pressed={on}
     className={cn(
-      "h-rail-tile duration-120 grid flex-1 place-items-center transition-colors ease-out",
-      "bg-rail-tile",
+      "h-10 duration-120 grid flex-1 place-items-center transition-colors ease-out",
+      "bg-rail",
       props.disabled
         ? // Keeps the rail tile ground but refuses the pointer, so a disabled toggle
           // never reads as one that is merely off. Unreachable today: MatchupPanel only
@@ -39,7 +39,7 @@ const RailToggle = ({
           "text-muted cursor-not-allowed"
         : on
           ? [accentFill[accent], accentGlyph[accent]]
-          : "hover:bg-rail-tile-hover text-muted",
+          : "hover:bg-rail-hover text-muted",
       className,
     )}
     {...props}

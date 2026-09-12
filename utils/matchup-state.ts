@@ -70,7 +70,7 @@ export const ACCEPTED_TYPES = [
 /**
  * Columns in the layer grid — the knob for trying out tile densities. There is
  * no row limit: the grid scrolls, so it holds as many layers as you add.
- * How tall it gets before scrolling is --spacing-layer-list in tailwind.css.
+ * How tall it gets before scrolling is the `max-h-*` on LayerGrid.
  */
 export const LAYER_COLUMNS = 3;
 

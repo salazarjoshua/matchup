@@ -20,7 +20,7 @@ const AnchorPad = ({
 }: AnchorPadProps) => (
   <div
     className={cn(
-      "size-anchor rounded-control bg-surface grid flex-none grid-cols-3 grid-rows-3 place-items-center",
+      "size-28 rounded-xl bg-surface grid flex-none grid-cols-3 grid-rows-3 place-items-center",
       className,
     )}
     {...props}
@@ -35,7 +35,7 @@ const AnchorPad = ({
           aria-pressed={active}
           disabled={disabled}
           onClick={() => onSelect?.(i)}
-          className="size-full grid place-items-center rounded-control"
+          className="size-full grid place-items-center rounded-xl"
         >
           {/* The active point grows into a rounded square; the rest stay dots. */}
           <span

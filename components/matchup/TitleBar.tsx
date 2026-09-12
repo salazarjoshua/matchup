@@ -7,7 +7,7 @@ type TitleBarProps = ComponentPropsWithoutRef<"div"> & { actions?: ReactNode };
 const TitleBar = ({ className, actions, ...props }: TitleBarProps) => (
   <div
     className={cn(
-      "h-title-bar border-hairline flex items-center gap-2 border-b pl-3 pr-1.5",
+      "h-10 border-hairline flex items-center gap-2 border-b pl-3 pr-1.5",
       className,
     )}
     {...props}

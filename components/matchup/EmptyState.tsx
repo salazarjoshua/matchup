@@ -17,7 +17,7 @@ const EmptyState = ({
     <button
       type="button"
       onClick={onUpload}
-      className="rounded-control bg-accent-blue flex aspect-square flex-1 flex-col justify-between p-3 text-left text-white"
+      className="rounded-xl bg-accent-blue flex aspect-square flex-1 flex-col justify-between p-3 text-left text-white"
     >
       <UploadIcon className="w-7" />
       <span className="text-sm font-semibold">Upload</span>
@@ -25,7 +25,7 @@ const EmptyState = ({
     <button
       type="button"
       onClick={onPaste}
-      className="rounded-control bg-accent-yellow text-ink flex aspect-square flex-1 flex-col justify-between p-3 text-left"
+      className="rounded-xl bg-accent-yellow text-ink flex aspect-square flex-1 flex-col justify-between p-3 text-left"
     >
       <ClipboardIcon className="w-7" />
       <span className="text-sm font-semibold">Paste</span>

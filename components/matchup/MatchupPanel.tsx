@@ -146,8 +146,8 @@ const MatchupPanel = ({
           aria-label={panelOpen ? "Hide panel" : "Show panel"}
           title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
           className={cn(
-            "size-rail-tile rounded-control grid place-items-center relative",
-            "bg-rail-tile hover:bg-rail-tile-hover text-muted",
+            "size-10 rounded-xl grid place-items-center relative",
+            "bg-rail hover:bg-rail-hover text-muted",
             "transition-colors duration-120 ease-out",
             !hasSelection && "flex-1",
           )}
@@ -165,7 +165,7 @@ const MatchupPanel = ({
               on={visible}
               onClick={onToggleVisible}
               title={`Toggle visibility (${shortcutLabel(shortcuts.toggleVisible)})`}
-              className="rounded-l-control"
+              className="rounded-l-xl"
             >
               {visible ? (
                 <EyeIcon className="w-5" />
@@ -190,7 +190,7 @@ const MatchupPanel = ({
               on={difference}
               onClick={onToggleDifference}
               title={`Toggle difference (${shortcutLabel(shortcuts.toggleDifference)})`}
-              className="rounded-r-control"
+              className="rounded-r-xl"
             >
               <CircleHalfIcon className="w-5" />
             </RailToggle>
@@ -199,7 +199,7 @@ const MatchupPanel = ({
       </Rail>
 
       {panelOpen && (
-        <div className="w-panel rounded-panel border-hairline shadow-panel flex-none overflow-hidden border bg-white">
+        <div className="w-panel rounded-2xl border-hairline shadow-panel flex-none overflow-hidden border bg-white">
           <TitleBar
             onPointerDown={onGripPointerDown}
             className={gripClass}
