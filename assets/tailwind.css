@@ -19,8 +19,8 @@
   --color-surface-strong: #e6e6e5;
   --color-hairline: rgb(0 0 0 / 0.08);
 
-  --color-rail: #1c1c1c;
-  --color-rail-hover: #2a2a2a;
+  --color-toolbar: #1e1e1e;
+  --color-toolbar-hover: #2c2c2c;
 
   /* Darker than accent-red, which fails contrast on the banner's 8% red ground. */
   --color-error: #d62d20;

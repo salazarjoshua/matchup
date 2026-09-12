@@ -31,7 +31,7 @@ const SAVE_DEBOUNCE_MS = 300;
 /** Only a first guess: the real size is measured after the first render below. */
 const PANEL_WIDTH = 300;
 const EDGE = 8;
-const RAIL_HEIGHT = 40;
+const TOOLBAR_HEIGHT = 40;
 const DRAG_THRESHOLD = 4;
 
 const swallowClick = (event: MouseEvent) => {
@@ -109,7 +109,7 @@ export default function MatchupApp() {
   const overlayDrag = useRef<{ dx: number; dy: number } | null>(null);
   const [widgetSize, setWidgetSize] = useState({
     w: PANEL_WIDTH,
-    h: RAIL_HEIGHT,
+    h: TOOLBAR_HEIGHT,
   });
 
   const patch = useCallback(
@@ -392,12 +392,12 @@ export default function MatchupApp() {
   // as it grows and shrinks rather than hanging off the bottom of the window.
   const xTravel = travel(viewport.w, widgetSize.w);
   const yTravel = travel(viewport.h, widgetSize.h);
-  const railLeft = clamp(
+  const widgetLeft = clamp(
     edgeX === "left" ? offsetX : viewport.w - widgetSize.w - offsetX,
     xTravel.min,
     xTravel.max,
   );
-  const railTop = clamp(
+  const widgetTop = clamp(
     edgeY === "top" ? offsetY : viewport.h - widgetSize.h - offsetY,
     yTravel.min,
     yTravel.max,
@@ -406,8 +406,8 @@ export default function MatchupApp() {
   // Read inside the drag rather than closed over: the viewport and the widget's
   // own height both change mid-drag (devtools opening, an image finishing), and
   // stale bounds would clamp the widget to a position the pointer has left.
-  const geometry = useRef({ viewport, widgetSize, railLeft, railTop });
-  geometry.current = { viewport, widgetSize, railLeft, railTop };
+  const geometry = useRef({ viewport, widgetSize, widgetLeft, widgetTop });
+  geometry.current = { viewport, widgetSize, widgetLeft, widgetTop };
 
   const onGripPointerDown = (event: ReactPointerEvent) => {
     const grip = event.currentTarget as HTMLElement;
@@ -415,8 +415,8 @@ export default function MatchupApp() {
     const startX = event.clientX;
     const startY = event.clientY;
     const from = {
-      left: geometry.current.railLeft,
-      top: geometry.current.railTop,
+      left: geometry.current.widgetLeft,
+      top: geometry.current.widgetTop,
     };
     let moved = false;
     let landed: Dock | undefined;
@@ -432,7 +432,7 @@ export default function MatchupApp() {
         if (travelled < DRAG_THRESHOLD) return;
         moved = true;
         // Only captured once it is definitely a drag: capturing on pointerdown
-        // would retarget the click and break the rail's own toggle buttons.
+        // would retarget the click and break the toolbar's own toggle buttons.
         // Without it the drag dies the moment the pointer crosses an iframe on
         // the host page, which is most of the width of a narrow viewport.
         try {
@@ -529,8 +529,8 @@ export default function MatchupApp() {
         ref={widget}
         style={{
           position: "fixed",
-          left: railLeft,
-          top: railTop,
+          left: widgetLeft,
+          top: widgetTop,
           zIndex: 2147483647,
         }}
       >

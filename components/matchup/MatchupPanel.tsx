@@ -5,8 +5,9 @@ import { Field } from "./Field";
 import { LayerGrid, UploadTile } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
-import { Rail } from "./Rail";
-import { RailToggle } from "./RailToggle";
+import { Toolbar } from "./Toolbar";
+import { ToolbarButton } from "./ToolbarButton";
+import { ToolbarToggle } from "./ToolbarToggle";
 import { IconButton } from "./IconButton";
 import { TitleBar } from "./TitleBar";
 import {
@@ -55,7 +56,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   y: string | number;
   scale: string | number;
   error?: string;
-  /** The panel shows its content. Collapsed, only the rail shows. */
+  /** The panel shows its content. Collapsed, only the toolbar shows. */
   panelOpen?: boolean;
   renamingId?: string;
   onToggleVisible?: () => void;
@@ -74,7 +75,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onTogglePanel?: () => void;
   onOpenSettings?: () => void;
   onOpenHelp?: () => void;
-  /** Settings belong to a layer, so the rail is inert until one is selected. */
+  /** Settings belong to a layer, so the toolbar is inert until one is selected. */
   hasSelection?: boolean;
   shortcuts?: Shortcuts;
   onXChange?: (value: string) => void;
@@ -137,18 +138,15 @@ const MatchupPanel = ({
       className={cn("flex flex-col items-start gap-1 font-sans", className)}
       {...props}
     >
-      <Rail onPointerDown={onGripPointerDown} className={gripClass}>
-        <button
-          type="button"
+      <Toolbar onPointerDown={onGripPointerDown} className={gripClass}>
+        <ToolbarButton
           onClick={onTogglePanel}
           aria-expanded={panelOpen}
           aria-label={panelOpen ? "Hide panel" : "Show panel"}
           title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
           className={cn(
-            "size-10 rounded-xl grid place-items-center relative",
-            "bg-rail hover:bg-rail-hover text-muted",
-            "transition-colors duration-120 ease-out",
-            !hasSelection && "flex-1",
+            "rounded-xl hover:bg-toolbar-hover",
+            hasSelection ? "w-10" : "flex-1",
           )}
         >
           {panelOpen ? (
@@ -156,10 +154,10 @@ const MatchupPanel = ({
           ) : (
             <PlusIcon className="w-5" />
           )}
-        </button>
+        </ToolbarButton>
         {hasSelection && (
           <div className="flex flex-1">
-            <RailToggle
+            <ToolbarToggle
               accent="blue"
               on={visible}
               onClick={onToggleVisible}
@@ -171,8 +169,8 @@ const MatchupPanel = ({
               ) : (
                 <EyeSlashIcon className="w-5" />
               )}
-            </RailToggle>
-            <RailToggle
+            </ToolbarToggle>
+            <ToolbarToggle
               accent="yellow"
               on={locked}
               onClick={onToggleLocked}
@@ -183,8 +181,8 @@ const MatchupPanel = ({
               ) : (
                 <UnlockIcon className="w-5" />
               )}
-            </RailToggle>
-            <RailToggle
+            </ToolbarToggle>
+            <ToolbarToggle
               accent="pink"
               on={difference}
               onClick={onToggleDifference}
@@ -192,10 +190,10 @@ const MatchupPanel = ({
               className="rounded-r-xl"
             >
               <CircleHalfIcon className="w-5" />
-            </RailToggle>
+            </ToolbarToggle>
           </div>
         )}
-      </Rail>
+      </Toolbar>
 
       {panelOpen && (
         <div className="w-panel rounded-2xl border-hairline shadow-panel flex-none overflow-hidden border bg-white">

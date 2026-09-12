@@ -1,9 +1,9 @@
 import { cn } from "@/utils/cn";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
-type RailProps = ComponentPropsWithoutRef<"div"> & { children: ReactNode };
+type ToolbarProps = ComponentPropsWithoutRef<"div"> & { children: ReactNode };
 
-const Rail = ({ className, children, ...props }: RailProps) => (
+const Toolbar = ({ className, children, ...props }: ToolbarProps) => (
   <div
     className={cn("w-panel flex flex-none items-center gap-1", className)}
     {...props}
@@ -12,5 +12,5 @@ const Rail = ({ className, children, ...props }: RailProps) => (
   </div>
 );
 
-export { Rail };
-export type { RailProps };
+export { Toolbar };
+export type { ToolbarProps };
