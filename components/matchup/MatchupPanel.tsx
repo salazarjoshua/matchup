@@ -243,9 +243,9 @@ const MatchupPanel = ({
                           : "after"
                         : undefined
                     }
-                    // Deferred a frame: the browser snapshots its drag ghost at the
-                    // end of dragstart, and dimming the tile any sooner bakes the
-                    // dimming into the ghost.
+                    // Deferred a frame so the dim lands after dragstart. The ghost
+                    // is suppressed, but a host page's CSP can refuse the blank
+                    // image and bring it back, and dimming any sooner bakes into it.
                     onDragStartLayer={() =>
                       requestAnimationFrame(() => setDraggingId(layer.id))
                     }

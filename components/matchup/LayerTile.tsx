@@ -6,6 +6,10 @@ import { useEffect, useRef } from "react";
 
 import type { ComponentPropsWithoutRef, DragEvent } from "react";
 
+const BLANK_DRAG_IMAGE = new Image();
+BLANK_DRAG_IMAGE.src =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
 /** Which half of the tile the pointer sits in decides which side the layer lands on. */
 const isBefore = (event: DragEvent<HTMLElement>) => {
   const rect = event.currentTarget.getBoundingClientRect();
@@ -102,6 +106,7 @@ const LayerTile = ({
       onDragStart={(event) => {
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData("text/plain", name);
+        event.dataTransfer.setDragImage(BLANK_DRAG_IMAGE, 0, 0);
         onDragStartLayer?.();
       }}
       onDragOver={(event) => {
@@ -116,10 +121,8 @@ const LayerTile = ({
       }}
       onDragEnd={onDragEndLayer}
       className={cn(
-        "relative flex min-w-0 flex-col gap-2",
-        // Native DnD never moves the source, so it must not look lifted too. Dimming
-        // it marks the slot being vacated while the browser's ghost does the moving.
-        lifted && "opacity-40",
+        "relative flex min-w-0 flex-col gap-2 transition-[scale_rotate]",
+        lifted && "z-10 -rotate-2 scale-[1.1]",
         className,
       )}
       {...props}
@@ -128,7 +131,7 @@ const LayerTile = ({
         <span
           aria-hidden
           className={cn(
-            "bg-accent-blue pointer-events-none absolute top-6 h-4.5 w-0.5 rounded-full",
+            "z-20 bg-accent-blue pointer-events-none absolute top-4 h-8 w-0.5 rounded-full",
             insertion === "before" ? "-left-1.25" : "-right-1.25",
           )}
         />
