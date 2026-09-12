@@ -32,7 +32,6 @@
   --spacing-panel: 300px;
 
   --shadow-panel: 0 1px 3px rgb(0 0 0 / 0.06);
-  --shadow-drag: 0 6px 16px rgb(0 0 0 / 0.24);
 }
 
 @layer components {
