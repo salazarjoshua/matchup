@@ -27,7 +27,6 @@ const LayerGrid = ({
   </div>
 );
 
-/** The tile that opens the file picker. See .idea/VOCABULARY.md — Upload. */
 const UploadTile = ({
   className,
   ...props

@@ -37,7 +37,6 @@ const AnchorPad = ({
           onClick={() => onSelect?.(i)}
           className="size-full grid place-items-center rounded-xl"
         >
-          {/* The active point grows into a rounded square; the rest stay dots. */}
           <span
             className={cn(
               active ? "size-4 rounded-md" : "size-1 rounded-full",

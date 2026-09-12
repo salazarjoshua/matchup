@@ -6,7 +6,6 @@ import { useEffect, useRef } from "react";
 
 import type { ComponentPropsWithoutRef } from "react";
 
-// Stand-in for absent thumbnail imagery, matching the design's placeholder weave.
 const PLACEHOLDER_WEAVE =
   "repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)";
 

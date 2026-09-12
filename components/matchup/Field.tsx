@@ -86,7 +86,6 @@ const Field = ({
             }
           }}
           onKeyDown={(event) => {
-            // Up/Down step the value. Left/Right stay with the caret.
             const direction =
               event.key === "ArrowUp" ? 1 : event.key === "ArrowDown" ? -1 : 0;
             if (direction === 0) return;

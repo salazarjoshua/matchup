@@ -83,7 +83,6 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onGripPointerDown?: (event: ReactPointerEvent) => void;
 };
 
-/** Shared by the rail and the title bar, the panel's two drag grips. */
 const gripClass = "cursor-grab touch-none select-none";
 
 const MatchupPanel = ({
