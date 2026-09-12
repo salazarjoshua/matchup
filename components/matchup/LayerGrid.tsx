@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef } from "react";
 import type { ComponentPropsWithoutRef, ReactNode, RefObject } from "react";
 import { UploadImageIcon } from "@/components/icons";
 
-const REORDER_MS = 160;
+const REORDER_MS = 120;
 /** var(--ease-out). */
 const REORDER_EASING = "cubic-bezier(0, 0, 0.2, 1)";
 

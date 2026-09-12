@@ -24,7 +24,7 @@ import {
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
 import { SHORTCUT_DEFAULTS, shortcutLabel } from "@/utils/matchup-settings";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Shortcuts } from "@/utils/matchup-settings";
 import type {
   ComponentPropsWithoutRef,
@@ -130,8 +130,17 @@ const MatchupPanel = ({
   const opacityDisabled = !visible;
   const positionEditable = anchor === null && !positionDisabled;
 
+  // The id is held on a ref as well as in state: state drives the lift, but it lands a
+  // frame late, and the drop needs the source synchronously or it silently no-ops.
+  const dragging = useRef<string>(undefined);
   const [draggingId, setDraggingId] = useState<string>();
   const [over, setOver] = useState<{ id: string; before: boolean }>();
+
+  const endDrag = () => {
+    dragging.current = undefined;
+    setDraggingId(undefined);
+    setOver(undefined);
+  };
 
   return (
     <div
@@ -220,7 +229,32 @@ const MatchupPanel = ({
 
           {layers.length > 0 && (
             <>
-              <LayerGrid order={layers.map((layer) => layer.id).join()}>
+              <LayerGrid
+                order={layers.map((layer) => layer.id).join()}
+                // The grid is the drop zone, not the tiles: the gaps and padding
+                // between them are dead to a tile-only handler, and the drop line
+                // is drawn in that gap — so you aimed at it and released on nothing.
+                onDragEnter={(event) => event.preventDefault()}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "move";
+                }}
+                onDragLeave={(event) => {
+                  // Fires when crossing into a child too, so only a pointer that has
+                  // left the grid outright may take the line away.
+                  if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                    setOver(undefined);
+                  }
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  const from = dragging.current;
+                  if (from && over && from !== over.id) {
+                    onReorderLayers?.(from, over.id, over.before);
+                  }
+                  endDrag();
+                }}
+              >
                 {layers.map((layer) => (
                   <LayerTile
                     key={layer.id}
@@ -243,12 +277,13 @@ const MatchupPanel = ({
                           : "after"
                         : undefined
                     }
-                    // Deferred a frame so the dim lands after dragstart. The ghost
-                    // is suppressed, but a host page's CSP can refuse the blank
-                    // image and bring it back, and dimming any sooner bakes into it.
-                    onDragStartLayer={() =>
-                      requestAnimationFrame(() => setDraggingId(layer.id))
-                    }
+                    onDragStartLayer={() => {
+                      dragging.current = layer.id;
+                      // Deferred a frame so the lift lands after dragstart. The ghost
+                      // is suppressed, but a host page's CSP can refuse the blank
+                      // image and bring it back, and lifting sooner bakes into it.
+                      requestAnimationFrame(() => setDraggingId(layer.id));
+                    }}
                     // Returns the same object when the edge hasn't changed, so a
                     // dragover firing at pointer rate doesn't re-render the grid.
                     onDragOverLayer={(before) =>
@@ -258,17 +293,7 @@ const MatchupPanel = ({
                           : { id: layer.id, before },
                       )
                     }
-                    onDropOnLayer={(before) => {
-                      if (draggingId && draggingId !== layer.id) {
-                        onReorderLayers?.(draggingId, layer.id, before);
-                      }
-                      setDraggingId(undefined);
-                      setOver(undefined);
-                    }}
-                    onDragEndLayer={() => {
-                      setDraggingId(undefined);
-                      setOver(undefined);
-                    }}
+                    onDragEndLayer={endDrag}
                   />
                 ))}
                 {/* Always has a cell now that the grid scrolls. */}

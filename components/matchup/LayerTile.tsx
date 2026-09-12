@@ -38,7 +38,6 @@ type LayerTileProps = Omit<
   onDelete?: () => void;
   onDragStartLayer?: () => void;
   onDragOverLayer?: (before: boolean) => void;
-  onDropOnLayer?: (before: boolean) => void;
   onDragEndLayer?: () => void;
 
   /** Edge the drop line sits on, or undefined while no layer is over this tile. */
@@ -77,7 +76,6 @@ const LayerTile = ({
   onDelete,
   onDragStartLayer,
   onDragOverLayer,
-  onDropOnLayer,
   onDragEndLayer,
   insertion,
   className,
@@ -110,18 +108,16 @@ const LayerTile = ({
         onDragStartLayer?.();
       }}
       onDragOver={(event) => {
-        if (!onDropOnLayer) return;
+        if (!onDragOverLayer) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = "move";
-        onDragOverLayer?.(isBefore(event));
-      }}
-      onDrop={(event) => {
-        event.preventDefault();
-        onDropOnLayer?.(isBefore(event));
+        onDragOverLayer(isBefore(event));
       }}
       onDragEnd={onDragEndLayer}
       className={cn(
-        "relative flex min-w-0 flex-col gap-2 transition-[scale_rotate]",
+        // select-none so a stray selection in the filename can't be dragged as text
+        // instead of the layer, which silently kills the drag.
+        "relative flex min-w-0 select-none flex-col gap-2 transition-[scale_rotate]",
         lifted && "z-10 -rotate-2 scale-[1.1]",
         className,
       )}
