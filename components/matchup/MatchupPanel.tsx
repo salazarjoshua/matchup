@@ -243,7 +243,12 @@ const MatchupPanel = ({
                           : "after"
                         : undefined
                     }
-                    onDragStartLayer={() => setDraggingId(layer.id)}
+                    // Deferred a frame: the browser snapshots its drag ghost at the
+                    // end of dragstart, and dimming the tile any sooner bakes the
+                    // dimming into the ghost.
+                    onDragStartLayer={() =>
+                      requestAnimationFrame(() => setDraggingId(layer.id))
+                    }
                     // Returns the same object when the edge hasn't changed, so a
                     // dragover firing at pointer rate doesn't re-render the grid.
                     onDragOverLayer={(before) =>

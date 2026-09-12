@@ -115,7 +115,13 @@ const LayerTile = ({
         onDropOnLayer?.(isBefore(event));
       }}
       onDragEnd={onDragEndLayer}
-      className={cn("relative flex min-w-0 flex-col gap-2", className)}
+      className={cn(
+        "relative flex min-w-0 flex-col gap-2",
+        // Native DnD never moves the source, so it must not look lifted too. Dimming
+        // it marks the slot being vacated while the browser's ghost does the moving.
+        lifted && "opacity-40",
+        className,
+      )}
       {...props}
     >
       {insertion && (
@@ -137,8 +143,6 @@ const LayerTile = ({
             "relative block w-full aspect-4/3 cursor-pointer overflow-hidden rounded-xl",
             "ring-2 ring-surface focus-visible:ring-2 focus-visible:ring-focus",
             selected && "ring-2 ring-accent-blue",
-            lifted &&
-              "z-10 -rotate-2 transition-[scale] scale-[1.05] shadow-drag ring-2 ring-accent-blue",
           )}
           style={
             src
