@@ -59,10 +59,10 @@ const Row = ({
 );
 
 const listClass =
-  "rounded-control bg-surface flex flex-col divide-y divide-black/5";
+  "rounded-xl bg-surface flex flex-col divide-y divide-black/5";
 
 const kbdClass =
-  "text-value text-muted rounded-badge min-w-12 px-2 py-0.5 text-center";
+  "text-sm text-muted rounded-md min-w-12 px-2 py-0.5 text-center";
 
 /**
  * One rebindable row. Clicking the key starts capture; the next bindable key
@@ -93,7 +93,7 @@ const ShortcutRow = ({
           kbdClass,
           capturing
             ? "bg-accent-yellow text-ink"
-            : "hover:bg-surface-track bg-white",
+            : "hover:bg-surface-strong bg-white",
         )}
       >
         {capturing ? "Press a key…" : shortcutLabel(code)}
@@ -104,9 +104,9 @@ const ShortcutRow = ({
 );
 
 const selectClass =
-  "h-control rounded-control bg-surface text-value text-ink w-44 px-3 outline-none";
+  "h-8 rounded-xl bg-surface text-sm text-ink w-44 px-3 outline-none";
 const numberClass =
-  "h-control rounded-control bg-surface text-value text-ink w-24 px-3 text-right tabular-nums outline-none";
+  "h-8 rounded-xl bg-surface text-sm text-ink w-24 px-3 text-right tabular-nums outline-none";
 
 export default function App() {
   const [settings, setSettings] = useState<MatchupSettings>(SETTINGS_DEFAULTS);
@@ -345,7 +345,7 @@ export default function App() {
                   shortcuts: SHORTCUT_DEFAULTS,
                 }));
               }}
-              className="text-muted hover:text-ink rounded-badge text-xs focus-visible:ring-offset-2"
+              className="text-muted hover:text-ink rounded-md text-xs focus-visible:ring-offset-2"
             >
               Reset to defaults
             </button>

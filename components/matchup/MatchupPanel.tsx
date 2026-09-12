@@ -5,8 +5,9 @@ import { Field } from "./Field";
 import { LayerGrid, UploadTile } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
-import { Rail } from "./Rail";
-import { RailToggle } from "./RailToggle";
+import { Toolbar } from "./Toolbar";
+import { ToolbarButton } from "./ToolbarButton";
+import { ToolbarToggle } from "./ToolbarToggle";
 import { IconButton } from "./IconButton";
 import { TitleBar } from "./TitleBar";
 import {
@@ -22,7 +23,9 @@ import {
   ScaleIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
-import { useState } from "react";
+import { SHORTCUT_DEFAULTS, shortcutLabel } from "@/utils/matchup-settings";
+import { useRef, useState } from "react";
+import type { Shortcuts } from "@/utils/matchup-settings";
 import type {
   ComponentPropsWithoutRef,
   PointerEvent as ReactPointerEvent,
@@ -53,7 +56,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   y: string | number;
   scale: string | number;
   error?: string;
-  /** The panel shows its content. Collapsed, only the rail shows. */
+  /** The panel shows its content. Collapsed, only the toolbar shows. */
   panelOpen?: boolean;
   renamingId?: string;
   onToggleVisible?: () => void;
@@ -67,20 +70,20 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onStartRename?: (id: string) => void;
   onRenameLayer?: (id: string, name: string) => void;
   onDeleteLayer?: (id: string) => void;
-  onReorderLayers?: (fromId: string, toId: string) => void;
+  onReorderLayers?: (fromId: string, toId: string, before: boolean) => void;
   onDismissError?: () => void;
   onTogglePanel?: () => void;
   onOpenSettings?: () => void;
   onOpenHelp?: () => void;
-  /** Settings belong to a layer, so the rail is inert until one is selected. */
+  /** Settings belong to a layer, so the toolbar is inert until one is selected. */
   hasSelection?: boolean;
+  shortcuts?: Shortcuts;
   onXChange?: (value: string) => void;
   onYChange?: (value: string) => void;
   onScaleChange?: (value: string) => void;
   onGripPointerDown?: (event: ReactPointerEvent) => void;
 };
 
-/** Shared by the rail and the title bar, the panel's two drag grips. */
 const gripClass = "cursor-grab touch-none select-none";
 
 const MatchupPanel = ({
@@ -114,6 +117,7 @@ const MatchupPanel = ({
   onOpenSettings,
   onOpenHelp,
   hasSelection = true,
+  shortcuts = SHORTCUT_DEFAULTS,
   onXChange,
   onYChange,
   onScaleChange,
@@ -126,26 +130,32 @@ const MatchupPanel = ({
   const opacityDisabled = !visible;
   const positionEditable = anchor === null && !positionDisabled;
 
+  // The id is held on a ref as well as in state: state drives the lift, but it lands a
+  // frame late, and the drop needs the source synchronously or it silently no-ops.
+  const dragging = useRef<string>(undefined);
   const [draggingId, setDraggingId] = useState<string>();
-  const [overId, setOverId] = useState<string>();
+  const [over, setOver] = useState<{ id: string; before: boolean }>();
+
+  const endDrag = () => {
+    dragging.current = undefined;
+    setDraggingId(undefined);
+    setOver(undefined);
+  };
 
   return (
     <div
       className={cn("flex flex-col items-start gap-1 font-sans", className)}
       {...props}
     >
-      <Rail onPointerDown={onGripPointerDown} className={gripClass}>
-        <button
-          type="button"
+      <Toolbar onPointerDown={onGripPointerDown} className={gripClass}>
+        <ToolbarButton
           onClick={onTogglePanel}
           aria-expanded={panelOpen}
           aria-label={panelOpen ? "Hide panel" : "Show panel"}
-          title={panelOpen ? "Hide panel (⌥/)" : "Show panel (⌥/)"}
+          title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
           className={cn(
-            "size-rail-tile rounded-control grid place-items-center relative",
-            "bg-rail-tile hover:bg-rail-tile-hover text-muted",
-            "transition-colors duration-120 ease-out",
-            !hasSelection && "flex-1",
+            "rounded-xl hover:bg-toolbar-hover",
+            hasSelection ? "w-10" : "flex-1",
           )}
         >
           {panelOpen ? (
@@ -153,49 +163,49 @@ const MatchupPanel = ({
           ) : (
             <PlusIcon className="w-5" />
           )}
-        </button>
+        </ToolbarButton>
         {hasSelection && (
           <div className="flex flex-1">
-            <RailToggle
+            <ToolbarToggle
               accent="blue"
               on={visible}
               onClick={onToggleVisible}
-              title="Toggle visibility (⌥V)"
-              className="rounded-l-control"
+              title={`Toggle visibility (${shortcutLabel(shortcuts.toggleVisible)})`}
+              className="rounded-l-xl"
             >
               {visible ? (
                 <EyeIcon className="w-5" />
               ) : (
                 <EyeSlashIcon className="w-5" />
               )}
-            </RailToggle>
-            <RailToggle
+            </ToolbarToggle>
+            <ToolbarToggle
               accent="yellow"
               on={locked}
               onClick={onToggleLocked}
-              title="Toggle lock (⌥L)"
+              title={`Toggle lock (${shortcutLabel(shortcuts.toggleLocked)})`}
             >
               {locked ? (
                 <LockIcon className="w-5" />
               ) : (
                 <UnlockIcon className="w-5" />
               )}
-            </RailToggle>
-            <RailToggle
+            </ToolbarToggle>
+            <ToolbarToggle
               accent="pink"
               on={difference}
               onClick={onToggleDifference}
-              title="Toggle difference (⌥D)"
-              className="rounded-r-control"
+              title={`Toggle difference (${shortcutLabel(shortcuts.toggleDifference)})`}
+              className="rounded-r-xl"
             >
               <CircleHalfIcon className="w-5" />
-            </RailToggle>
+            </ToolbarToggle>
           </div>
         )}
-      </Rail>
+      </Toolbar>
 
       {panelOpen && (
-        <div className="w-panel rounded-panel border-hairline shadow-panel flex-none overflow-hidden border bg-white">
+        <div className="w-panel rounded-2xl border-hairline shadow-panel flex-none overflow-hidden border bg-white">
           <TitleBar
             onPointerDown={onGripPointerDown}
             className={gripClass}
@@ -219,7 +229,32 @@ const MatchupPanel = ({
 
           {layers.length > 0 && (
             <>
-              <LayerGrid>
+              <LayerGrid
+                order={layers.map((layer) => layer.id).join()}
+                // The grid is the drop zone, not the tiles: the gaps and padding
+                // between them are dead to a tile-only handler, and the drop line
+                // is drawn in that gap — so you aimed at it and released on nothing.
+                onDragEnter={(event) => event.preventDefault()}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "move";
+                }}
+                onDragLeave={(event) => {
+                  // Fires when crossing into a child too, so only a pointer that has
+                  // left the grid outright may take the line away.
+                  if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                    setOver(undefined);
+                  }
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  const from = dragging.current;
+                  if (from && over && from !== over.id) {
+                    onReorderLayers?.(from, over.id, over.before);
+                  }
+                  endDrag();
+                }}
+              >
                 {layers.map((layer) => (
                   <LayerTile
                     key={layer.id}
@@ -233,31 +268,39 @@ const MatchupPanel = ({
                     onRename={(next) => onRenameLayer?.(layer.id, next)}
                     onDelete={() => onDeleteLayer?.(layer.id)}
                     lifted={draggingId === layer.id}
-                    dropTarget={
-                      Boolean(draggingId) &&
-                      overId === layer.id &&
-                      draggingId !== layer.id
+                    insertion={
+                      draggingId &&
+                      draggingId !== layer.id &&
+                      over?.id === layer.id
+                        ? over.before
+                          ? "before"
+                          : "after"
+                        : undefined
                     }
-                    onDragStartLayer={() => setDraggingId(layer.id)}
-                    onDropOnLayer={() => {
-                      if (draggingId && draggingId !== layer.id) {
-                        onReorderLayers?.(draggingId, layer.id);
-                      }
-                      setDraggingId(undefined);
-                      setOverId(undefined);
+                    onDragStartLayer={() => {
+                      dragging.current = layer.id;
+                      // Deferred a frame so the lift lands after dragstart. The ghost
+                      // is suppressed, but a host page's CSP can refuse the blank
+                      // image and bring it back, and lifting sooner bakes into it.
+                      requestAnimationFrame(() => setDraggingId(layer.id));
                     }}
-                    onDragEndLayer={() => {
-                      setDraggingId(undefined);
-                      setOverId(undefined);
-                    }}
-                    onDragEnter={() => setOverId(layer.id)}
+                    // Returns the same object when the edge hasn't changed, so a
+                    // dragover firing at pointer rate doesn't re-render the grid.
+                    onDragOverLayer={(before) =>
+                      setOver((current) =>
+                        current?.id === layer.id && current.before === before
+                          ? current
+                          : { id: layer.id, before },
+                      )
+                    }
+                    onDragEndLayer={endDrag}
                   />
                 ))}
                 {/* Always has a cell now that the grid scrolls. */}
                 <div className="flex flex-col">
                   <UploadTile
                     aria-label="Upload an image"
-                    title="Upload an image (⌥U)"
+                    title={`Upload an image (${shortcutLabel(shortcuts.upload)})`}
                     onClick={onUpload}
                   />
                 </div>

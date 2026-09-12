@@ -44,7 +44,7 @@ const Field = ({
   return (
     <div
       className={cn(
-        "h-control rounded-control duration-120 flex items-center gap-2 transition-colors ease-out",
+        "h-8 rounded-xl duration-120 flex items-center gap-2 transition-colors ease-out",
         focused && interactive
           ? "border-[1.5px] border-focus bg-white px-[11.5px]"
           : editable && !disabled
@@ -86,7 +86,6 @@ const Field = ({
             }
           }}
           onKeyDown={(event) => {
-            // Up/Down step the value. Left/Right stay with the caret.
             const direction =
               event.key === "ArrowUp" ? 1 : event.key === "ArrowDown" ? -1 : 0;
             if (direction === 0) return;
@@ -97,12 +96,12 @@ const Field = ({
             // Trims float noise from decimal steps without losing real precision.
             onChange?.(String(Number(next.toFixed(4))));
           }}
-          className="text-value text-ink min-w-0 flex-1 tabular-nums outline-none focus-visible:ring-0"
+          className="text-sm text-ink min-w-0 flex-1 tabular-nums outline-none focus-visible:ring-0"
         />
       ) : (
         <span
           className={cn(
-            "text-value flex-1 tabular-nums",
+            "text-sm flex-1 tabular-nums",
             disabled ? "text-disabled" : "text-muted",
           )}
         >

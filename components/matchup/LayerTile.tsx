@@ -4,9 +4,18 @@ import { cn } from "@/utils/cn";
 
 import { useEffect, useRef } from "react";
 
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, DragEvent } from "react";
 
-// Stand-in for absent thumbnail imagery, matching the design's placeholder weave.
+const BLANK_DRAG_IMAGE = new Image();
+BLANK_DRAG_IMAGE.src =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+/** Which half of the tile the pointer sits in decides which side the layer lands on. */
+const isBefore = (event: DragEvent<HTMLElement>) => {
+  const rect = event.currentTarget.getBoundingClientRect();
+  return event.clientX < rect.left + rect.width / 2;
+};
+
 const PLACEHOLDER_WEAVE =
   "repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)";
 
@@ -28,11 +37,11 @@ type LayerTileProps = Omit<
   onRename?: (name: string) => void;
   onDelete?: () => void;
   onDragStartLayer?: () => void;
-  onDropOnLayer?: () => void;
+  onDragOverLayer?: (before: boolean) => void;
   onDragEndLayer?: () => void;
 
-  /** True while another tile is being dragged over this one. */
-  dropTarget?: boolean;
+  /** Edge the drop line sits on, or undefined while no layer is over this tile. */
+  insertion?: "before" | "after";
 };
 
 const ThumbAction = ({
@@ -66,9 +75,9 @@ const LayerTile = ({
   onRename,
   onDelete,
   onDragStartLayer,
-  onDropOnLayer,
+  onDragOverLayer,
   onDragEndLayer,
-  dropTarget = false,
+  insertion,
   className,
   ...props
 }: LayerTileProps) => {
@@ -91,40 +100,48 @@ const LayerTile = ({
   return (
     <div
       ref={self}
-      className={cn("flex min-w-0 flex-col gap-2", className)}
+      draggable={Boolean(onDragStartLayer) && !renaming}
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", name);
+        event.dataTransfer.setDragImage(BLANK_DRAG_IMAGE, 0, 0);
+        onDragStartLayer?.();
+      }}
+      onDragOver={(event) => {
+        if (!onDragOverLayer) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        onDragOverLayer(isBefore(event));
+      }}
+      onDragEnd={onDragEndLayer}
+      className={cn(
+        // select-none so a stray selection in the filename can't be dragged as text
+        // instead of the layer, which silently kills the drag.
+        "relative flex min-w-0 select-none flex-col gap-2 transition-[scale_rotate]",
+        lifted && "z-10 -rotate-2 scale-[1.1]",
+        className,
+      )}
       {...props}
     >
-      <div className="group relative w-full rounded-control">
+      {insertion && (
+        <span
+          aria-hidden
+          className={cn(
+            "z-20 bg-accent-blue pointer-events-none absolute top-4 h-8 w-0.5 rounded-full",
+            insertion === "before" ? "-left-1.25" : "-right-1.25",
+          )}
+        />
+      )}
+      <div className="group relative w-full rounded-xl">
         <button
           type="button"
           aria-pressed={selected}
           aria-label={`Select ${name}`}
-          draggable={Boolean(onDragStartLayer) && !renaming}
-          onDragStart={(event) => {
-            event.dataTransfer.effectAllowed = "move";
-            event.dataTransfer.setData("text/plain", name);
-            onDragStartLayer?.();
-          }}
-          onDragOver={(event) => {
-            if (!onDropOnLayer) return;
-
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "move";
-          }}
-          onDrop={(event) => {
-            event.preventDefault();
-            onDropOnLayer?.();
-          }}
-          onDragEnd={onDragEndLayer}
           onClick={onSelect}
           className={cn(
-            "relative w-full aspect-4/3 cursor-pointer overflow-hidden rounded-control",
-            "focus-visible:ring-2 focus-visible:ring-focus",
+            "relative block w-full aspect-4/3 cursor-pointer overflow-hidden rounded-xl",
+            "ring-2 ring-surface focus-visible:ring-2 focus-visible:ring-focus",
             selected && "ring-2 ring-accent-blue",
-            !selected && "group-hover:ring-2 group-hover:ring-disabled/75",
-            lifted &&
-              "z-10 -rotate-2 scale-[1.03] shadow-drag ring-2 ring-accent-blue",
-            dropTarget && "ring-2 ring-offset-1 ring-accent-blue",
           )}
           style={
             src
@@ -140,13 +157,19 @@ const LayerTile = ({
             <img
               src={src}
               alt=""
+              draggable={false}
               className="size-full select-none object-cover"
             />
           )}
         </button>
 
-        <div className="pointer-events-none aspect-4/3 absolute inset-0 p-1 items-start justify-between hidden group-hover:flex">
-          <div className="pointer-events-none absolute inset-0 rounded-control bg-black/15 backdrop-blur-[2px]" />
+        <div
+          className={cn(
+            "pointer-events-none aspect-4/3 absolute inset-0 p-1 items-start justify-between hidden group-hover:flex",
+            lifted && `opacity-0`,
+          )}
+        >
+          <div className="pointer-events-none absolute inset-0 rounded-xl bg-black/15 backdrop-blur-[2px]" />
           <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
             <EditIcon className="w-3 text-accent-blue" />
           </ThumbAction>
@@ -168,7 +191,7 @@ const LayerTile = ({
             if (event.key === "Enter") event.currentTarget.blur();
             if (event.key === "Escape") onRename?.(name);
           }}
-          className="h-4.5 w-full rounded-badge border-[1.5px] border-focus bg-white px-1.25 text-micro text-ink focus-visible:ring-0"
+          className="h-4.5 w-full rounded-md border-[1.5px] border-focus bg-white px-1.25 text-micro text-ink focus-visible:ring-0"
         />
       ) : (
         <div
