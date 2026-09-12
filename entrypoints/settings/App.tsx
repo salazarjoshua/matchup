@@ -62,7 +62,7 @@ const listClass =
   "rounded-control bg-surface flex flex-col divide-y divide-black/5";
 
 const kbdClass =
-  "text-value text-muted rounded-badge min-w-12 px-2 py-0.5 text-center";
+  "text-sm text-muted rounded-badge min-w-12 px-2 py-0.5 text-center";
 
 /**
  * One rebindable row. Clicking the key starts capture; the next bindable key
@@ -104,9 +104,9 @@ const ShortcutRow = ({
 );
 
 const selectClass =
-  "h-control rounded-control bg-surface text-value text-ink w-44 px-3 outline-none";
+  "h-control rounded-control bg-surface text-sm text-ink w-44 px-3 outline-none";
 const numberClass =
-  "h-control rounded-control bg-surface text-value text-ink w-24 px-3 text-right tabular-nums outline-none";
+  "h-control rounded-control bg-surface text-sm text-ink w-24 px-3 text-right tabular-nums outline-none";
 
 export default function App() {
   const [settings, setSettings] = useState<MatchupSettings>(SETTINGS_DEFAULTS);

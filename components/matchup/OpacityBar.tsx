@@ -138,7 +138,7 @@ const OpacityBar = ({
             if (event.key === "Escape") setEditing(false);
             event.stopPropagation();
           }}
-          className="text-value text-ink w-10 bg-transparent text-right tabular-nums rounded-sm"
+          className="text-sm text-ink w-10 bg-transparent text-right tabular-nums rounded-sm"
         />
       ) : (
         <button
@@ -150,7 +150,7 @@ const OpacityBar = ({
             setEditing(true);
           }}
           className={cn(
-            "text-value w-10 text-right tabular-nums rounded-sm",
+            "text-sm w-10 text-right tabular-nums rounded-sm",
             disabled ? "text-disabled" : "text-ink hover:text-accent-blue",
           )}
         >

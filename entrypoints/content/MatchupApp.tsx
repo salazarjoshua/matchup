@@ -549,6 +549,7 @@ export default function MatchupApp() {
           error={error}
           panelOpen={state.panelOpen}
           hasSelection={Boolean(selected)}
+          shortcuts={prefs.shortcuts}
           onOpenSettings={() =>
             void browser.runtime.sendMessage({ type: "matchup:open-settings" })
           }

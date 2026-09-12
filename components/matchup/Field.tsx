@@ -97,12 +97,12 @@ const Field = ({
             // Trims float noise from decimal steps without losing real precision.
             onChange?.(String(Number(next.toFixed(4))));
           }}
-          className="text-value text-ink min-w-0 flex-1 tabular-nums outline-none focus-visible:ring-0"
+          className="text-sm text-ink min-w-0 flex-1 tabular-nums outline-none focus-visible:ring-0"
         />
       ) : (
         <span
           className={cn(
-            "text-value flex-1 tabular-nums",
+            "text-sm flex-1 tabular-nums",
             disabled ? "text-disabled" : "text-muted",
           )}
         >

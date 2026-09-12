@@ -22,7 +22,9 @@ import {
   ScaleIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
+import { SHORTCUT_DEFAULTS, shortcutLabel } from "@/utils/matchup-settings";
 import { useState } from "react";
+import type { Shortcuts } from "@/utils/matchup-settings";
 import type {
   ComponentPropsWithoutRef,
   PointerEvent as ReactPointerEvent,
@@ -74,6 +76,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onOpenHelp?: () => void;
   /** Settings belong to a layer, so the rail is inert until one is selected. */
   hasSelection?: boolean;
+  shortcuts?: Shortcuts;
   onXChange?: (value: string) => void;
   onYChange?: (value: string) => void;
   onScaleChange?: (value: string) => void;
@@ -114,6 +117,7 @@ const MatchupPanel = ({
   onOpenSettings,
   onOpenHelp,
   hasSelection = true,
+  shortcuts = SHORTCUT_DEFAULTS,
   onXChange,
   onYChange,
   onScaleChange,
@@ -140,7 +144,7 @@ const MatchupPanel = ({
           onClick={onTogglePanel}
           aria-expanded={panelOpen}
           aria-label={panelOpen ? "Hide panel" : "Show panel"}
-          title={panelOpen ? "Hide panel (⌥/)" : "Show panel (⌥/)"}
+          title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
           className={cn(
             "size-rail-tile rounded-control grid place-items-center relative",
             "bg-rail-tile hover:bg-rail-tile-hover text-muted",
@@ -160,7 +164,7 @@ const MatchupPanel = ({
               accent="blue"
               on={visible}
               onClick={onToggleVisible}
-              title="Toggle visibility (⌥V)"
+              title={`Toggle visibility (${shortcutLabel(shortcuts.toggleVisible)})`}
               className="rounded-l-control"
             >
               {visible ? (
@@ -173,7 +177,7 @@ const MatchupPanel = ({
               accent="yellow"
               on={locked}
               onClick={onToggleLocked}
-              title="Toggle lock (⌥L)"
+              title={`Toggle lock (${shortcutLabel(shortcuts.toggleLocked)})`}
             >
               {locked ? (
                 <LockIcon className="w-5" />
@@ -185,7 +189,7 @@ const MatchupPanel = ({
               accent="pink"
               on={difference}
               onClick={onToggleDifference}
-              title="Toggle difference (⌥D)"
+              title={`Toggle difference (${shortcutLabel(shortcuts.toggleDifference)})`}
               className="rounded-r-control"
             >
               <CircleHalfIcon className="w-5" />
@@ -257,7 +261,7 @@ const MatchupPanel = ({
                 <div className="flex flex-col">
                   <UploadTile
                     aria-label="Upload an image"
-                    title="Upload an image (⌥U)"
+                    title={`Upload an image (${shortcutLabel(shortcuts.upload)})`}
                     onClick={onUpload}
                   />
                 </div>

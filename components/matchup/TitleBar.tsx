@@ -12,7 +12,7 @@ const TitleBar = ({ className, actions, ...props }: TitleBarProps) => (
     )}
     {...props}
   >
-    <div className="flex items-center gap-1 text-panel-title text-ink font-sans">
+    <div className="text-ink">
       <LogoLockup className="h-4 -mb-1" />
     </div>
     {actions && <span className="ml-auto flex items-center">{actions}</span>}
