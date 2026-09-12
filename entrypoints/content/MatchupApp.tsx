@@ -586,15 +586,17 @@ export default function MatchupApp() {
             });
             setRenamingId(undefined);
           }}
-          onReorderLayers={(fromId, toId) =>
+          onReorderLayers={(fromId, toId, before) =>
             setState((current) => {
               const from = current.layers.findIndex((l) => l.id === fromId);
-              const to = current.layers.findIndex((l) => l.id === toId);
-              if (from < 0 || to < 0 || from === to) return current;
+              const target = current.layers.findIndex((l) => l.id === toId);
+              if (from < 0 || target < 0 || from === target) return current;
               const layers = [...current.layers];
               const [moved] = layers.splice(from, 1);
               if (!moved) return current;
-              layers.splice(to, 0, moved);
+              // Pulling the layer out shifts the target down one when it sat after it.
+              const at = from < target ? target - 1 : target;
+              layers.splice(before ? at : at + 1, 0, moved);
               return { ...current, layers };
             })
           }

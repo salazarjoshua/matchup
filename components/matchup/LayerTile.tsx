@@ -4,7 +4,13 @@ import { cn } from "@/utils/cn";
 
 import { useEffect, useRef } from "react";
 
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, DragEvent } from "react";
+
+/** Which half of the tile the pointer sits in decides which side the layer lands on. */
+const isBefore = (event: DragEvent<HTMLElement>) => {
+  const rect = event.currentTarget.getBoundingClientRect();
+  return event.clientX < rect.left + rect.width / 2;
+};
 
 const PLACEHOLDER_WEAVE =
   "repeating-linear-gradient(135deg,#dcdcdc 0 4px,#eaeaea 4px 8px)";
@@ -27,11 +33,12 @@ type LayerTileProps = Omit<
   onRename?: (name: string) => void;
   onDelete?: () => void;
   onDragStartLayer?: () => void;
-  onDropOnLayer?: () => void;
+  onDragOverLayer?: (before: boolean) => void;
+  onDropOnLayer?: (before: boolean) => void;
   onDragEndLayer?: () => void;
 
-  /** True while another tile is being dragged over this one. */
-  dropTarget?: boolean;
+  /** Edge the drop line sits on, or undefined while no layer is over this tile. */
+  insertion?: "before" | "after";
 };
 
 const ThumbAction = ({
@@ -65,9 +72,10 @@ const LayerTile = ({
   onRename,
   onDelete,
   onDragStartLayer,
+  onDragOverLayer,
   onDropOnLayer,
   onDragEndLayer,
-  dropTarget = false,
+  insertion,
   className,
   ...props
 }: LayerTileProps) => {
@@ -90,40 +98,48 @@ const LayerTile = ({
   return (
     <div
       ref={self}
-      className={cn("flex min-w-0 flex-col gap-2", className)}
+      draggable={Boolean(onDragStartLayer) && !renaming}
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", name);
+        onDragStartLayer?.();
+      }}
+      onDragOver={(event) => {
+        if (!onDropOnLayer) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "move";
+        onDragOverLayer?.(isBefore(event));
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        onDropOnLayer?.(isBefore(event));
+      }}
+      onDragEnd={onDragEndLayer}
+      className={cn("relative flex min-w-0 flex-col gap-2", className)}
       {...props}
     >
+      {insertion && (
+        <span
+          aria-hidden
+          className={cn(
+            "bg-accent-blue pointer-events-none absolute top-6 h-4.5 w-0.5 rounded-full",
+            insertion === "before" ? "-left-1.25" : "-right-1.25",
+          )}
+        />
+      )}
       <div className="group relative w-full rounded-xl">
         <button
           type="button"
           aria-pressed={selected}
           aria-label={`Select ${name}`}
-          draggable={Boolean(onDragStartLayer) && !renaming}
-          onDragStart={(event) => {
-            event.dataTransfer.effectAllowed = "move";
-            event.dataTransfer.setData("text/plain", name);
-            onDragStartLayer?.();
-          }}
-          onDragOver={(event) => {
-            if (!onDropOnLayer) return;
-
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "move";
-          }}
-          onDrop={(event) => {
-            event.preventDefault();
-            onDropOnLayer?.();
-          }}
-          onDragEnd={onDragEndLayer}
           onClick={onSelect}
           className={cn(
-            "relative w-full aspect-4/3 cursor-pointer overflow-hidden rounded-xl",
+            "relative block w-full aspect-4/3 cursor-pointer overflow-hidden rounded-xl",
             "focus-visible:ring-2 focus-visible:ring-focus",
             selected && "ring-2 ring-accent-blue",
             !selected && "group-hover:ring-2 group-hover:ring-disabled/75",
             lifted &&
-              "z-10 -rotate-2 scale-[1.03] shadow-drag ring-2 ring-accent-blue",
-            dropTarget && "ring-2 ring-offset-1 ring-accent-blue",
+              "z-10 -rotate-2 transition-[scale] scale-[1.05] shadow-drag ring-2 ring-accent-blue",
           )}
           style={
             src

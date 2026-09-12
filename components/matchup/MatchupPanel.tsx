@@ -70,7 +70,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onStartRename?: (id: string) => void;
   onRenameLayer?: (id: string, name: string) => void;
   onDeleteLayer?: (id: string) => void;
-  onReorderLayers?: (fromId: string, toId: string) => void;
+  onReorderLayers?: (fromId: string, toId: string, before: boolean) => void;
   onDismissError?: () => void;
   onTogglePanel?: () => void;
   onOpenSettings?: () => void;
@@ -131,7 +131,7 @@ const MatchupPanel = ({
   const positionEditable = anchor === null && !positionDisabled;
 
   const [draggingId, setDraggingId] = useState<string>();
-  const [overId, setOverId] = useState<string>();
+  const [over, setOver] = useState<{ id: string; before: boolean }>();
 
   return (
     <div
@@ -234,24 +234,36 @@ const MatchupPanel = ({
                     onRename={(next) => onRenameLayer?.(layer.id, next)}
                     onDelete={() => onDeleteLayer?.(layer.id)}
                     lifted={draggingId === layer.id}
-                    dropTarget={
-                      Boolean(draggingId) &&
-                      overId === layer.id &&
-                      draggingId !== layer.id
+                    insertion={
+                      draggingId &&
+                      draggingId !== layer.id &&
+                      over?.id === layer.id
+                        ? over.before
+                          ? "before"
+                          : "after"
+                        : undefined
                     }
                     onDragStartLayer={() => setDraggingId(layer.id)}
-                    onDropOnLayer={() => {
+                    // Returns the same object when the edge hasn't changed, so a
+                    // dragover firing at pointer rate doesn't re-render the grid.
+                    onDragOverLayer={(before) =>
+                      setOver((current) =>
+                        current?.id === layer.id && current.before === before
+                          ? current
+                          : { id: layer.id, before },
+                      )
+                    }
+                    onDropOnLayer={(before) => {
                       if (draggingId && draggingId !== layer.id) {
-                        onReorderLayers?.(draggingId, layer.id);
+                        onReorderLayers?.(draggingId, layer.id, before);
                       }
                       setDraggingId(undefined);
-                      setOverId(undefined);
+                      setOver(undefined);
                     }}
                     onDragEndLayer={() => {
                       setDraggingId(undefined);
-                      setOverId(undefined);
+                      setOver(undefined);
                     }}
-                    onDragEnter={() => setOverId(layer.id)}
                   />
                 ))}
                 {/* Always has a cell now that the grid scrolls. */}
