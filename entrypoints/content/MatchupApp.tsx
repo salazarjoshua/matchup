@@ -33,6 +33,8 @@ const PANEL_WIDTH = 300;
 const EDGE = 8;
 const TOOLBAR_HEIGHT = 40;
 const DRAG_THRESHOLD = 4;
+const MAX_NAME = 24;
+const ACCEPTED_COPY = "Use PNG, JPG, WebP or SVG.";
 
 const swallowClick = (event: MouseEvent) => {
   event.stopPropagation();
@@ -72,6 +74,26 @@ const isEditable = (event: KeyboardEvent) => {
     target instanceof HTMLTextAreaElement ||
     target instanceof HTMLSelectElement
   );
+};
+
+/** Long names wrap the 300px banner into a wall of text; the extension is the part
+ *  that explains the rejection, so it survives the trim. */
+const shortName = (name: string) => {
+  if (name.length <= MAX_NAME) return name;
+  const dot = name.lastIndexOf(".");
+  const ext = dot > 0 ? name.slice(dot) : "";
+  return `${name.slice(0, Math.max(1, MAX_NAME - ext.length - 1))}…${ext}`;
+};
+
+const rejectionMessage = (rejected: File[], addedAny: boolean) => {
+  const one = rejected.length === 1;
+  const what = one
+    ? shortName(rejected[0]?.name || "one file")
+    : `${rejected.length} files`;
+  if (addedAny) return `Skipped ${what}. ${ACCEPTED_COPY}`;
+  return one
+    ? `${what} isn’t supported. ${ACCEPTED_COPY}`
+    : `${what} aren’t supported. ${ACCEPTED_COPY}`;
 };
 
 const readAsDataUrl = (file: File) =>
@@ -197,27 +219,37 @@ export default function MatchupApp() {
   });
 
   const addFiles = useCallback(async (files: File[]) => {
-    const rejected = files.find((file) => !ACCEPTED_TYPES.includes(file.type));
-    if (rejected) {
-      setError(`That file isn’t supported. Use PNG, JPG, WebP or SVG.`);
-      return;
-    }
-    setError(undefined);
-    const decoded = await Promise.all(
-      files.map(async (file) => ({
-        ...prefsRef.current.layerDefaults,
-        id: crypto.randomUUID(),
-        name: file.name || "pasted.png",
-        src: await readAsDataUrl(file),
-      })),
+    // Partitioned rather than rejected outright: a dropped folder selection is
+    // often mostly usable, and throwing all of it away over one stray file is
+    // harsher than it was when every file came from a filtered picker.
+    const accepted = files.filter((file) => ACCEPTED_TYPES.includes(file.type));
+    const rejected = files.filter(
+      (file) => !ACCEPTED_TYPES.includes(file.type),
     );
-    // Selecting the new layer is enough to reach it: the grid scrolls, and the
-    // tile scrolls itself into view when it becomes the selected one.
-    setState((current) => ({
-      ...current,
-      layers: [...current.layers, ...decoded],
-      selectedId: decoded[decoded.length - 1]?.id,
-    }));
+
+    if (accepted.length > 0) {
+      const decoded = await Promise.all(
+        accepted.map(async (file) => ({
+          ...prefsRef.current.layerDefaults,
+          id: crypto.randomUUID(),
+          name: file.name || "pasted.png",
+          src: await readAsDataUrl(file),
+        })),
+      );
+      // Selecting the new layer is enough to reach it: the grid scrolls, and the
+      // tile scrolls itself into view when it becomes the selected one.
+      setState((current) => ({
+        ...current,
+        layers: [...current.layers, ...decoded],
+        selectedId: decoded[decoded.length - 1]?.id,
+      }));
+    }
+
+    setError(
+      rejected.length > 0
+        ? rejectionMessage(rejected, accepted.length > 0)
+        : undefined,
+    );
   }, []);
 
   const pasteFromClipboard = useCallback(async () => {
