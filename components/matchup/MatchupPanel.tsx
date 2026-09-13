@@ -19,6 +19,7 @@ import {
   UnlockIcon,
   LockIcon,
   SettingsIcon,
+  SidePanelIcon,
   PlusIcon,
   MinusIcon,
   ScaleIcon,
@@ -81,6 +82,9 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   /** Settings belong to a layer, so the toolbar is inert until one is selected. */
   hasSelection?: boolean;
   shortcuts?: Shortcuts;
+  /** False when the panel has a dock of its own: no drag grip, no collapsing. */
+  floating?: boolean;
+  onToggleSidePanel?: () => void;
   onXChange?: (value: string) => void;
   onYChange?: (value: string) => void;
   onScaleChange?: (value: string) => void;
@@ -122,6 +126,8 @@ const MatchupPanel = ({
   onOpenHelp,
   hasSelection = true,
   shortcuts = SHORTCUT_DEFAULTS,
+  floating = true,
+  onToggleSidePanel,
   onXChange,
   onYChange,
   onScaleChange,
@@ -148,255 +154,286 @@ const MatchupPanel = ({
   };
 
   return (
-    <div
-      className={cn("flex flex-col items-start gap-1 font-sans", className)}
-      {...props}
-    >
-      <Toolbar onPointerDown={onGripPointerDown} className={gripClass}>
-        <ToolbarButton
-          onClick={onTogglePanel}
-          aria-expanded={panelOpen}
-          aria-label={panelOpen ? "Hide panel" : "Show panel"}
-          title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
-          className={cn(
-            "rounded-xl hover:bg-toolbar-hover",
-            hasSelection ? "w-10" : "flex-1",
-          )}
-        >
-          {panelOpen ? (
-            <MinusIcon className="w-5" />
-          ) : (
-            <PlusIcon className="w-5" />
-          )}
-        </ToolbarButton>
-        {hasSelection && (
-          <div className="flex flex-1">
-            <ToolbarToggle
-              accent="blue"
-              on={visible}
-              onClick={onToggleVisible}
-              title={`Toggle visibility (${shortcutLabel(shortcuts.toggleVisible)})`}
-              className="rounded-l-xl"
-            >
-              {visible ? (
-                <EyeIcon className="w-5" />
-              ) : (
-                <EyeSlashIcon className="w-5" />
-              )}
-            </ToolbarToggle>
-            <ToolbarToggle
-              accent="yellow"
-              on={locked}
-              onClick={onToggleLocked}
-              title={`Toggle lock (${shortcutLabel(shortcuts.toggleLocked)})`}
-            >
-              {locked ? (
-                <LockIcon className="w-5" />
-              ) : (
-                <UnlockIcon className="w-5" />
-              )}
-            </ToolbarToggle>
-            <ToolbarToggle
-              accent="pink"
-              on={difference}
-              onClick={onToggleDifference}
-              title={`Toggle difference (${shortcutLabel(shortcuts.toggleDifference)})`}
-              className="rounded-r-xl"
-            >
-              <CircleHalfIcon className="w-5" />
-            </ToolbarToggle>
-          </div>
+    <div className="w-full justify-center items-center flex">
+      <div
+        className={cn(
+          "flex flex-col items-start gap-1 font-sans w-panel",
+          className,
         )}
-      </Toolbar>
+        {...props}
+      >
+        <Toolbar
+          onPointerDown={floating ? onGripPointerDown : undefined}
+          className={cn(floating ? gripClass : "w-full")}
+        >
+          {floating && (
+            <ToolbarButton
+              onClick={onTogglePanel}
+              aria-expanded={panelOpen}
+              aria-label={panelOpen ? "Hide panel" : "Show panel"}
+              title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
+              className={cn(
+                "rounded-xl hover:bg-toolbar-hover",
+                hasSelection ? "w-10" : "flex-1",
+              )}
+            >
+              {panelOpen ? (
+                <MinusIcon className="w-5" />
+              ) : (
+                <PlusIcon className="w-5" />
+              )}
+            </ToolbarButton>
+          )}
+          {hasSelection && (
+            <div className="flex flex-1">
+              <ToolbarToggle
+                accent="blue"
+                on={visible}
+                onClick={onToggleVisible}
+                title={`Toggle visibility (${shortcutLabel(shortcuts.toggleVisible)})`}
+                className="rounded-l-xl"
+              >
+                {visible ? (
+                  <EyeIcon className="w-5" />
+                ) : (
+                  <EyeSlashIcon className="w-5" />
+                )}
+              </ToolbarToggle>
+              <ToolbarToggle
+                accent="yellow"
+                on={locked}
+                onClick={onToggleLocked}
+                title={`Toggle lock (${shortcutLabel(shortcuts.toggleLocked)})`}
+              >
+                {locked ? (
+                  <LockIcon className="w-5" />
+                ) : (
+                  <UnlockIcon className="w-5" />
+                )}
+              </ToolbarToggle>
+              <ToolbarToggle
+                accent="pink"
+                on={difference}
+                onClick={onToggleDifference}
+                title={`Toggle difference (${shortcutLabel(shortcuts.toggleDifference)})`}
+                className="rounded-r-xl"
+              >
+                <CircleHalfIcon className="w-5" />
+              </ToolbarToggle>
+            </div>
+          )}
+        </Toolbar>
 
-      {panelOpen && (
-        <div className="w-panel rounded-2xl border-hairline shadow-panel flex-none overflow-hidden border bg-white">
-          <TitleBar
-            onPointerDown={onGripPointerDown}
-            className={gripClass}
-            actions={
-              <>
-                <IconButton aria-label="About" onClick={onOpenHelp}>
-                  <InfoIcon className="w-4" />
-                </IconButton>
-                <IconButton aria-label="Settings" onClick={onOpenSettings}>
-                  <SettingsIcon className="w-4" />
-                </IconButton>
-              </>
-            }
-          />
-
+        {(panelOpen || !floating) && (
           <div
-            className="relative"
-            onDragEnter={(event) => {
-              if (!hasFiles(event)) return;
-              event.preventDefault();
-              setDroppingFiles(true);
-            }}
-            onDragOver={(event) => {
-              if (!hasFiles(event)) return;
-              event.preventDefault();
-              event.dataTransfer.dropEffect = "copy";
-              setDroppingFiles(true);
-            }}
-            onDragLeave={(event) => {
-              // Crossing into a child fires dragleave too, so only a pointer that
-              // has left the zone outright may close it.
-              if (!hasFiles(event)) return;
-              if (event.currentTarget.contains(event.relatedTarget as Node))
-                return;
-              setDroppingFiles(false);
-            }}
-            onDrop={(event) => {
-              if (!hasFiles(event)) return;
-              event.preventDefault();
-              setDroppingFiles(false);
-              onDropFiles?.(Array.from(event.dataTransfer.files));
-            }}
+            className={cn(
+              "rounded-2xl border-hairline shadow-panel flex-none overflow-hidden border bg-white",
+              floating ? "w-panel" : "w-full",
+            )}
           >
-            {droppingFiles && <DropOverlay />}
-
-            {error && (
-              <ErrorBanner message={error} onDismiss={onDismissError} />
-            )}
-
-            {layers.length === 0 && (
-              <EmptyState onUpload={onUpload} onPaste={onPaste} />
-            )}
-
-            {layers.length > 0 && (
-              <>
-                <LayerGrid
-                  order={layers.map((layer) => layer.id).join()}
-                  // The grid is the drop zone, not the tiles: the gaps and padding
-                  // between them are dead to a tile-only handler, and the drop line
-                  // is drawn in that gap — so you aimed at it and released on nothing.
-                  onDragEnter={(event) => {
-                    if (hasFiles(event)) return;
-                    event.preventDefault();
-                  }}
-                  onDragOver={(event) => {
-                    if (hasFiles(event)) return;
-                    event.preventDefault();
-                    event.dataTransfer.dropEffect = "move";
-                  }}
-                  onDragLeave={(event) => {
-                    if (hasFiles(event)) return;
-                    // Fires when crossing into a child too, so only a pointer that has
-                    // left the grid outright may take the line away.
-                    if (
-                      !event.currentTarget.contains(event.relatedTarget as Node)
-                    ) {
-                      setOver(undefined);
-                    }
-                  }}
-                  onDrop={(event) => {
-                    if (hasFiles(event)) return;
-                    event.preventDefault();
-                    const from = dragging.current;
-                    if (from && over && from !== over.id) {
-                      onReorderLayers?.(from, over.id, over.before);
-                    }
-                    endDrag();
-                  }}
-                >
-                  {layers.map((layer) => (
-                    <LayerTile
-                      key={layer.id}
-                      name={layer.name}
-                      src={layer.src}
-                      selected={layer.id === selectedId}
-                      locked={locked && layer.id === selectedId}
-                      renaming={layer.id === renamingId}
-                      onSelect={() => onSelectLayer?.(layer.id)}
-                      onStartRename={() => onStartRename?.(layer.id)}
-                      onRename={(next) => onRenameLayer?.(layer.id, next)}
-                      onDelete={() => onDeleteLayer?.(layer.id)}
-                      lifted={draggingId === layer.id}
-                      insertion={
-                        draggingId &&
-                        draggingId !== layer.id &&
-                        over?.id === layer.id
-                          ? over.before
-                            ? "before"
-                            : "after"
-                          : undefined
+            <TitleBar
+              onPointerDown={floating ? onGripPointerDown : undefined}
+              className={cn(floating && gripClass)}
+              actions={
+                <>
+                  {onToggleSidePanel && (
+                    <IconButton
+                      aria-label={
+                        floating ? "Open in side panel" : "Show on the page"
                       }
-                      onDragStartLayer={() => {
-                        dragging.current = layer.id;
-                        // Deferred a frame so the lift lands after dragstart. The ghost
-                        // is suppressed, but a host page's CSP can refuse the blank
-                        // image and bring it back, and lifting sooner bakes into it.
-                        requestAnimationFrame(() => setDraggingId(layer.id));
-                      }}
-                      // Returns the same object when the edge hasn't changed, so a
-                      // dragover firing at pointer rate doesn't re-render the grid.
-                      onDragOverLayer={(before) =>
-                        setOver((current) =>
-                          current?.id === layer.id && current.before === before
-                            ? current
-                            : { id: layer.id, before },
+                      title={
+                        floating ? "Open in side panel" : "Show on the page"
+                      }
+                      onClick={onToggleSidePanel}
+                    >
+                      <SidePanelIcon className="w-4" />
+                    </IconButton>
+                  )}
+                  <IconButton aria-label="About" onClick={onOpenHelp}>
+                    <InfoIcon className="w-4" />
+                  </IconButton>
+                  <IconButton aria-label="Settings" onClick={onOpenSettings}>
+                    <SettingsIcon className="w-4" />
+                  </IconButton>
+                </>
+              }
+            />
+
+            <div
+              className="relative"
+              onDragEnter={(event) => {
+                if (!hasFiles(event)) return;
+                event.preventDefault();
+                setDroppingFiles(true);
+              }}
+              onDragOver={(event) => {
+                if (!hasFiles(event)) return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "copy";
+                setDroppingFiles(true);
+              }}
+              onDragLeave={(event) => {
+                // Crossing into a child fires dragleave too, so only a pointer that
+                // has left the zone outright may close it.
+                if (!hasFiles(event)) return;
+                if (event.currentTarget.contains(event.relatedTarget as Node))
+                  return;
+                setDroppingFiles(false);
+              }}
+              onDrop={(event) => {
+                if (!hasFiles(event)) return;
+                event.preventDefault();
+                setDroppingFiles(false);
+                onDropFiles?.(Array.from(event.dataTransfer.files));
+              }}
+            >
+              {droppingFiles && <DropOverlay />}
+
+              {error && (
+                <ErrorBanner message={error} onDismiss={onDismissError} />
+              )}
+
+              {layers.length === 0 && (
+                <EmptyState onUpload={onUpload} onPaste={onPaste} />
+              )}
+
+              {layers.length > 0 && (
+                <>
+                  <LayerGrid
+                    order={layers.map((layer) => layer.id).join()}
+                    // The grid is the drop zone, not the tiles: the gaps and padding
+                    // between them are dead to a tile-only handler, and the drop line
+                    // is drawn in that gap — so you aimed at it and released on nothing.
+                    onDragEnter={(event) => {
+                      if (hasFiles(event)) return;
+                      event.preventDefault();
+                    }}
+                    onDragOver={(event) => {
+                      if (hasFiles(event)) return;
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = "move";
+                    }}
+                    onDragLeave={(event) => {
+                      if (hasFiles(event)) return;
+                      // Fires when crossing into a child too, so only a pointer that has
+                      // left the grid outright may take the line away.
+                      if (
+                        !event.currentTarget.contains(
+                          event.relatedTarget as Node,
                         )
+                      ) {
+                        setOver(undefined);
                       }
-                      onDragEndLayer={endDrag}
-                    />
-                  ))}
-                  {/* Always has a cell now that the grid scrolls. */}
-                  <div className="flex flex-col">
-                    <UploadTile
-                      aria-label="Upload an image"
-                      title={`Upload an image (${shortcutLabel(shortcuts.upload)})`}
-                      onClick={onUpload}
-                    />
-                  </div>
-                </LayerGrid>
-
-                <div className="border-hairline border-t p-3">
-                  <div className="flex items-start gap-3">
-                    <AnchorPad
-                      selected={anchor}
-                      disabled={positionDisabled}
-                      onSelect={onAnchorSelect}
-                    />
-                    <div className="flex min-w-0 flex-1 flex-col gap-2">
-                      <Field
-                        label="X"
-                        value={x}
-                        editable={positionEditable}
-                        disabled={positionDisabled}
-                        onChange={onXChange}
+                    }}
+                    onDrop={(event) => {
+                      if (hasFiles(event)) return;
+                      event.preventDefault();
+                      const from = dragging.current;
+                      if (from && over && from !== over.id) {
+                        onReorderLayers?.(from, over.id, over.before);
+                      }
+                      endDrag();
+                    }}
+                  >
+                    {layers.map((layer) => (
+                      <LayerTile
+                        key={layer.id}
+                        name={layer.name}
+                        src={layer.src}
+                        selected={layer.id === selectedId}
+                        locked={locked && layer.id === selectedId}
+                        renaming={layer.id === renamingId}
+                        onSelect={() => onSelectLayer?.(layer.id)}
+                        onStartRename={() => onStartRename?.(layer.id)}
+                        onRename={(next) => onRenameLayer?.(layer.id, next)}
+                        onDelete={() => onDeleteLayer?.(layer.id)}
+                        lifted={draggingId === layer.id}
+                        insertion={
+                          draggingId &&
+                          draggingId !== layer.id &&
+                          over?.id === layer.id
+                            ? over.before
+                              ? "before"
+                              : "after"
+                            : undefined
+                        }
+                        onDragStartLayer={() => {
+                          dragging.current = layer.id;
+                          // Deferred a frame so the lift lands after dragstart. The ghost
+                          // is suppressed, but a host page's CSP can refuse the blank
+                          // image and bring it back, and lifting sooner bakes into it.
+                          requestAnimationFrame(() => setDraggingId(layer.id));
+                        }}
+                        // Returns the same object when the edge hasn't changed, so a
+                        // dragover firing at pointer rate doesn't re-render the grid.
+                        onDragOverLayer={(before) =>
+                          setOver((current) =>
+                            current?.id === layer.id &&
+                            current.before === before
+                              ? current
+                              : { id: layer.id, before },
+                          )
+                        }
+                        onDragEndLayer={endDrag}
                       />
-                      <Field
-                        label="Y"
-                        value={y}
-                        editable={positionEditable}
-                        disabled={positionDisabled}
-                        onChange={onYChange}
-                      />
-                      <Field
-                        label={<ScaleIcon className="size-4 " />}
-                        value={scale}
-                        editable={!positionDisabled}
-                        disabled={positionDisabled}
-                        onChange={onScaleChange}
-                        step={0.1}
-                        min={0.01}
+                    ))}
+                    {/* Always has a cell now that the grid scrolls. */}
+                    <div className="flex flex-col">
+                      <UploadTile
+                        aria-label="Upload an image"
+                        title={`Upload an image (${shortcutLabel(shortcuts.upload)})`}
+                        onClick={onUpload}
                       />
                     </div>
-                  </div>
-                </div>
+                  </LayerGrid>
 
-                <OpacityBar
-                  value={opacity}
-                  disabled={opacityDisabled}
-                  onChange={onOpacityChange}
-                  className="p-3 pt-0"
-                />
-              </>
-            )}
+                  <div className="border-hairline border-t p-3">
+                    <div className="flex items-start gap-3">
+                      <AnchorPad
+                        selected={anchor}
+                        disabled={positionDisabled}
+                        onSelect={onAnchorSelect}
+                      />
+                      <div className="flex min-w-0 flex-1 flex-col gap-2">
+                        <Field
+                          label="X"
+                          value={x}
+                          editable={positionEditable}
+                          disabled={positionDisabled}
+                          onChange={onXChange}
+                        />
+                        <Field
+                          label="Y"
+                          value={y}
+                          editable={positionEditable}
+                          disabled={positionDisabled}
+                          onChange={onYChange}
+                        />
+                        <Field
+                          label={<ScaleIcon className="size-4 " />}
+                          value={scale}
+                          editable={!positionDisabled}
+                          disabled={positionDisabled}
+                          onChange={onScaleChange}
+                          step={0.1}
+                          min={0.01}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <OpacityBar
+                    value={opacity}
+                    disabled={opacityDisabled}
+                    onChange={onOpacityChange}
+                    className="p-3 pt-0"
+                  />
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

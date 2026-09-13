@@ -14,12 +14,21 @@ export type LayerSettings = {
   scale: string;
 };
 
+/**
+ * Deliberately without the image. Every tweak of a slider rewrites this record, and a
+ * layer's data URL runs to megabytes — carrying one through each write is what made the
+ * side panel crawl. Sources live in their own store and are written only on add or delete.
+ */
 export type MatchupLayer = LayerSettings & {
   id: string;
   name: string;
-  /** Data URL — object URLs do not survive a page reload. */
-  src: string;
 };
+
+/** Layer id → data URL. Object URLs do not survive a page reload, so these are inline. */
+export type LayerSources = Record<string, string>;
+
+/** A layer with its image joined back on, which is all any component ever wants. */
+export type DrawnLayer = MatchupLayer & { src?: string };
 
 export type MatchupState = {
   layers: MatchupLayer[];
@@ -50,8 +59,10 @@ export const MATCHUP_DEFAULTS: MatchupState = {
  * object would carry those dead keys forward and keep re-saving them.
  */
 export const restoreState = (stored?: Partial<MatchupState>): MatchupState => ({
+  // Each layer is rebuilt over the defaults too, so a settings key added in a later
+  // version reaches layers that were stored before it existed.
   layers: Array.isArray(stored?.layers)
-    ? stored.layers
+    ? stored.layers.map((layer) => ({ ...LAYER_DEFAULTS, ...layer }))
     : MATCHUP_DEFAULTS.layers,
   selectedId:
     typeof stored?.selectedId === "string" ? stored.selectedId : undefined,
@@ -74,9 +85,27 @@ export const ACCEPTED_TYPES = [
  */
 export const LAYER_COLUMNS = 3;
 
-export const matchupState = storage.defineItem<MatchupState>(
-  "local:matchup-state",
-  {
+/**
+ * Keyed by origin: a mockup belongs to the site it was drawn for, and one shared store
+ * meant every page opened with someone else's layers. Memoised because `watch` registers
+ * against the item, so each origin needs one and the same instance everywhere.
+ */
+const stores = new Map<string, ReturnType<typeof defineStores>>();
+
+const defineStores = (origin: string) => ({
+  state: storage.defineItem<MatchupState>(`local:matchup-state:${origin}`, {
     fallback: MATCHUP_DEFAULTS,
-  },
-);
+  }),
+  sources: storage.defineItem<LayerSources>(
+    `local:matchup-sources:${origin}`,
+    { fallback: {} },
+  ),
+});
+
+export const storesFor = (origin: string) => {
+  const existing = stores.get(origin);
+  if (existing) return existing;
+  const created = defineStores(origin);
+  stores.set(origin, created);
+  return created;
+};
