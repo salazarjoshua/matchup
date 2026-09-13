@@ -576,6 +576,7 @@ export default function MatchupApp() {
           onUpload={() => fileInput.current?.click()}
           onPaste={() => void pasteFromClipboard()}
           onDismissError={() => setError(undefined)}
+          onDropFiles={(files) => void addFiles(files)}
           onSelectLayer={(id) => patch({ selectedId: id })}
           onStartRename={setRenamingId}
           onRenameLayer={(id, name) => {

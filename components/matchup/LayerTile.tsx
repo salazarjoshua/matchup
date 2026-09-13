@@ -1,6 +1,7 @@
 import { EditIcon, DeleteIcon } from "@/components/icons";
 
 import { cn } from "@/utils/cn";
+import { hasFiles } from "@/utils/drag";
 
 import { useEffect, useRef } from "react";
 
@@ -108,7 +109,8 @@ const LayerTile = ({
         onDragStartLayer?.();
       }}
       onDragOver={(event) => {
-        if (!onDragOverLayer) return;
+        // A file drag belongs to the panel's drop zone, not to reordering.
+        if (!onDragOverLayer || hasFiles(event)) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = "move";
         onDragOverLayer(isBefore(event));

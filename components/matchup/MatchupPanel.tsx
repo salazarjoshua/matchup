@@ -5,6 +5,7 @@ import { Field } from "./Field";
 import { LayerGrid, UploadTile } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
+import { DropOverlay } from "./DropOverlay";
 import { Toolbar } from "./Toolbar";
 import { ToolbarButton } from "./ToolbarButton";
 import { ToolbarToggle } from "./ToolbarToggle";
@@ -23,6 +24,7 @@ import {
   ScaleIcon,
 } from "@/components/icons";
 import { cn } from "@/utils/cn";
+import { hasFiles } from "@/utils/drag";
 import { SHORTCUT_DEFAULTS, shortcutLabel } from "@/utils/matchup-settings";
 import { useRef, useState } from "react";
 import type { Shortcuts } from "@/utils/matchup-settings";
@@ -72,6 +74,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onDeleteLayer?: (id: string) => void;
   onReorderLayers?: (fromId: string, toId: string, before: boolean) => void;
   onDismissError?: () => void;
+  onDropFiles?: (files: File[]) => void;
   onTogglePanel?: () => void;
   onOpenSettings?: () => void;
   onOpenHelp?: () => void;
@@ -113,6 +116,7 @@ const MatchupPanel = ({
   onDeleteLayer,
   onReorderLayers,
   onDismissError,
+  onDropFiles,
   onTogglePanel,
   onOpenSettings,
   onOpenHelp,
@@ -135,6 +139,7 @@ const MatchupPanel = ({
   const dragging = useRef<string>(undefined);
   const [draggingId, setDraggingId] = useState<string>();
   const [over, setOver] = useState<{ id: string; before: boolean }>();
+  const [droppingFiles, setDroppingFiles] = useState(false);
 
   const endDrag = () => {
     dragging.current = undefined;
@@ -221,134 +226,175 @@ const MatchupPanel = ({
             }
           />
 
-          {error && <ErrorBanner message={error} onDismiss={onDismissError} />}
+          <div
+            className="relative"
+            onDragEnter={(event) => {
+              if (!hasFiles(event)) return;
+              event.preventDefault();
+              setDroppingFiles(true);
+            }}
+            onDragOver={(event) => {
+              if (!hasFiles(event)) return;
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "copy";
+              setDroppingFiles(true);
+            }}
+            onDragLeave={(event) => {
+              // Crossing into a child fires dragleave too, so only a pointer that
+              // has left the zone outright may close it.
+              if (!hasFiles(event)) return;
+              if (event.currentTarget.contains(event.relatedTarget as Node))
+                return;
+              setDroppingFiles(false);
+            }}
+            onDrop={(event) => {
+              if (!hasFiles(event)) return;
+              event.preventDefault();
+              setDroppingFiles(false);
+              onDropFiles?.(Array.from(event.dataTransfer.files));
+            }}
+          >
+            {droppingFiles && <DropOverlay />}
 
-          {layers.length === 0 && (
-            <EmptyState onUpload={onUpload} onPaste={onPaste} />
-          )}
+            {error && (
+              <ErrorBanner message={error} onDismiss={onDismissError} />
+            )}
 
-          {layers.length > 0 && (
-            <>
-              <LayerGrid
-                order={layers.map((layer) => layer.id).join()}
-                // The grid is the drop zone, not the tiles: the gaps and padding
-                // between them are dead to a tile-only handler, and the drop line
-                // is drawn in that gap — so you aimed at it and released on nothing.
-                onDragEnter={(event) => event.preventDefault()}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  event.dataTransfer.dropEffect = "move";
-                }}
-                onDragLeave={(event) => {
-                  // Fires when crossing into a child too, so only a pointer that has
-                  // left the grid outright may take the line away.
-                  if (!event.currentTarget.contains(event.relatedTarget as Node)) {
-                    setOver(undefined);
-                  }
-                }}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  const from = dragging.current;
-                  if (from && over && from !== over.id) {
-                    onReorderLayers?.(from, over.id, over.before);
-                  }
-                  endDrag();
-                }}
-              >
-                {layers.map((layer) => (
-                  <LayerTile
-                    key={layer.id}
-                    name={layer.name}
-                    src={layer.src}
-                    selected={layer.id === selectedId}
-                    locked={locked && layer.id === selectedId}
-                    renaming={layer.id === renamingId}
-                    onSelect={() => onSelectLayer?.(layer.id)}
-                    onStartRename={() => onStartRename?.(layer.id)}
-                    onRename={(next) => onRenameLayer?.(layer.id, next)}
-                    onDelete={() => onDeleteLayer?.(layer.id)}
-                    lifted={draggingId === layer.id}
-                    insertion={
-                      draggingId &&
-                      draggingId !== layer.id &&
-                      over?.id === layer.id
-                        ? over.before
-                          ? "before"
-                          : "after"
-                        : undefined
+            {layers.length === 0 && (
+              <EmptyState onUpload={onUpload} onPaste={onPaste} />
+            )}
+
+            {layers.length > 0 && (
+              <>
+                <LayerGrid
+                  order={layers.map((layer) => layer.id).join()}
+                  // The grid is the drop zone, not the tiles: the gaps and padding
+                  // between them are dead to a tile-only handler, and the drop line
+                  // is drawn in that gap — so you aimed at it and released on nothing.
+                  onDragEnter={(event) => {
+                    if (hasFiles(event)) return;
+                    event.preventDefault();
+                  }}
+                  onDragOver={(event) => {
+                    if (hasFiles(event)) return;
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = "move";
+                  }}
+                  onDragLeave={(event) => {
+                    if (hasFiles(event)) return;
+                    // Fires when crossing into a child too, so only a pointer that has
+                    // left the grid outright may take the line away.
+                    if (
+                      !event.currentTarget.contains(event.relatedTarget as Node)
+                    ) {
+                      setOver(undefined);
                     }
-                    onDragStartLayer={() => {
-                      dragging.current = layer.id;
-                      // Deferred a frame so the lift lands after dragstart. The ghost
-                      // is suppressed, but a host page's CSP can refuse the blank
-                      // image and bring it back, and lifting sooner bakes into it.
-                      requestAnimationFrame(() => setDraggingId(layer.id));
-                    }}
-                    // Returns the same object when the edge hasn't changed, so a
-                    // dragover firing at pointer rate doesn't re-render the grid.
-                    onDragOverLayer={(before) =>
-                      setOver((current) =>
-                        current?.id === layer.id && current.before === before
-                          ? current
-                          : { id: layer.id, before },
-                      )
+                  }}
+                  onDrop={(event) => {
+                    if (hasFiles(event)) return;
+                    event.preventDefault();
+                    const from = dragging.current;
+                    if (from && over && from !== over.id) {
+                      onReorderLayers?.(from, over.id, over.before);
                     }
-                    onDragEndLayer={endDrag}
-                  />
-                ))}
-                {/* Always has a cell now that the grid scrolls. */}
-                <div className="flex flex-col">
-                  <UploadTile
-                    aria-label="Upload an image"
-                    title={`Upload an image (${shortcutLabel(shortcuts.upload)})`}
-                    onClick={onUpload}
-                  />
-                </div>
-              </LayerGrid>
-
-              <div className="border-hairline border-t p-3">
-                <div className="flex items-start gap-3">
-                  <AnchorPad
-                    selected={anchor}
-                    disabled={positionDisabled}
-                    onSelect={onAnchorSelect}
-                  />
-                  <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <Field
-                      label="X"
-                      value={x}
-                      editable={positionEditable}
-                      disabled={positionDisabled}
-                      onChange={onXChange}
+                    endDrag();
+                  }}
+                >
+                  {layers.map((layer) => (
+                    <LayerTile
+                      key={layer.id}
+                      name={layer.name}
+                      src={layer.src}
+                      selected={layer.id === selectedId}
+                      locked={locked && layer.id === selectedId}
+                      renaming={layer.id === renamingId}
+                      onSelect={() => onSelectLayer?.(layer.id)}
+                      onStartRename={() => onStartRename?.(layer.id)}
+                      onRename={(next) => onRenameLayer?.(layer.id, next)}
+                      onDelete={() => onDeleteLayer?.(layer.id)}
+                      lifted={draggingId === layer.id}
+                      insertion={
+                        draggingId &&
+                        draggingId !== layer.id &&
+                        over?.id === layer.id
+                          ? over.before
+                            ? "before"
+                            : "after"
+                          : undefined
+                      }
+                      onDragStartLayer={() => {
+                        dragging.current = layer.id;
+                        // Deferred a frame so the lift lands after dragstart. The ghost
+                        // is suppressed, but a host page's CSP can refuse the blank
+                        // image and bring it back, and lifting sooner bakes into it.
+                        requestAnimationFrame(() => setDraggingId(layer.id));
+                      }}
+                      // Returns the same object when the edge hasn't changed, so a
+                      // dragover firing at pointer rate doesn't re-render the grid.
+                      onDragOverLayer={(before) =>
+                        setOver((current) =>
+                          current?.id === layer.id && current.before === before
+                            ? current
+                            : { id: layer.id, before },
+                        )
+                      }
+                      onDragEndLayer={endDrag}
                     />
-                    <Field
-                      label="Y"
-                      value={y}
-                      editable={positionEditable}
-                      disabled={positionDisabled}
-                      onChange={onYChange}
-                    />
-                    <Field
-                      label={<ScaleIcon className="size-4 " />}
-                      value={scale}
-                      editable={!positionDisabled}
-                      disabled={positionDisabled}
-                      onChange={onScaleChange}
-                      step={0.1}
-                      min={0.01}
+                  ))}
+                  {/* Always has a cell now that the grid scrolls. */}
+                  <div className="flex flex-col">
+                    <UploadTile
+                      aria-label="Upload an image"
+                      title={`Upload an image (${shortcutLabel(shortcuts.upload)})`}
+                      onClick={onUpload}
                     />
                   </div>
-                </div>
-              </div>
+                </LayerGrid>
 
-              <OpacityBar
-                value={opacity}
-                disabled={opacityDisabled}
-                onChange={onOpacityChange}
-                className="p-3 pt-0"
-              />
-            </>
-          )}
+                <div className="border-hairline border-t p-3">
+                  <div className="flex items-start gap-3">
+                    <AnchorPad
+                      selected={anchor}
+                      disabled={positionDisabled}
+                      onSelect={onAnchorSelect}
+                    />
+                    <div className="flex min-w-0 flex-1 flex-col gap-2">
+                      <Field
+                        label="X"
+                        value={x}
+                        editable={positionEditable}
+                        disabled={positionDisabled}
+                        onChange={onXChange}
+                      />
+                      <Field
+                        label="Y"
+                        value={y}
+                        editable={positionEditable}
+                        disabled={positionDisabled}
+                        onChange={onYChange}
+                      />
+                      <Field
+                        label={<ScaleIcon className="size-4 " />}
+                        value={scale}
+                        editable={!positionDisabled}
+                        disabled={positionDisabled}
+                        onChange={onScaleChange}
+                        step={0.1}
+                        min={0.01}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <OpacityBar
+                  value={opacity}
+                  disabled={opacityDisabled}
+                  onChange={onOpacityChange}
+                  className="p-3 pt-0"
+                />
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
