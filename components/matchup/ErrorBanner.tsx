@@ -13,14 +13,10 @@ const ErrorBanner = ({
   className,
   ...props
 }: ErrorBannerProps) => (
-  <div className="pt-3 px-3">
+  <div className={cn("px-3 pt-3", className)} {...props}>
     <div
       role="alert"
-      className={cn(
-        "rounded-xl bg-accent-red flex gap-1.5 px-3 py-2.5",
-        className,
-      )}
-      {...props}
+      className="rounded-xl bg-accent-red flex gap-1.5 px-3 py-2.5"
     >
       <span className="text-white mt-px flex-none">
         <WarningIcon className="w-4" />
