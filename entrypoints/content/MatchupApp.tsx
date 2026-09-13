@@ -199,9 +199,7 @@ export default function MatchupApp() {
   const addFiles = useCallback(async (files: File[]) => {
     const rejected = files.find((file) => !ACCEPTED_TYPES.includes(file.type));
     if (rejected) {
-      setError(
-        `${rejected.name || "That file"} isn’t supported. Use PNG, JPG, WebP or SVG.`,
-      );
+      setError(`That file isn’t supported. Use PNG, JPG, WebP or SVG.`);
       return;
     }
     setError(undefined);
