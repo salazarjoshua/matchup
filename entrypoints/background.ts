@@ -1,4 +1,9 @@
-import { ASK_REMOTE, SIDE_PANEL_PORT, TELL_REMOTE } from "@/utils/side-panel";
+import {
+  PAGE_STATE,
+  SIDE_PANEL_PORT,
+  TELL_REMOTE,
+  isRestricted,
+} from "@/utils/side-panel";
 import { browser } from "wxt/browser";
 import { defineBackground } from "wxt/utils/define-background";
 
@@ -51,21 +56,24 @@ const closeSidePanel = async () => {
 /** Tabs a side panel is currently showing. Held here because the background outlives
  *  both the panel and any page in it, and a side panel's port keeps it awake. */
 const panelTabs = new Set<number>();
+/** Tabs where Matchup is actually running. The flag itself lives in each page's own
+ *  sessionStorage, so this is the only place the side panel can learn it from. */
+const liveTabs = new Set<number>();
+/** Each open side panel and the tab it is currently speaking for. */
+const panelPorts = new Map<Browser.runtime.Port, number | undefined>();
+
+const tellPanels = (tabId: number, extra?: { needsReload?: boolean }) => {
+  for (const [port, watching] of panelPorts) {
+    if (watching !== tabId) continue;
+    port.postMessage({ open: liveTabs.has(tabId), ...extra });
+  }
+};
 
 const tellTab = (tabId: number) => {
   void browser.tabs
     .sendMessage(tabId, { type: TELL_REMOTE, remote: panelTabs.has(tabId) })
     .catch(() => undefined);
 };
-
-/** Pages where content scripts can't run, so there is nothing to toggle. */
-const RESTRICTED = [
-  "about:",
-  "chrome:",
-  "edge:",
-  "chrome-extension:",
-  "https://chromewebstore.google.com",
-];
 
 export default defineBackground(() => {
   // Only extension pages may open the options page, so the panel asks us to.
@@ -79,13 +87,18 @@ export default defineBackground(() => {
       openSidePanel(sender.tab?.id);
     } else if (type === "matchup:close-side-panel") {
       void closeSidePanel();
-    } else if (type === ASK_REMOTE) {
+    } else if (type === PAGE_STATE) {
       // Announced by every content script as it mounts, which is what survives a
       // refresh. Answered by pushing rather than replying: `browser` here is Chrome's
       // own API, where returning a promise from onMessage does nothing, and the page
       // is already listening for the push anyway.
       const tabId = sender.tab?.id;
-      if (tabId != null) tellTab(tabId);
+      if (tabId == null) return;
+      const open = (message as { open?: boolean }).open === true;
+      if (open) liveTabs.add(tabId);
+      else liveTabs.delete(tabId);
+      tellTab(tabId);
+      tellPanels(tabId);
     }
   });
 
@@ -98,26 +111,61 @@ export default defineBackground(() => {
       panelTabs.delete(watching);
       tellTab(watching);
       watching = undefined;
+      panelPorts.set(port, undefined);
     };
+    panelPorts.set(port, undefined);
+
     port.onMessage.addListener((message: unknown) => {
-      const tabId = (message as { tabId?: number })?.tabId;
-      if (typeof tabId !== "number" || tabId === watching) return;
-      release();
-      watching = tabId;
-      panelTabs.add(tabId);
-      tellTab(tabId);
+      const request = message as {
+        tabId?: number;
+        openPage?: boolean;
+        reloadPage?: boolean;
+      };
+
+      if (typeof request.tabId === "number" && request.tabId !== watching) {
+        release();
+        watching = request.tabId;
+        panelPorts.set(port, watching);
+        panelTabs.add(watching);
+        tellTab(watching);
+        tellPanels(watching);
+        return;
+      }
+      if (watching == null) return;
+      if (request.reloadPage) {
+        void browser.tabs.reload(watching);
+        return;
+      }
+      if (request.openPage) {
+        // The page owns the flag, so it is asked rather than told about; a rejection
+        // means no content script is there to ask, which only a reload fixes.
+        const target = watching;
+        void browser.tabs
+          .sendMessage(target, { type: "matchup:toggle", open: true })
+          .catch(() => tellPanels(target, { needsReload: true }));
+      }
     });
-    port.onDisconnect.addListener(release);
+
+    port.onDisconnect.addListener(() => {
+      release();
+      panelPorts.delete(port);
+    });
+  });
+
+  browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
+    if (changeInfo.status !== "loading") return;
+    liveTabs.delete(tabId);
+    tellPanels(tabId);
+  });
+
+  browser.tabs.onRemoved.addListener((tabId) => {
+    liveTabs.delete(tabId);
+    panelTabs.delete(tabId);
   });
 
   // No popup: the icon toggles the panel straight away, and again to close it.
   browser.action.onClicked.addListener(async (tab) => {
-    if (
-      !tab.id ||
-      !tab.url ||
-      RESTRICTED.some((prefix) => tab.url!.startsWith(prefix))
-    )
-      return;
+    if (!tab.id || !tab.url || isRestricted(tab.url)) return;
     try {
       await browser.tabs.sendMessage(tab.id, { type: "matchup:toggle" });
     } catch {

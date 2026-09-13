@@ -1,13 +1,28 @@
+import { isRestricted } from "@/utils/side-panel";
 import { useEffect, useState } from "react";
 import { browser } from "wxt/browser";
 
-export type ActiveTab = { id: number; origin: string };
+export type ActiveTab = {
+  id: number;
+  origin: string;
+  host: string;
+  /** Matchup runs no content script here, so there is nothing to turn on. */
+  restricted: boolean;
+};
 
 const read = async (): Promise<ActiveTab | undefined> => {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   if (tab?.id == null || !tab.url) return undefined;
+  if (isRestricted(tab.url))
+    return { id: tab.id, origin: "", host: "", restricted: true };
   try {
-    return { id: tab.id, origin: new URL(tab.url).origin };
+    const url = new URL(tab.url);
+    return {
+      id: tab.id,
+      origin: url.origin,
+      host: url.host,
+      restricted: false,
+    };
   } catch {
     return undefined;
   }
@@ -26,7 +41,9 @@ export const useActiveTab = () => {
       void read().then((next) => {
         if (!live) return;
         setTab((current) =>
-          current?.id === next?.id && current?.origin === next?.origin
+          current?.id === next?.id &&
+          current?.origin === next?.origin &&
+          current?.restricted === next?.restricted
             ? current
             : next,
         );

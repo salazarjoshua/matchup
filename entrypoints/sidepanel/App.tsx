@@ -1,4 +1,4 @@
-import { MatchupPanel } from "@/components/matchup";
+import { MatchupPanel, SidePanelPrompt } from "@/components/matchup";
 import { ACCEPTED_TYPES } from "@/utils/matchup-state";
 import { SIDE_PANEL_PORT } from "@/utils/side-panel";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
@@ -9,6 +9,11 @@ import { browser } from "wxt/browser";
 export default function App() {
   const tab = useActiveTab();
   const prefs = useMatchupSettings();
+  /** Whether Matchup is running on the tab being shown. Editing layers for a page that
+   *  is not listening would draw nothing, so the panel offers to turn it on instead. */
+  const [page, setPage] = useState<{ open: boolean; needsReload?: boolean }>({
+    open: false,
+  });
   const {
     state,
     setState,
@@ -23,7 +28,7 @@ export default function App() {
     addFiles,
     deleteLayer,
     pasteFromClipboard,
-  } = useMatchupStore(tab?.origin, prefs.layerDefaults);
+  } = useMatchupStore(page.open ? tab?.origin : undefined, prefs.layerDefaults);
   const [renamingId, setRenamingId] = useState<string>();
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -43,6 +48,13 @@ export default function App() {
       port.current = next;
       // The worker is recycled freely; without this the page would be left thinking
       // no side panel is open.
+      next.onMessage.addListener((message: unknown) => {
+        const state = message as { open?: boolean; needsReload?: boolean };
+        setPage({
+          open: state.open === true,
+          needsReload: state.needsReload === true,
+        });
+      });
       next.onDisconnect.addListener(() => {
         port.current = undefined;
         if (live) setTimeout(connect, 250);
@@ -63,10 +75,20 @@ export default function App() {
     port.current?.postMessage({ tabId: tab.id });
   }, [tab?.id]);
 
-  if (!tab) {
+  const close = () =>
+    void browser.runtime.sendMessage({ type: "matchup:close-side-panel" });
+
+  if (!tab || tab.restricted || !page.open) {
     return (
-      <div className="font-sans text-muted grid min-h-screen place-items-center p-6 text-center text-xs">
-        Open a page to compare against.
+      <div className="font-sans bg-canvas">
+        <SidePanelPrompt
+          host={tab?.host}
+          restricted={!tab || tab.restricted}
+          needsReload={page.needsReload}
+          onOpenPage={() => port.current?.postMessage({ openPage: true })}
+          onReload={() => port.current?.postMessage({ reloadPage: true })}
+          onClose={close}
+        />
       </div>
     );
   }
@@ -103,11 +125,7 @@ export default function App() {
           scale={settings.scale}
           error={error}
           hasSelection={Boolean(selected)}
-          onToggleSidePanel={() =>
-            void browser.runtime.sendMessage({
-              type: "matchup:close-side-panel",
-            })
-          }
+          onToggleSidePanel={close}
           onOpenSettings={() =>
             void browser.runtime.sendMessage({ type: "matchup:open-settings" })
           }

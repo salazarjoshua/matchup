@@ -4,7 +4,7 @@ import { clamp } from "@/utils/clamp";
 import { patchTab, readTab } from "@/utils/matchup-tab";
 import { ACCEPTED_TYPES } from "@/utils/matchup-state";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
-import { ASK_REMOTE, TELL_REMOTE } from "@/utils/side-panel";
+import { PAGE_STATE, TELL_REMOTE } from "@/utils/side-panel";
 import {
   useCallback,
   useEffect,
@@ -157,20 +157,26 @@ export default function MatchupApp() {
       if ((readTab().remote === true) !== showing)
         patchTab({ remote: showing });
     };
-    // Listening first, then announcing: the answer comes back as one of these.
     browser.runtime.onMessage.addListener(onRemote);
-    // This script is rebuilt on every navigation, and a side panel that was already
-    // open has no way to notice — so it says hello rather than waiting to be told.
-    void browser.runtime
-      .sendMessage({ type: ASK_REMOTE })
-      .catch(() => undefined);
     return () => browser.runtime.onMessage.removeListener(onRemote);
   }, []);
 
+  // Reported on mount and on every toggle. This script is rebuilt by each navigation,
+  // and a side panel already open has no other way to learn either fact.
+  useEffect(() => {
+    void browser.runtime
+      .sendMessage({ type: PAGE_STATE, open })
+      .catch(() => undefined);
+  }, [open]);
+
   useEffect(() => {
     const onMessage = (message: unknown) => {
-      if ((message as { type?: string })?.type === "matchup:toggle") {
-        const next = !openRef.current;
+      const request = message as { type?: string; open?: boolean };
+      if (request?.type === "matchup:toggle") {
+        // An explicit value when the side panel asks, so it can't blindly flip Matchup
+        // back off if its view of the page is a moment stale.
+        const next =
+          typeof request.open === "boolean" ? request.open : !openRef.current;
         // Claimed on the ref immediately, so two clicks landing in one task
         // can't both read the same pre-toggle value and cancel each other out.
         openRef.current = next;
