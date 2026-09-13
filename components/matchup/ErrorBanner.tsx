@@ -13,32 +13,26 @@ const ErrorBanner = ({
   className,
   ...props
 }: ErrorBannerProps) => (
-  <div
-    role="alert"
-    className={cn(
-      "rounded-xl bg-accent-red mx-3 mt-3 -mb-1 flex items-center gap-1.5 px-3 py-2.5",
-      className,
-    )}
-    {...props}
-  >
-    <span className="text-white mt-px flex-none">
-      <WarningIcon className="w-4" />
-    </span>
-    <span className="text-white flex-1 font-sans text-[11px]/[1.2]">
-      {message}
-    </span>
-    {onDismiss && (
-      <button
-        type="button"
-        aria-label="Dismiss"
-        onClick={onDismiss}
-        className="text-white flex-none rounded-sm h-full
-          px-3 py-2.5 -mx-3 -my-2.5
-          "
-      >
-        <XIcon className="w-3" />
-      </button>
-    )}
+  <div className={cn("px-3 pt-3", className)} {...props}>
+    <div
+      role="alert"
+      className="rounded-xl bg-accent-red flex items-start gap-1.5 px-3 py-2.5 font-sans text-[11px]/4 text-white"
+    >
+      <span className="grid h-4 flex-none place-items-center">
+        <WarningIcon className="w-4" />
+      </span>
+      <span className="flex-1">{message}</span>
+      {onDismiss && (
+        <button
+          type="button"
+          aria-label="Dismiss"
+          onClick={onDismiss}
+          className="box-content grid h-4 flex-none place-items-center rounded-sm px-3 py-2.5 -my-2.5 -mr-3"
+        >
+          <XIcon className="w-3" />
+        </button>
+      )}
+    </div>
   </div>
 );
 

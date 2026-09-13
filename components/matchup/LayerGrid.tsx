@@ -71,7 +71,7 @@ const LayerGrid = ({
     <div
       ref={root}
       className={cn(
-        "grid gap-2 p-3",
+        "grid gap-2.5 p-3",
         "max-h-66 scrollbar-panel overflow-y-auto",
         className,
       )}

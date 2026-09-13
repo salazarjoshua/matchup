@@ -1,4 +1,5 @@
 export * from "./AnchorPad";
+export * from "./DropOverlay";
 export * from "./EmptyState";
 export * from "./ErrorBanner";
 export * from "./Field";
@@ -7,7 +8,7 @@ export * from "./LayerGrid";
 export * from "./LayerTile";
 export * from "./MatchupPanel";
 export * from "./OpacityBar";
+export * from "./TitleBar";
 export * from "./Toolbar";
 export * from "./ToolbarButton";
 export * from "./ToolbarToggle";
-export * from "./TitleBar";

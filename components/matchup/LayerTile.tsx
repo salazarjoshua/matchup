@@ -1,6 +1,7 @@
 import { EditIcon, DeleteIcon } from "@/components/icons";
 
 import { cn } from "@/utils/cn";
+import { hasFiles } from "@/utils/drag";
 
 import { useEffect, useRef } from "react";
 
@@ -108,17 +109,18 @@ const LayerTile = ({
         onDragStartLayer?.();
       }}
       onDragOver={(event) => {
-        if (!onDragOverLayer) return;
+        // A file drag belongs to the panel's drop zone, not to reordering.
+        if (!onDragOverLayer || hasFiles(event)) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = "move";
         onDragOverLayer(isBefore(event));
       }}
       onDragEnd={onDragEndLayer}
       className={cn(
-        // select-none so a stray selection in the filename can't be dragged as text
-        // instead of the layer, which silently kills the drag.
-        "relative flex min-w-0 select-none flex-col gap-2 transition-[scale_rotate]",
-        lifted && "z-10 -rotate-2 scale-[1.1]",
+        // select-none: a stray selection in the filename is dragged as text instead
+        // of the layer, which kills the drag with no sign of why.
+        "relative flex min-w-0 select-none flex-col gap-2.5 transition-[scale_rotate]",
+        lifted && "z-10 -rotate-2 scale-[0.9]",
         className,
       )}
       {...props}
@@ -127,8 +129,8 @@ const LayerTile = ({
         <span
           aria-hidden
           className={cn(
-            "z-20 bg-accent-blue pointer-events-none absolute top-4 h-8 w-0.5 rounded-full",
-            insertion === "before" ? "-left-1.25" : "-right-1.25",
+            "z-20 bg-accent-blue pointer-events-none absolute top-6 h-4 ring-2 ring-accent-blue/25 w-0.5 rounded-full",
+            insertion === "before" ? "-left-1.5" : "-right-1.5",
           )}
         />
       )}
