@@ -2,18 +2,9 @@ import Overlay from "@/components/Overlay";
 import { MatchupPanel } from "@/components/matchup";
 import { clamp } from "@/utils/clamp";
 import { patchTab, readTab } from "@/utils/matchup-tab";
-import {
-  SETTINGS_DEFAULTS,
-  matchupSettings,
-  restoreSettings,
-} from "@/utils/matchup-settings";
-import {
-  ACCEPTED_TYPES,
-  LAYER_DEFAULTS,
-  MATCHUP_DEFAULTS,
-  matchupState,
-  restoreState,
-} from "@/utils/matchup-state";
+import { ACCEPTED_TYPES } from "@/utils/matchup-state";
+import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
+import { PAGE_STATE, TELL_REMOTE } from "@/utils/side-panel";
 import {
   useCallback,
   useEffect,
@@ -23,18 +14,14 @@ import {
 } from "react";
 import { browser } from "wxt/browser";
 import type { Dock } from "@/utils/matchup-tab";
-import type { MatchupSettings, ShortcutAction } from "@/utils/matchup-settings";
-import type { LayerSettings, MatchupState } from "@/utils/matchup-state";
+import type { ShortcutAction } from "@/utils/matchup-settings";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
-const SAVE_DEBOUNCE_MS = 300;
 /** Only a first guess: the real size is measured after the first render below. */
 const PANEL_WIDTH = 300;
 const EDGE = 8;
 const TOOLBAR_HEIGHT = 40;
 const DRAG_THRESHOLD = 4;
-const MAX_NAME = 24;
-const ACCEPTED_COPY = "Use PNG, JPG, WebP or SVG.";
 
 const swallowClick = (event: MouseEvent) => {
   event.stopPropagation();
@@ -76,49 +63,42 @@ const isEditable = (event: KeyboardEvent) => {
   );
 };
 
-/** Long names wrap the 300px banner into a wall of text; the extension is the part
- *  that explains the rejection, so it survives the trim. */
-const shortName = (name: string) => {
-  if (name.length <= MAX_NAME) return name;
-  const dot = name.lastIndexOf(".");
-  const ext = dot > 0 ? name.slice(dot) : "";
-  return `${name.slice(0, Math.max(1, MAX_NAME - ext.length - 1))}…${ext}`;
-};
-
-const rejectionMessage = (rejected: File[], addedAny: boolean) => {
-  const one = rejected.length === 1;
-  const what = one
-    ? shortName(rejected[0]?.name || "one file")
-    : `${rejected.length} files`;
-  if (addedAny) return `Skipped ${what}. ${ACCEPTED_COPY}`;
-  return one
-    ? `${what} isn’t supported. ${ACCEPTED_COPY}`
-    : `${what} aren’t supported. ${ACCEPTED_COPY}`;
-};
-
-const readAsDataUrl = (file: File) =>
-  new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-
 export default function MatchupApp() {
-  const [state, setState] = useState<MatchupState>(MATCHUP_DEFAULTS);
-  const [renamingId, setRenamingId] = useState<string>();
-  const [error, setError] = useState<string>();
-  const [hydrated, setHydrated] = useState(false);
-  // Both read synchronously: sessionStorage is not async, and hydrating in an
-  // effect would flash the widget at the settings corner before it jumped to
-  // the dragged position.
+  // Both read synchronously: sessionStorage is not async, and hydrating in an effect
+  // would flash the widget at the settings corner before it jumped to the dragged
+  // position.
   const [open, setOpen] = useState(() => readTab().open);
   const [dock, setDock] = useState<Dock | undefined>(() => readTab().dock);
-  const openRef = useRef(open);
-  openRef.current = open;
-  const [prefs, setPrefs] = useState<MatchupSettings>(SETTINGS_DEFAULTS);
+  /** True while a side panel is showing this tab, which is the page's cue to stand
+   *  down — and, when it drops, to come back. */
+  const [remote, setRemote] = useState(() => readTab().remote === true);
+  const prefs = useMatchupSettings();
   const prefsRef = useRef(prefs);
   prefsRef.current = prefs;
+  // Nothing is read until Matchup is actually open on this page. The content script
+  // runs on every URL, and sources can be megabytes — no page should pay for that
+  // just by existing.
+  const {
+    state,
+    setState,
+    layers,
+    selected,
+    settings,
+    hydrated,
+    error,
+    setError,
+    patch,
+    patchLayer,
+    addFiles,
+    deleteLayer,
+    pasteFromClipboard,
+  } = useMatchupStore(
+    open ? window.location.origin : undefined,
+    prefs.layerDefaults,
+  );
+  const [renamingId, setRenamingId] = useState<string>();
+  const openRef = useRef(open);
+  openRef.current = open;
   const [viewport, setViewport] = useState({
     w: window.innerWidth,
     h: window.innerHeight,
@@ -133,58 +113,6 @@ export default function MatchupApp() {
     w: PANEL_WIDTH,
     h: TOOLBAR_HEIGHT,
   });
-
-  const patch = useCallback(
-    (next: Partial<MatchupState>) =>
-      setState((current) => ({ ...current, ...next })),
-    [],
-  );
-
-  /** Settings live on the layer, so every edit targets the selected one. */
-  const patchLayer = useCallback(
-    (next: Partial<LayerSettings>) =>
-      setState((current) => ({
-        ...current,
-        layers: current.layers.map((layer) =>
-          layer.id === current.selectedId ? { ...layer, ...next } : layer,
-        ),
-      })),
-    [],
-  );
-
-  useEffect(() => {
-    matchupSettings
-      .getValue()
-      .then((stored) => setPrefs(restoreSettings(stored)))
-      .catch(() => undefined);
-    const unwatch = matchupSettings.watch((next) =>
-      setPrefs(restoreSettings(next)),
-    );
-    return unwatch;
-  }, []);
-
-  useEffect(() => {
-    matchupState
-      .getValue()
-      .then((stored) => setState(restoreState(stored)))
-      .catch(() => undefined)
-      .finally(() => setHydrated(true));
-  }, []);
-
-  // Debounced so dragging the opacity bar doesn't hammer storage.
-  useEffect(() => {
-    if (!hydrated) return;
-    const timer = setTimeout(() => {
-      matchupState
-        .setValue(state)
-        .catch(() =>
-          setError(
-            "Ran out of extension storage. Delete a layer and try again.",
-          ),
-        );
-    }, SAVE_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [state, hydrated]);
 
   useEffect(() => {
     // A resize event never fires for a tab that was hidden when the script mounted,
@@ -218,69 +146,37 @@ export default function MatchupApp() {
     );
   });
 
-  const addFiles = useCallback(async (files: File[]) => {
-    // Partitioned rather than rejected outright: a dropped folder selection is
-    // often mostly usable, and throwing all of it away over one stray file is
-    // harsher than it was when every file came from a filtered picker.
-    const accepted = files.filter((file) => ACCEPTED_TYPES.includes(file.type));
-    const rejected = files.filter(
-      (file) => !ACCEPTED_TYPES.includes(file.type),
-    );
-
-    if (accepted.length > 0) {
-      const decoded = await Promise.all(
-        accepted.map(async (file) => ({
-          ...prefsRef.current.layerDefaults,
-          id: crypto.randomUUID(),
-          name: file.name || "pasted.png",
-          src: await readAsDataUrl(file),
-        })),
-      );
-      // Selecting the new layer is enough to reach it: the grid scrolls, and the
-      // tile scrolls itself into view when it becomes the selected one.
-      setState((current) => ({
-        ...current,
-        layers: [...current.layers, ...decoded],
-        selectedId: decoded[decoded.length - 1]?.id,
-      }));
-    }
-
-    setError(
-      rejected.length > 0
-        ? rejectionMessage(rejected, accepted.length > 0)
-        : undefined,
-    );
+  useEffect(() => {
+    const onRemote = (message: unknown) => {
+      const next = message as { type?: string; remote?: boolean };
+      if (next?.type !== TELL_REMOTE) return;
+      const showing = Boolean(next.remote);
+      setRemote(showing);
+      // Only on a change, so merely visiting a page still leaves no trace in its
+      // sessionStorage — the background greets every content script with a false.
+      if ((readTab().remote === true) !== showing)
+        patchTab({ remote: showing });
+    };
+    browser.runtime.onMessage.addListener(onRemote);
+    return () => browser.runtime.onMessage.removeListener(onRemote);
   }, []);
 
-  const pasteFromClipboard = useCallback(async () => {
-    try {
-      const items = await navigator.clipboard.read();
-      const files: File[] = [];
-      for (const item of items) {
-        const type = item.types.find((candidate) =>
-          ACCEPTED_TYPES.includes(candidate),
-        );
-        if (!type) continue;
-        files.push(
-          new File([await item.getType(type)], `pasted.${type.split("/")[1]}`, {
-            type,
-          }),
-        );
-      }
-      if (files.length === 0) {
-        setError("No image on the clipboard.");
-        return;
-      }
-      await addFiles(files);
-    } catch {
-      setError("Couldn’t read the clipboard. Press ⌘V over the page instead.");
-    }
-  }, [addFiles]);
+  // Reported on mount and on every toggle. This script is rebuilt by each navigation,
+  // and a side panel already open has no other way to learn either fact.
+  useEffect(() => {
+    void browser.runtime
+      .sendMessage({ type: PAGE_STATE, open })
+      .catch(() => undefined);
+  }, [open]);
 
   useEffect(() => {
     const onMessage = (message: unknown) => {
-      if ((message as { type?: string })?.type === "matchup:toggle") {
-        const next = !openRef.current;
+      const request = message as { type?: string; open?: boolean };
+      if (request?.type === "matchup:toggle") {
+        // An explicit value when the side panel asks, so it can't blindly flip Matchup
+        // back off if its view of the page is a moment stale.
+        const next =
+          typeof request.open === "boolean" ? request.open : !openRef.current;
         // Claimed on the ref immediately, so two clicks landing in one task
         // can't both read the same pre-toggle value and cancel each other out.
         openRef.current = next;
@@ -344,7 +240,6 @@ export default function MatchupApp() {
     };
   }, [open, addFiles, patchLayer]);
 
-  const selected = state.layers.find((layer) => layer.id === state.selectedId);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
 
@@ -524,8 +419,6 @@ export default function MatchupApp() {
 
   if (!hydrated || !open) return null;
 
-  const settings: LayerSettings = selected ?? LAYER_DEFAULTS;
-
   return (
     <>
       {selected?.src && settings.visible && (
@@ -555,96 +448,98 @@ export default function MatchupApp() {
         }}
       />
 
-      <div
-        ref={widget}
-        style={{
-          position: "fixed",
-          left: widgetLeft,
-          top: widgetTop,
-          zIndex: 2147483647,
-        }}
-      >
-        <MatchupPanel
-          layers={state.layers}
-          selectedId={state.selectedId}
-          renamingId={renamingId}
-          visible={settings.visible}
-          locked={settings.locked}
-          difference={settings.difference}
-          opacity={settings.opacity}
-          anchor={settings.anchor}
-          x={settings.x}
-          y={settings.y}
-          scale={settings.scale}
-          error={error}
-          panelOpen={state.panelOpen}
-          hasSelection={Boolean(selected)}
-          shortcuts={prefs.shortcuts}
-          onOpenSettings={() =>
-            void browser.runtime.sendMessage({ type: "matchup:open-settings" })
-          }
-          onOpenHelp={() =>
-            void browser.runtime.sendMessage({ type: "matchup:open-help" })
-          }
-          onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
-          onToggleVisible={() => patchLayer({ visible: !settings.visible })}
-          onToggleLocked={() => patchLayer({ locked: !settings.locked })}
-          onToggleDifference={() =>
-            patchLayer({ difference: !settings.difference })
-          }
-          onOpacityChange={(opacity) => patchLayer({ opacity })}
-          onAnchorSelect={(index) =>
-            patchLayer(
-              settings.anchor === index
-                ? { anchor: null }
-                : {
-                    anchor: index,
-                    ...anchoredPosition(index, Number(settings.scale) || 1),
-                  },
-            )
-          }
-          onUpload={() => fileInput.current?.click()}
-          onPaste={() => void pasteFromClipboard()}
-          onDismissError={() => setError(undefined)}
-          onDropFiles={(files) => void addFiles(files)}
-          onSelectLayer={(id) => patch({ selectedId: id })}
-          onStartRename={setRenamingId}
-          onRenameLayer={(id, name) => {
-            patch({
-              layers: state.layers.map((layer) =>
-                layer.id === id ? { ...layer, name } : layer,
-              ),
-            });
-            setRenamingId(undefined);
+      {!remote && (
+        <div
+          ref={widget}
+          style={{
+            position: "fixed",
+            left: widgetLeft,
+            top: widgetTop,
+            zIndex: 2147483647,
           }}
-          onReorderLayers={(fromId, toId, before) =>
-            setState((current) => {
-              const from = current.layers.findIndex((l) => l.id === fromId);
-              const target = current.layers.findIndex((l) => l.id === toId);
-              if (from < 0 || target < 0 || from === target) return current;
-              const layers = [...current.layers];
-              const [moved] = layers.splice(from, 1);
-              if (!moved) return current;
-              // Pulling the layer out shifts the target down one when it sat after it.
-              const at = from < target ? target - 1 : target;
-              layers.splice(before ? at : at + 1, 0, moved);
-              return { ...current, layers };
-            })
-          }
-          onDeleteLayer={(id) => {
-            const remaining = state.layers.filter((layer) => layer.id !== id);
-            patch({
-              layers: remaining,
-              selectedId:
-                state.selectedId === id ? remaining[0]?.id : state.selectedId,
-            });
-          }}
-          onXChange={(x) => patchLayer({ x })}
-          onYChange={(y) => patchLayer({ y })}
-          onScaleChange={(scale) => patchLayer({ scale })}
-          onGripPointerDown={onGripPointerDown}
-        />
-      </div>
+        >
+          <MatchupPanel
+            layers={layers}
+            selectedId={state.selectedId}
+            renamingId={renamingId}
+            visible={settings.visible}
+            locked={settings.locked}
+            difference={settings.difference}
+            opacity={settings.opacity}
+            anchor={settings.anchor}
+            x={settings.x}
+            y={settings.y}
+            scale={settings.scale}
+            error={error}
+            panelOpen={state.panelOpen}
+            hasSelection={Boolean(selected)}
+            shortcuts={prefs.shortcuts}
+            onOpenSettings={() =>
+              void browser.runtime.sendMessage({
+                type: "matchup:open-settings",
+              })
+            }
+            onOpenHelp={() =>
+              void browser.runtime.sendMessage({ type: "matchup:open-help" })
+            }
+            onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
+            onToggleVisible={() => patchLayer({ visible: !settings.visible })}
+            onToggleLocked={() => patchLayer({ locked: !settings.locked })}
+            onToggleDifference={() =>
+              patchLayer({ difference: !settings.difference })
+            }
+            onOpacityChange={(opacity) => patchLayer({ opacity })}
+            onAnchorSelect={(index) =>
+              patchLayer(
+                settings.anchor === index
+                  ? { anchor: null }
+                  : {
+                      anchor: index,
+                      ...anchoredPosition(index, Number(settings.scale) || 1),
+                    },
+              )
+            }
+            onUpload={() => fileInput.current?.click()}
+            onPaste={() => void pasteFromClipboard()}
+            onDismissError={() => setError(undefined)}
+            onDropFiles={(files) => void addFiles(files)}
+            onSelectLayer={(id) => patch({ selectedId: id })}
+            onStartRename={setRenamingId}
+            onRenameLayer={(id, name) => {
+              patch({
+                layers: state.layers.map((layer) =>
+                  layer.id === id ? { ...layer, name } : layer,
+                ),
+              });
+              setRenamingId(undefined);
+            }}
+            onReorderLayers={(fromId, toId, before) =>
+              setState((current) => {
+                const from = current.layers.findIndex((l) => l.id === fromId);
+                const target = current.layers.findIndex((l) => l.id === toId);
+                if (from < 0 || target < 0 || from === target) return current;
+                const layers = [...current.layers];
+                const [moved] = layers.splice(from, 1);
+                if (!moved) return current;
+                // Pulling the layer out shifts the target down one when it sat after it.
+                const at = from < target ? target - 1 : target;
+                layers.splice(before ? at : at + 1, 0, moved);
+                return { ...current, layers };
+              })
+            }
+            onDeleteLayer={deleteLayer}
+            onXChange={(x) => patchLayer({ x })}
+            onYChange={(y) => patchLayer({ y })}
+            onScaleChange={(scale) => patchLayer({ scale })}
+            onGripPointerDown={onGripPointerDown}
+            onToggleSidePanel={() => {
+              void browser.runtime.sendMessage({
+                type: "matchup:open-side-panel",
+              });
+            }}
+          />
+        </div>
+      )}
     </>
   );
 }

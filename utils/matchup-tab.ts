@@ -15,6 +15,12 @@ export type TabState = {
   /** Matchup is showing on this page at all. Toggled from the toolbar icon. */
   open: boolean;
   dock?: Dock;
+  /**
+   * A side panel was showing this tab when the page last ran. Remembered only so a
+   * refresh can start out of the way: learning it from the background takes a round
+   * trip, and the page would flash its own panel in the meantime.
+   */
+  remote?: boolean;
 };
 
 /**
@@ -48,8 +54,12 @@ export const readTab = (): TabState => {
     if (!raw) return TAB_DEFAULTS;
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== "object" || parsed === null) return TAB_DEFAULTS;
-    const { open, dock } = parsed as Record<string, unknown>;
-    return { open: open === true, dock: parseDock(dock) };
+    const { open, dock, remote } = parsed as Record<string, unknown>;
+    return {
+      open: open === true,
+      dock: parseDock(dock),
+      remote: remote === true,
+    };
   } catch {
     // A sandboxed frame or blocked site data denies sessionStorage outright.
     // Forgetting is better than failing to mount.
