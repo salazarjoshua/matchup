@@ -240,6 +240,19 @@ export default function App() {
             </select>
           </Row>
 
+          <Row label="Frame" hint="What position is measured from">
+            <select
+              value={defaults.pinned ? "window" : "page"}
+              onChange={(event) =>
+                patchLayer({ pinned: event.currentTarget.value === "window" })
+              }
+              className={selectClass}
+            >
+              <option value="page">page</option>
+              <option value="window">window</option>
+            </select>
+          </Row>
+
           <Row label="Scale">
             <input
               value={defaults.scale}

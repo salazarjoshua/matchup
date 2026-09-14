@@ -5,6 +5,7 @@ import { Field } from "./Field";
 import { LayerGrid, UploadTile } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
+import { Segmented } from "./Segmented";
 import { DropOverlay } from "./DropOverlay";
 import { Toolbar } from "./Toolbar";
 import { ToolbarButton } from "./ToolbarButton";
@@ -52,6 +53,8 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   visible: boolean;
   locked: boolean;
   difference: boolean;
+  /** The overlay holds its place in the window rather than scrolling with the page. */
+  pinned: boolean;
   opacity: number;
   /** Index 0–8 of the active snap point, or null when X/Y are free. */
   anchor: number | null;
@@ -65,6 +68,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onToggleVisible?: () => void;
   onToggleLocked?: () => void;
   onToggleDifference?: () => void;
+  onPinnedChange?: (pinned: boolean) => void;
   onOpacityChange?: (value: number) => void;
   onAnchorSelect?: (index: number) => void;
   onUpload?: () => void;
@@ -93,12 +97,19 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
 
 const gripClass = "cursor-grab touch-none select-none";
 
+/** Naming both states is the point — "not pinned" never said "scrolls with the page". */
+const FRAMES = [
+  { value: "page", label: "Page" },
+  { value: "window", label: "Window" },
+] as const;
+
 const MatchupPanel = ({
   layers,
   selectedId,
   visible,
   locked,
   difference,
+  pinned,
   opacity,
   anchor,
   x,
@@ -110,6 +121,7 @@ const MatchupPanel = ({
   onToggleVisible,
   onToggleLocked,
   onToggleDifference,
+  onPinnedChange,
   onOpacityChange,
   onAnchorSelect,
   onUpload,
@@ -387,7 +399,27 @@ const MatchupPanel = ({
                     </div>
                   </LayerGrid>
 
-                  <div className="border-hairline border-t p-3">
+                  <div className="border-hairline border-t flex flex-col gap-3 p-3">
+                    {/* Above the pad and the fields because it governs both: the
+                        nine snap points and X/Y are the page's or the window's,
+                        and nothing else on this card says which. */}
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          "text-[12px]",
+                          positionDisabled ? "text-disabled" : "text-muted",
+                        )}
+                      >
+                        Frame
+                      </span>
+                      <Segmented
+                        className="flex-1"
+                        value={pinned ? "window" : "page"}
+                        disabled={positionDisabled}
+                        options={FRAMES}
+                        onChange={(next) => onPinnedChange?.(next === "window")}
+                      />
+                    </div>
                     <div className="flex items-start gap-3">
                       <AnchorPad
                         selected={anchor}

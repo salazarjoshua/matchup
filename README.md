@@ -17,7 +17,8 @@ Matchup is a simple tool for comparing your design with your website. Drop your 
 
 - **Supports** `PNG`, `JPG`, `WebP`, and `SVG`
 - **Fine-tune** position, scale, and opacity
-- **Snap** to 9 viewport positions
+- **Scroll** the overlay with the page, or fix it to the window
+- **Snap** to 9 positions
 - **Spot** pixel differences
 - **Lock or hide** layers
 - **Reorder** layers

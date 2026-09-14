@@ -8,6 +8,7 @@ export * from "./LayerGrid";
 export * from "./LayerTile";
 export * from "./MatchupPanel";
 export * from "./OpacityBar";
+export * from "./Segmented";
 export * from "./SidePanelPrompt";
 export * from "./TitleBar";
 export * from "./Toolbar";

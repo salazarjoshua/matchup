@@ -9,6 +9,13 @@ export type LayerSettings = {
   opacity: number;
   /** Index 0–8 of the active snap point, or null when x/y are free. */
   anchor: number | null;
+  /**
+   * The overlay holds its place in the window instead of travelling with the page.
+   * Off by default: most things worth comparing — an email, a long landing page —
+   * run past one screenful, and an image that stays put can only ever be checked
+   * against the first of them.
+   */
+  pinned: boolean;
   x: string;
   y: string;
   scale: string;
@@ -43,6 +50,7 @@ export const LAYER_DEFAULTS: LayerSettings = {
   difference: false,
   opacity: 50,
   anchor: null,
+  pinned: false,
   x: "0",
   y: "0",
   scale: "0.5",

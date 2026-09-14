@@ -118,6 +118,7 @@ export default function App() {
           visible={settings.visible}
           locked={settings.locked}
           difference={settings.difference}
+          pinned={settings.pinned}
           opacity={settings.opacity}
           anchor={settings.anchor}
           x={settings.x}
@@ -137,6 +138,9 @@ export default function App() {
           onToggleDifference={() =>
             patchLayer({ difference: !settings.difference })
           }
+          // Only the flag: the page converts the coordinates on the way through,
+          // because it is the only side that knows how far it is scrolled.
+          onPinnedChange={(pinned) => patchLayer({ pinned })}
           onOpacityChange={(opacity) => patchLayer({ opacity })}
           onAnchorSelect={(index) =>
             patchLayer({ anchor: settings.anchor === index ? null : index })
