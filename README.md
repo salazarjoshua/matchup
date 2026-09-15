@@ -33,7 +33,7 @@ Customize them to your preference.
 | <kbd>⌥</kbd><kbd>`</kbd> | Toggle panel      |
 | <kbd>⌥</kbd><kbd>1</kbd> | Toggle visibility |
 | <kbd>⌥</kbd><kbd>2</kbd> | Toggle lock       |
-| <kbd>⌥</kbd><kbd>3</kbd> | Toggle difference |
+| <kbd>⌥</kbd><kbd>3</kbd> | Toggle invert     |
 | <kbd>⌥</kbd><kbd>U</kbd> | Upload image      |
 | <kbd>⌘</kbd><kbd>V</kbd> | Paste image       |
 
