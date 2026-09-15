@@ -63,11 +63,11 @@ const isEditable = (event: KeyboardEvent) => {
   );
 };
 
+/** Mounted only while Matchup is open on this page — the content script entry owns that
+ *  flag, because it has to be reachable with nothing rendered. */
 export default function MatchupApp() {
-  // Both read synchronously: sessionStorage is not async, and hydrating in an effect
-  // would flash the widget at the settings corner before it jumped to the dragged
-  // position.
-  const [open, setOpen] = useState(() => readTab().open);
+  // Read synchronously: sessionStorage is not async, and hydrating in an effect would
+  // flash the widget at the settings corner before it jumped to the dragged position.
   const [dock, setDock] = useState<Dock | undefined>(() => readTab().dock);
   /** True while a side panel is showing this tab, which is the page's cue to stand
    *  down — and, when it drops, to come back. */
@@ -75,9 +75,6 @@ export default function MatchupApp() {
   const prefs = useMatchupSettings();
   const prefsRef = useRef(prefs);
   prefsRef.current = prefs;
-  // Nothing is read until Matchup is actually open on this page. The content script
-  // runs on every URL, and sources can be megabytes — no page should pay for that
-  // just by existing.
   const {
     state,
     setState,
@@ -89,9 +86,7 @@ export default function MatchupApp() {
     patchLayer,
     addFiles,
     panelProps,
-  } = useMatchupStore(open ? window.location.origin : undefined, prefs);
-  const openRef = useRef(open);
-  openRef.current = open;
+  } = useMatchupStore(window.location.origin, prefs);
   const [viewport, setViewport] = useState({
     w: window.innerWidth,
     h: window.innerHeight,
@@ -166,38 +161,16 @@ export default function MatchupApp() {
     return () => browser.runtime.onMessage.removeListener(onRemote);
   }, []);
 
-  // Reported on mount and on every toggle. This script is rebuilt by each navigation,
-  // and a side panel already open has no other way to learn either fact.
+  // Announced on mount, which is what survives a navigation: a side panel already open
+  // has no other way to learn Matchup is running here. Turning it off is announced by
+  // the entry instead, since this is gone by then.
   useEffect(() => {
     void browser.runtime
-      .sendMessage({ type: PAGE_STATE, open })
+      .sendMessage({ type: PAGE_STATE, open: true })
       .catch(() => undefined);
-  }, [open]);
-
-  useEffect(() => {
-    const onMessage = (message: unknown) => {
-      const request = message as { type?: string; open?: boolean };
-      if (request?.type === "matchup:toggle") {
-        // An explicit value when the side panel asks, so it can't blindly flip Matchup
-        // back off if its view of the page is a moment stale.
-        const next =
-          typeof request.open === "boolean" ? request.open : !openRef.current;
-        // Claimed on the ref immediately, so two clicks landing in one task
-        // can't both read the same pre-toggle value and cancel each other out.
-        openRef.current = next;
-        setOpen(next);
-        // Written here rather than from an effect on `open`, so that merely
-        // visiting a page never touches its sessionStorage: the content script
-        // runs on every URL, and only a deliberate toggle should leave a trace.
-        patchTab({ open: next });
-      }
-    };
-    browser.runtime.onMessage.addListener(onMessage);
-    return () => browser.runtime.onMessage.removeListener(onMessage);
   }, []);
 
   useEffect(() => {
-    if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey || event.metaKey || event.ctrlKey) return;
       if (isEditable(event)) return;
@@ -243,7 +216,7 @@ export default function MatchupApp() {
       window.removeEventListener("keydown", onKeyDown, true);
       window.removeEventListener("paste", onPaste, true);
     };
-  }, [open, addFiles, pickFiles, patchLayer]);
+  }, [addFiles, pickFiles, patchLayer]);
 
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
@@ -485,7 +458,7 @@ export default function MatchupApp() {
     window.addEventListener("pointercancel", onUp);
   };
 
-  if (!hydrated || !open) return null;
+  if (!hydrated) return null;
 
   return (
     <>
