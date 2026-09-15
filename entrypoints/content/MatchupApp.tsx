@@ -1,8 +1,7 @@
 import Overlay from "@/components/Overlay";
-import { MatchupPanel } from "@/components/matchup";
+import { MatchupPanel } from "@/components/matchup/MatchupPanel";
 import { clamp } from "@/utils/clamp";
 import { patchTab, readTab } from "@/utils/matchup-tab";
-import { ACCEPTED_TYPES, lockAspect } from "@/utils/matchup-state";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
 import { PAGE_STATE, TELL_REMOTE } from "@/utils/side-panel";
 import {
@@ -82,22 +81,15 @@ export default function MatchupApp() {
   const {
     state,
     setState,
-    layers,
     selected,
     settings,
     hydrated,
-    error,
-    setError,
+    pickFiles,
     patch,
     patchLayer,
     addFiles,
-    deleteLayer,
-    pasteFromClipboard,
-  } = useMatchupStore(
-    open ? window.location.origin : undefined,
-    prefs.layerDefaults,
-  );
-  const [renamingId, setRenamingId] = useState<string>();
+    panelProps,
+  } = useMatchupStore(open ? window.location.origin : undefined, prefs);
   const openRef = useRef(open);
   openRef.current = open;
   const [viewport, setViewport] = useState({
@@ -112,7 +104,6 @@ export default function MatchupApp() {
     h: document.documentElement.scrollHeight,
   });
 
-  const fileInput = useRef<HTMLInputElement>(null);
   const overlayImage = useRef<HTMLImageElement>(null);
   const [imageEpoch, setImageEpoch] = useState(0);
   const widget = useRef<HTMLDivElement>(null);
@@ -224,10 +215,7 @@ export default function MatchupApp() {
           patchLayer({ locked: !selectedRef.current?.locked });
           break;
         case "toggleInvert":
-          patchLayer({
-            blendMode:
-              selectedRef.current?.blendMode === "invert" ? "none" : "invert",
-          });
+          patchLayer({ invert: !selectedRef.current?.invert });
           break;
         case "togglePanel":
           setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
@@ -235,7 +223,7 @@ export default function MatchupApp() {
         case "upload":
           // A keydown carries user activation, which is what the file dialog
           // needs; preventDefault below doesn't spend it.
-          fileInput.current?.click();
+          pickFiles();
           break;
         default:
           return;
@@ -255,7 +243,7 @@ export default function MatchupApp() {
       window.removeEventListener("keydown", onKeyDown, true);
       window.removeEventListener("paste", onPaste, true);
     };
-  }, [open, addFiles, patchLayer]);
+  }, [open, addFiles, pickFiles, patchLayer]);
 
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
@@ -510,7 +498,7 @@ export default function MatchupApp() {
           height={Number(settings.height) || undefined}
           scale={Number(settings.scale) || 1}
           opacity={settings.opacity}
-          blendMode={settings.blendMode}
+          invert={settings.invert}
           pinned={settings.pinned}
           draggable={!settings.locked}
           onPointerDown={onOverlayPointerDown}
@@ -518,18 +506,6 @@ export default function MatchupApp() {
           imageRef={overlayImage}
         />
       )}
-
-      <input
-        ref={fileInput}
-        type="file"
-        accept={ACCEPTED_TYPES.join(",")}
-        multiple
-        hidden
-        onChange={(event) => {
-          void addFiles(Array.from(event.currentTarget.files ?? []));
-          event.currentTarget.value = "";
-        }}
-      />
 
       {!remote && (
         <div
@@ -542,99 +518,24 @@ export default function MatchupApp() {
           }}
         >
           <MatchupPanel
-            layers={layers}
-            selectedId={state.selectedId}
-            renamingId={renamingId}
-            visible={settings.visible}
-            locked={settings.locked}
-            blendMode={settings.blendMode}
-            pinned={settings.pinned}
-            opacity={settings.opacity}
-            anchor={settings.anchor}
-            x={settings.x}
-            y={settings.y}
-            width={settings.width ?? ""}
-            height={settings.height ?? ""}
-            scale={settings.scale}
-            error={error}
+            {...panelProps}
             panelOpen={state.panelOpen}
-            hasSelection={Boolean(selected)}
-            shortcuts={prefs.shortcuts}
-            onOpenSettings={() =>
-              void browser.runtime.sendMessage({
-                type: "matchup:open-settings",
-              })
-            }
-            onOpenHelp={() =>
-              void browser.runtime.sendMessage({ type: "matchup:open-help" })
-            }
             onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
-            onToggleVisible={() => patchLayer({ visible: !settings.visible })}
-            onToggleLocked={() => patchLayer({ locked: !settings.locked })}
-            onToggleInvert={() =>
-              patchLayer({
-                blendMode: settings.blendMode === "invert" ? "none" : "invert",
-              })
-            }
-            onPinnedChange={(pinned) => patchLayer({ pinned })}
-            onOpacityChange={(opacity) => patchLayer({ opacity })}
+            // Unlike the side panel, the page knows what frame the layer is in, so a
+            // snap point can be solved to real coordinates the moment it is picked.
             onAnchorSelect={(index) =>
               patchLayer(
                 settings.anchor === index
                   ? { anchor: null }
-                  : {
-                      anchor: index,
-                      ...anchoredPosition(index, settings),
-                    },
+                  : { anchor: index, ...anchoredPosition(index, settings) },
               )
             }
-            onUpload={() => fileInput.current?.click()}
-            onPaste={() => void pasteFromClipboard()}
-            onDismissError={() => setError(undefined)}
-            onDropFiles={(files) => void addFiles(files)}
-            onSelectLayer={(id) => patch({ selectedId: id })}
-            onStartRename={setRenamingId}
-            onRenameLayer={(id, name) => {
-              patch({
-                layers: state.layers.map((layer) =>
-                  layer.id === id ? { ...layer, name } : layer,
-                ),
-              });
-              setRenamingId(undefined);
-            }}
-            onReorderLayers={(fromId, toId, before) =>
-              setState((current) => {
-                const from = current.layers.findIndex((l) => l.id === fromId);
-                const target = current.layers.findIndex((l) => l.id === toId);
-                if (from < 0 || target < 0 || from === target) return current;
-                const layers = [...current.layers];
-                const [moved] = layers.splice(from, 1);
-                if (!moved) return current;
-                // Pulling the layer out shifts the target down one when it sat after it.
-                const at = from < target ? target - 1 : target;
-                layers.splice(before ? at : at + 1, 0, moved);
-                return { ...current, layers };
-              })
-            }
-            onDeleteLayer={deleteLayer}
-            // Typing a position is as much a release from the snap point as
-            // dragging away from it is; leaving the anchor set would re-solve
-            // the layer back on top of whatever was entered.
-            onXChange={(x) => patchLayer({ x, anchor: null })}
-            onYChange={(y) => patchLayer({ y, anchor: null })}
-            onWidthChange={(width) =>
-              patchLayer(lockAspect(settings, "width", width))
-            }
-            onHeightChange={(height) =>
-              patchLayer(lockAspect(settings, "height", height))
-            }
-            onScaleChange={(scale) => patchLayer({ scale })}
             onGripPointerDown={onGripPointerDown}
-            onToggleSidePanel={() => {
+            onToggleSidePanel={() =>
               void browser.runtime.sendMessage({
                 type: "matchup:open-side-panel",
-              });
-            }}
+              })
+            }
           />
         </div>
       )}

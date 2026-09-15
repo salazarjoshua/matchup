@@ -72,12 +72,6 @@ export const SHORTCUT_LABELS = Object.fromEntries(
   ]),
 ) as Record<ShortcutAction, string>;
 
-/**
- * Not rebindable: pasting is a `paste` event rather than a keydown, so the
- * browser owns the chord. Listed so the settings page can still show it.
- */
-export const FIXED_SHORTCUTS = [{ keys: "⌘V", label: "Paste image" }];
-
 const PUNCTUATION_LABELS: Record<string, string> = {
   Slash: "/",
   Backslash: "\\",

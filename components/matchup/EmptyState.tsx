@@ -34,4 +34,3 @@ const EmptyState = ({
 );
 
 export { EmptyState };
-export type { EmptyStateProps };

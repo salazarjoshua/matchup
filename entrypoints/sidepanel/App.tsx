@@ -1,5 +1,5 @@
-import { MatchupPanel, SidePanelPrompt } from "@/components/matchup";
-import { ACCEPTED_TYPES, lockAspect } from "@/utils/matchup-state";
+import { MatchupPanel } from "@/components/matchup/MatchupPanel";
+import { SidePanelPrompt } from "@/components/matchup/SidePanelPrompt";
 import { SIDE_PANEL_PORT } from "@/utils/side-panel";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
 import { useActiveTab } from "./useActiveTab";
@@ -14,23 +14,10 @@ export default function App() {
   const [page, setPage] = useState<{ open: boolean; needsReload?: boolean }>({
     open: false,
   });
-  const {
-    state,
-    setState,
-    layers,
-    selected,
-    settings,
-    hydrated,
-    error,
-    setError,
-    patch,
-    patchLayer,
-    addFiles,
-    deleteLayer,
-    pasteFromClipboard,
-  } = useMatchupStore(page.open ? tab?.origin : undefined, prefs.layerDefaults);
-  const [renamingId, setRenamingId] = useState<string>();
-  const fileInput = useRef<HTMLInputElement>(null);
+  const { hydrated, panelProps } = useMatchupStore(
+    page.open ? tab?.origin : undefined,
+    prefs,
+  );
 
   const port = useRef<ReturnType<typeof browser.runtime.connect>>(undefined);
   const watching = useRef<number>(undefined);
@@ -82,7 +69,6 @@ export default function App() {
     return (
       <div className="font-sans bg-canvas">
         <SidePanelPrompt
-          host={tab?.host}
           restricted={!tab || tab.restricted}
           needsReload={page.needsReload}
           onOpenPage={() => port.current?.postMessage({ openPage: true })}
@@ -95,98 +81,12 @@ export default function App() {
 
   return (
     <div className="font-sans bg-canvas min-h-screen p-2">
-      <input
-        ref={fileInput}
-        type="file"
-        accept={ACCEPTED_TYPES.join(",")}
-        multiple
-        hidden
-        onChange={(event) => {
-          void addFiles(Array.from(event.currentTarget.files ?? []));
-          event.currentTarget.value = "";
-        }}
-      />
-
       {hydrated && (
         <MatchupPanel
+          {...panelProps}
           floating={false}
           panelOpen
-          shortcuts={prefs.shortcuts}
-          layers={layers}
-          selectedId={state.selectedId}
-          renamingId={renamingId}
-          visible={settings.visible}
-          locked={settings.locked}
-          blendMode={settings.blendMode}
-          pinned={settings.pinned}
-          opacity={settings.opacity}
-          anchor={settings.anchor}
-          x={settings.x}
-          y={settings.y}
-          width={settings.width ?? ""}
-          height={settings.height ?? ""}
-          scale={settings.scale}
-          error={error}
-          hasSelection={Boolean(selected)}
           onToggleSidePanel={close}
-          onOpenSettings={() =>
-            void browser.runtime.sendMessage({ type: "matchup:open-settings" })
-          }
-          onOpenHelp={() =>
-            void browser.runtime.sendMessage({ type: "matchup:open-help" })
-          }
-          onToggleVisible={() => patchLayer({ visible: !settings.visible })}
-          onToggleLocked={() => patchLayer({ locked: !settings.locked })}
-          onToggleInvert={() =>
-            patchLayer({
-              blendMode: settings.blendMode === "invert" ? "none" : "invert",
-            })
-          }
-          // Only the flag: the page converts the coordinates on the way through,
-          // because it is the only side that knows how far it is scrolled.
-          onPinnedChange={(pinned) => patchLayer({ pinned })}
-          onOpacityChange={(opacity) => patchLayer({ opacity })}
-          onAnchorSelect={(index) =>
-            patchLayer({ anchor: settings.anchor === index ? null : index })
-          }
-          onUpload={() => fileInput.current?.click()}
-          onPaste={() => void pasteFromClipboard()}
-          onDropFiles={(files) => void addFiles(files)}
-          onDismissError={() => setError(undefined)}
-          onSelectLayer={(id) => patch({ selectedId: id })}
-          onStartRename={setRenamingId}
-          onRenameLayer={(id, name) => {
-            patch({
-              layers: state.layers.map((layer) =>
-                layer.id === id ? { ...layer, name } : layer,
-              ),
-            });
-            setRenamingId(undefined);
-          }}
-          onReorderLayers={(fromId, toId, before) =>
-            setState((current) => {
-              const from = current.layers.findIndex((l) => l.id === fromId);
-              const target = current.layers.findIndex((l) => l.id === toId);
-              if (from < 0 || target < 0 || from === target) return current;
-              const next = [...current.layers];
-              const [moved] = next.splice(from, 1);
-              if (!moved) return current;
-              const at = from < target ? target - 1 : target;
-              next.splice(before ? at : at + 1, 0, moved);
-              return { ...current, layers: next };
-            })
-          }
-          onDeleteLayer={deleteLayer}
-          // See MatchupApp: an entered position releases the snap point.
-          onXChange={(x) => patchLayer({ x, anchor: null })}
-          onYChange={(y) => patchLayer({ y, anchor: null })}
-          onWidthChange={(width) =>
-            patchLayer(lockAspect(settings, "width", width))
-          }
-          onHeightChange={(height) =>
-            patchLayer(lockAspect(settings, "height", height))
-          }
-          onScaleChange={(scale) => patchLayer({ scale })}
         />
       )}
     </div>

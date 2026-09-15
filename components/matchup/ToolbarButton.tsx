@@ -17,7 +17,6 @@ const ToolbarButton = ({
     className={cn(
       "h-10 duration-120 grid place-items-center transition-colors ease-out",
       "bg-toolbar text-muted",
-      props.disabled && "cursor-not-allowed",
       className,
     )}
     {...props}
@@ -27,4 +26,3 @@ const ToolbarButton = ({
 );
 
 export { ToolbarButton };
-export type { ToolbarButtonProps };

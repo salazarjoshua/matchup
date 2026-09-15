@@ -25,4 +25,3 @@ const DropOverlay = ({ className, ...props }: DropOverlayProps) => (
 );
 
 export { DropOverlay };
-export type { DropOverlayProps };

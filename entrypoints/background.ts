@@ -53,14 +53,16 @@ const closeSidePanel = async () => {
   });
 };
 
-/** Tabs a side panel is currently showing. Held here because the background outlives
- *  both the panel and any page in it, and a side panel's port keeps it awake. */
-const panelTabs = new Set<number>();
 /** Tabs where Matchup is actually running. The flag itself lives in each page's own
  *  sessionStorage, so this is the only place the side panel can learn it from. */
 const liveTabs = new Set<number>();
-/** Each open side panel and the tab it is currently speaking for. */
+/** Each open side panel and the tab it is currently speaking for. Held here because the
+ *  background outlives both the panel and any page in it, and a side panel's port keeps
+ *  it awake. Which tabs a panel is showing is read back off this rather than tracked
+ *  alongside it, so the two can't disagree. */
 const panelPorts = new Map<Browser.runtime.Port, number | undefined>();
+
+const hasPanel = (tabId: number) => [...panelPorts.values()].includes(tabId);
 
 const tellPanels = (tabId: number, extra?: { needsReload?: boolean }) => {
   for (const [port, watching] of panelPorts) {
@@ -71,7 +73,7 @@ const tellPanels = (tabId: number, extra?: { needsReload?: boolean }) => {
 
 const tellTab = (tabId: number) => {
   void browser.tabs
-    .sendMessage(tabId, { type: TELL_REMOTE, remote: panelTabs.has(tabId) })
+    .sendMessage(tabId, { type: TELL_REMOTE, remote: hasPanel(tabId) })
     .catch(() => undefined);
 };
 
@@ -108,10 +110,11 @@ export default defineBackground(() => {
     let watching: number | undefined;
     const release = () => {
       if (watching == null) return;
-      panelTabs.delete(watching);
-      tellTab(watching);
+      const released = watching;
       watching = undefined;
+      // Cleared before the page is told, so `hasPanel` no longer counts this port.
       panelPorts.set(port, undefined);
+      tellTab(released);
     };
     panelPorts.set(port, undefined);
 
@@ -126,7 +129,6 @@ export default defineBackground(() => {
         release();
         watching = request.tabId;
         panelPorts.set(port, watching);
-        panelTabs.add(watching);
         tellTab(watching);
         tellPanels(watching);
         return;
@@ -160,7 +162,6 @@ export default defineBackground(() => {
 
   browser.tabs.onRemoved.addListener((tabId) => {
     liveTabs.delete(tabId);
-    panelTabs.delete(tabId);
   });
 
   // No popup: the icon toggles the panel straight away, and again to close it.

@@ -162,4 +162,3 @@ const OpacityBar = ({
 };
 
 export { OpacityBar };
-export type { OpacityBarProps };

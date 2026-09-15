@@ -6,8 +6,6 @@ type SidePanelPromptProps = Omit<
   ComponentPropsWithoutRef<"div">,
   "children"
 > & {
-  /** Named so it is obvious which page the layers would belong to. */
-  host?: string;
   restricted?: boolean;
   needsReload?: boolean;
   onOpenPage?: () => void;
@@ -16,7 +14,6 @@ type SidePanelPromptProps = Omit<
 };
 
 const SidePanelPrompt = ({
-  host,
   restricted = false,
   needsReload = false,
   onOpenPage,
@@ -39,7 +36,7 @@ const SidePanelPrompt = ({
         }
       : {
           title: "Matchup isn’t on yet",
-          body: `Ready when you are.`,
+          body: "Ready when you are.",
           action: { label: "Start matching up", run: onOpenPage },
         };
 
@@ -81,4 +78,3 @@ const SidePanelPrompt = ({
 };
 
 export { SidePanelPrompt };
-export type { SidePanelPromptProps };

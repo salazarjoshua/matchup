@@ -1,5 +1,4 @@
 import { cn } from "@/utils/cn";
-import { LAYER_COLUMNS } from "@/utils/matchup-state";
 import { useLayoutEffect, useRef } from "react";
 import type { ComponentPropsWithoutRef, ReactNode, RefObject } from "react";
 import { UploadImageIcon } from "@/components/icons";
@@ -59,7 +58,6 @@ type LayerGridProps = ComponentPropsWithoutRef<"div"> & {
 
 const LayerGrid = ({
   className,
-  style,
   order,
   children,
   ...props
@@ -71,14 +69,10 @@ const LayerGrid = ({
     <div
       ref={root}
       className={cn(
-        "grid gap-2.5 p-3",
+        "grid grid-cols-3 gap-2.5 p-3",
         "max-h-66 scrollbar-panel overflow-y-auto",
         className,
       )}
-      style={{
-        gridTemplateColumns: `repeat(${LAYER_COLUMNS}, minmax(0, 1fr))`,
-        ...style,
-      }}
       {...props}
     >
       {children}
@@ -104,4 +98,3 @@ const UploadTile = ({
 );
 
 export { LayerGrid, UploadTile };
-export type { LayerGridProps };

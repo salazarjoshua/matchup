@@ -212,4 +212,3 @@ const LayerTile = ({
 
 export { LayerTile };
 
-export type { LayerTileProps };

@@ -60,4 +60,3 @@ const Segmented = ({
 );
 
 export { Segmented };
-export type { SegmentedProps, SegmentedOption };

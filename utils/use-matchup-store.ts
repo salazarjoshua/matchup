@@ -2,6 +2,7 @@ import {
   ACCEPTED_TYPES,
   LAYER_DEFAULTS,
   MATCHUP_DEFAULTS,
+  lockAspect,
   restoreState,
   storesFor,
 } from "./matchup-state";
@@ -11,6 +12,7 @@ import {
   restoreSettings,
 } from "./matchup-settings";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { browser } from "wxt/browser";
 import type {
   DrawnLayer,
   LayerSettings,
@@ -99,15 +101,16 @@ export const useMatchupSettings = (): MatchupSettings => {
  */
 export const useMatchupStore = (
   origin: string | undefined,
-  layerDefaults: LayerSettings,
+  prefs: MatchupSettings,
 ) => {
   const [state, setState] = useState<MatchupState>(MATCHUP_DEFAULTS);
   const [sources, setSources] = useState<LayerSources>({});
   const [hydrated, setHydrated] = useState(false);
   const [error, setError] = useState<string>();
+  const [renamingId, setRenamingId] = useState<string>();
 
-  const defaults = useRef(layerDefaults);
-  defaults.current = layerDefaults;
+  const defaults = useRef(prefs.layerDefaults);
+  defaults.current = prefs.layerDefaults;
   /**
    * The record as last written or last received. storage.onChanged reaches the writer
    * too, so without this each side adopts its own echo, re-renders, and writes again —
@@ -297,22 +300,117 @@ export const useMatchupStore = (
     }
   }, [addFiles]);
 
+  /**
+   * A picker that never has to be in the tree. The upload shortcut fires from the page
+   * even while the panel is docked in the side panel, so there is nowhere to hang a
+   * hidden <input> that is reliably mounted at the time.
+   */
+  const pickFiles = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ACCEPTED_TYPES.join(",");
+    input.multiple = true;
+    input.onchange = () => void addFiles(Array.from(input.files ?? []));
+    input.click();
+  }, [addFiles]);
+
+  const renameLayer = useCallback((id: string, name: string) => {
+    setState((current) => ({
+      ...current,
+      layers: current.layers.map((layer) =>
+        layer.id === id ? { ...layer, name } : layer,
+      ),
+    }));
+    setRenamingId(undefined);
+  }, []);
+
+  const reorderLayers = useCallback(
+    (fromId: string, toId: string, before: boolean) =>
+      setState((current) => {
+        const from = current.layers.findIndex((l) => l.id === fromId);
+        const target = current.layers.findIndex((l) => l.id === toId);
+        if (from < 0 || target < 0 || from === target) return current;
+        const layers = [...current.layers];
+        const [moved] = layers.splice(from, 1);
+        if (!moved) return current;
+        // Pulling the layer out shifts the target down one when it sat after it.
+        const at = from < target ? target - 1 : target;
+        layers.splice(before ? at : at + 1, 0, moved);
+        return { ...current, layers };
+      }),
+    [],
+  );
+
   const selected = layers.find((layer) => layer.id === state.selectedId);
+  const settings = (selected ?? LAYER_DEFAULTS) as LayerSettings &
+    Partial<LayerSize>;
+
+  /**
+   * Everything the panel needs that is the same wherever it is mounted. The page and
+   * the side panel each spread this and add only what differs — where it is docked,
+   * and how an anchor resolves once a frame is known.
+   */
+  const panelProps = {
+    layers,
+    selectedId: state.selectedId,
+    renamingId,
+    shortcuts: prefs.shortcuts,
+    visible: settings.visible,
+    locked: settings.locked,
+    invert: settings.invert,
+    pinned: settings.pinned,
+    opacity: settings.opacity,
+    anchor: settings.anchor,
+    x: settings.x,
+    y: settings.y,
+    width: settings.width ?? "",
+    height: settings.height ?? "",
+    scale: settings.scale,
+    error,
+    hasSelection: Boolean(selected),
+    onOpenSettings: () =>
+      void browser.runtime.sendMessage({ type: "matchup:open-settings" }),
+    onOpenHelp: () =>
+      void browser.runtime.sendMessage({ type: "matchup:open-help" }),
+    onToggleVisible: () => patchLayer({ visible: !settings.visible }),
+    onToggleLocked: () => patchLayer({ locked: !settings.locked }),
+    onToggleInvert: () => patchLayer({ invert: !settings.invert }),
+    // Only the flag: the page converts the coordinates on the way through, because
+    // it is the only side that knows how far it is scrolled.
+    onPinnedChange: (pinned: boolean) => patchLayer({ pinned }),
+    onOpacityChange: (opacity: number) => patchLayer({ opacity }),
+    onAnchorSelect: (index: number) =>
+      patchLayer({ anchor: settings.anchor === index ? null : index }),
+    onUpload: pickFiles,
+    onPaste: () => void pasteFromClipboard(),
+    onAddFiles: (files: File[]) => void addFiles(files),
+    onDismissError: () => setError(undefined),
+    onSelectLayer: (id: string) => patch({ selectedId: id }),
+    onStartRename: setRenamingId,
+    onRenameLayer: renameLayer,
+    onReorderLayers: reorderLayers,
+    onDeleteLayer: deleteLayer,
+    // Typing a position is as much a release from the snap point as dragging away
+    // from it is; leaving the anchor set would re-solve the layer back on top.
+    onXChange: (x: string) => patchLayer({ x, anchor: null }),
+    onYChange: (y: string) => patchLayer({ y, anchor: null }),
+    onWidthChange: (width: string) =>
+      patchLayer(lockAspect(settings, "width", width)),
+    onHeightChange: (height: string) =>
+      patchLayer(lockAspect(settings, "height", height)),
+    onScaleChange: (scale: string) => patchLayer({ scale }),
+  };
 
   return {
     state,
     setState,
-    layers,
     selected,
-    settings: (selected ?? LAYER_DEFAULTS) as LayerSettings &
-      Partial<LayerSize>,
+    settings,
     hydrated,
-    error,
-    setError,
+    pickFiles,
     patch,
     patchLayer,
     addFiles,
-    deleteLayer,
-    pasteFromClipboard,
+    panelProps,
   };
 };

@@ -24,11 +24,6 @@ const accentGlyph = {
   pink: "text-ink",
 } as const;
 
-/**
- * A disabled toggle keeps the plain toolbar ground instead of its accent, so it never
- * reads as one that is merely off. Unreachable today: MatchupPanel only renders the
- * toggles once a layer is selected, and never disables them.
- */
 const ToolbarToggle = ({
   accent,
   on,
@@ -40,10 +35,7 @@ const ToolbarToggle = ({
     aria-pressed={on}
     className={cn(
       "flex-1",
-      !props.disabled &&
-        (on
-          ? [accentFill[accent], accentGlyph[accent]]
-          : "hover:bg-toolbar-hover"),
+      on ? [accentFill[accent], accentGlyph[accent]] : "hover:bg-toolbar-hover",
       className,
     )}
     {...props}
@@ -53,4 +45,3 @@ const ToolbarToggle = ({
 );
 
 export { ToolbarToggle };
-export type { ToolbarToggleProps };

@@ -7,7 +7,6 @@ import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
 import { Segmented } from "./Segmented";
 import { DropOverlay } from "./DropOverlay";
-import { Toolbar } from "./Toolbar";
 import { ToolbarButton } from "./ToolbarButton";
 import { ToolbarToggle } from "./ToolbarToggle";
 import { IconButton } from "./IconButton";
@@ -31,7 +30,6 @@ import { hasFiles } from "@/utils/drag";
 import { SHORTCUT_DEFAULTS, shortcutLabel } from "@/utils/matchup-settings";
 import { useRef, useState } from "react";
 import type { Shortcuts } from "@/utils/matchup-settings";
-import type { BlendMode } from "@/utils/matchup-state";
 import type {
   ComponentPropsWithoutRef,
   PointerEvent as ReactPointerEvent,
@@ -46,7 +44,6 @@ type LayerSummary = {
   id: string;
   name: string;
   src?: string;
-  locked?: boolean;
 };
 
 type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
@@ -54,7 +51,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   selectedId?: string;
   visible: boolean;
   locked: boolean;
-  blendMode: BlendMode;
+  invert: boolean;
   /** The overlay holds its place in the window rather than scrolling with the page. */
   pinned: boolean;
   opacity: number;
@@ -84,7 +81,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onDeleteLayer?: (id: string) => void;
   onReorderLayers?: (fromId: string, toId: string, before: boolean) => void;
   onDismissError?: () => void;
-  onDropFiles?: (files: File[]) => void;
+  onAddFiles?: (files: File[]) => void;
   onTogglePanel?: () => void;
   onOpenSettings?: () => void;
   onOpenHelp?: () => void;
@@ -115,7 +112,7 @@ const MatchupPanel = ({
   selectedId,
   visible,
   locked,
-  blendMode,
+  invert,
   pinned,
   opacity,
   anchor,
@@ -141,7 +138,7 @@ const MatchupPanel = ({
   onDeleteLayer,
   onReorderLayers,
   onDismissError,
-  onDropFiles,
+  onAddFiles,
   onTogglePanel,
   onOpenSettings,
   onOpenHelp,
@@ -184,9 +181,12 @@ const MatchupPanel = ({
         )}
         {...props}
       >
-        <Toolbar
+        <div
           onPointerDown={floating ? onGripPointerDown : undefined}
-          className={cn(floating ? gripClass : "w-full")}
+          className={cn(
+            "w-panel flex flex-none items-center gap-1",
+            floating ? gripClass : "w-full",
+          )}
         >
           {floating && (
             <ToolbarButton
@@ -235,7 +235,7 @@ const MatchupPanel = ({
               </ToolbarToggle>
               <ToolbarToggle
                 accent="pink"
-                on={blendMode === "invert"}
+                on={invert}
                 onClick={onToggleInvert}
                 title={`Toggle invert (${shortcutLabel(shortcuts.toggleInvert)})`}
                 className="rounded-r-xl"
@@ -244,7 +244,7 @@ const MatchupPanel = ({
               </ToolbarToggle>
             </div>
           )}
-        </Toolbar>
+        </div>
 
         {(panelOpen || !floating) && (
           <div
@@ -312,7 +312,7 @@ const MatchupPanel = ({
                 if (!hasFiles(event)) return;
                 event.preventDefault();
                 setDroppingFiles(false);
-                onDropFiles?.(Array.from(event.dataTransfer.files));
+                onAddFiles?.(Array.from(event.dataTransfer.files));
               }}
             >
               {droppingFiles && <DropOverlay />}
@@ -431,7 +431,6 @@ const MatchupPanel = ({
                             label="X"
                             className="min-w-0 flex-1"
                             value={x}
-                            editable={!positionDisabled}
                             disabled={positionDisabled}
                             onChange={onXChange}
                           />
@@ -439,7 +438,6 @@ const MatchupPanel = ({
                             label="Y"
                             className="min-w-0 flex-1"
                             value={y}
-                            editable={!positionDisabled}
                             disabled={positionDisabled}
                             onChange={onYChange}
                           />
@@ -450,7 +448,6 @@ const MatchupPanel = ({
                             label="W"
                             className="min-w-0 flex-1 relative z-10"
                             value={width}
-                            editable={!positionDisabled}
                             disabled={positionDisabled}
                             onChange={onWidthChange}
                             min={1}
@@ -463,7 +460,6 @@ const MatchupPanel = ({
                             label="H"
                             className="min-w-0 flex-1 relative z-10"
                             value={height}
-                            editable={!positionDisabled}
                             disabled={positionDisabled}
                             onChange={onHeightChange}
                             min={1}
@@ -486,7 +482,6 @@ const MatchupPanel = ({
                         label={<ScaleIcon className="size-4 " />}
                         className="min-w-0 flex-1"
                         value={scale}
-                        editable={!positionDisabled}
                         disabled={positionDisabled}
                         onChange={onScaleChange}
                         step={0.1}
@@ -512,4 +507,3 @@ const MatchupPanel = ({
 };
 
 export { MatchupPanel };
-export type { MatchupPanelProps, LayerSummary };

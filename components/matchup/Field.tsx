@@ -6,7 +6,6 @@ type FieldProps = Omit<ComponentPropsWithoutRef<"div">, "onChange"> & {
   /** Field label — 'X', 'Y', or an icon for scale. */
   label?: ReactNode;
   value: string | number;
-  editable?: boolean;
   disabled?: boolean;
   onChange?: (value: string) => void;
   /** Arrow-key increment; Shift multiplies it by ten. */
@@ -29,7 +28,6 @@ const toNumeric = (raw: string, allowNegative: boolean) => {
 const Field = ({
   label,
   value,
-  editable = false,
   disabled = false,
   onChange,
   step = 1,
@@ -38,7 +36,7 @@ const Field = ({
   ...props
 }: FieldProps) => {
   const [focused, setFocused] = useState(false);
-  const interactive = editable && !disabled && Boolean(onChange);
+  const interactive = !disabled && Boolean(onChange);
   const bounded = min !== undefined;
 
   return (
@@ -48,9 +46,9 @@ const Field = ({
         "px-3 border-0 bg-surface",
         focused && interactive
           ? "focus-within:ring-2 focus-within:ring-focus"
-          : editable && !disabled
-            ? "border-hairline"
-            : "border-transparent",
+          : disabled
+            ? "border-transparent"
+            : "border-hairline",
         className,
       )}
       {...props}
@@ -116,4 +114,3 @@ const Field = ({
 };
 
 export { Field };
-export type { FieldProps };
