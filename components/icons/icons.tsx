@@ -382,13 +382,31 @@ export const SidePanelIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="currentColor"
+    fill="none"
     {...props}
   >
     <path
-      fillRule="evenodd"
-      d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2m9 2v14h5V5zM5 5h7v14H5z"
-      clipRule="evenodd"
+      stroke="currentColor"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM15 5v14"
+    />
+  </svg>
+);
+
+export const UndockIcon = (props: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    {...props}
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M7 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-5M5 5l5.25 5.25M4 10V4.75A.75.75 0 0 1 4.75 4H10"
     />
   </svg>
 );

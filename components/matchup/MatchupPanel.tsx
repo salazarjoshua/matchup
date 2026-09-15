@@ -21,6 +21,7 @@ import {
   LockIcon,
   SettingsIcon,
   SidePanelIcon,
+  UndockIcon,
   PlusIcon,
   MinusIcon,
   ScaleIcon,
@@ -259,15 +260,21 @@ const MatchupPanel = ({
                 <>
                   {onToggleSidePanel && (
                     <IconButton
+                      // The button names where it sends the panel, so docked it
+                      // offers the side panel and undocked it offers the page back.
                       aria-label={
-                        floating ? "Open in side panel" : "Show on the page"
+                        floating ? "Open in side panel" : "Undock to the page"
                       }
                       title={
-                        floating ? "Open in side panel" : "Show on the page"
+                        floating ? "Open in side panel" : "Undock to the page"
                       }
                       onClick={onToggleSidePanel}
                     >
-                      <SidePanelIcon className="w-4" />
+                      {floating ? (
+                        <SidePanelIcon className="w-4" />
+                      ) : (
+                        <UndockIcon className="w-4" />
+                      )}
                     </IconButton>
                   )}
                   <IconButton aria-label="About" onClick={onOpenHelp}>
