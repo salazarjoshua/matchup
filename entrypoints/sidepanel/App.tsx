@@ -62,8 +62,14 @@ export default function App() {
     port.current?.postMessage({ tabId: tab.id });
   }, [tab?.id]);
 
-  const close = () =>
-    void browser.runtime.sendMessage({ type: "matchup:close-side-panel" });
+  /**
+   * A side panel closes itself. Asking the background to disable it for the tab was the
+   * long way round and never shut it on the first click: the disable and the re-enable
+   * that keeps it openable land in the same turn, so the panel is on again before Chrome
+   * has torn it down. Dropping this document drops the port, which is what tells the page
+   * to take its own panel back.
+   */
+  const close = () => window.close();
 
   if (!tab || tab.restricted || !page.open) {
     return (

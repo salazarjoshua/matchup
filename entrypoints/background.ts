@@ -8,18 +8,10 @@ import { browser } from "wxt/browser";
 import { defineBackground } from "wxt/utils/define-background";
 
 const HELP_URL = "https://joshuasalazar.me/";
-const SIDE_PANEL_PATH = "sidepanel.html";
 
 /** Chrome only, and absent before 114, so it is reached structurally rather than through
  *  the polyfill. Firefox builds get a sidebar the user opens themselves. */
-type SidePanelApi = {
-  setOptions: (o: {
-    tabId: number;
-    path?: string;
-    enabled: boolean;
-  }) => Promise<void>;
-  open: (o: { tabId: number }) => Promise<void>;
-};
+type SidePanelApi = { open: (o: { tabId: number }) => Promise<void> };
 
 const sidePanel = (
   globalThis as unknown as { chrome?: { sidePanel?: SidePanelApi } }
@@ -37,20 +29,6 @@ const openSidePanel = (tabId?: number) => {
     .catch((reason: unknown) =>
       console.warn("Matchup: couldn’t open the side panel", reason),
     );
-};
-
-/** Disabling is the only way to close a side panel; re-enabling straight after leaves it
- *  shut but openable, which keeps the gesture-sensitive open() above free of setup. */
-const closeSidePanel = async () => {
-  if (!sidePanel) return;
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (tab?.id == null) return;
-  await sidePanel.setOptions({ tabId: tab.id, enabled: false });
-  await sidePanel.setOptions({
-    tabId: tab.id,
-    path: SIDE_PANEL_PATH,
-    enabled: true,
-  });
 };
 
 /** Tabs where Matchup is actually running. The flag itself lives in each page's own
@@ -87,8 +65,6 @@ export default defineBackground(() => {
       void browser.tabs.create({ url: HELP_URL });
     } else if (type === "matchup:open-side-panel") {
       openSidePanel(sender.tab?.id);
-    } else if (type === "matchup:close-side-panel") {
-      void closeSidePanel();
     } else if (type === PAGE_STATE) {
       // Announced by every content script as it mounts, which is what survives a
       // refresh. Answered by pushing rather than replying: `browser` here is Chrome's
