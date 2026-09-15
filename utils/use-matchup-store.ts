@@ -27,7 +27,7 @@ import type { MatchupSettings } from "./matchup-settings";
  * Affordable at this rate only because images no longer travel with the record.
  */
 const WRITE_INTERVAL_MS = 60;
-const MAX_NAME = 24;
+const MAX_NAME = 16;
 const ACCEPTED_COPY = "Use PNG, JPG, WebP or SVG.";
 
 const shortName = (name: string) => {

@@ -21,7 +21,7 @@ const ErrorBanner = ({
       <span className="grid h-4 flex-none place-items-center">
         <WarningIcon className="w-4" />
       </span>
-      <span className="flex-1">{message}</span>
+      <span className="flex-1 line-clamp-2">{message}</span>
       {onDismiss && (
         <button
           type="button"
