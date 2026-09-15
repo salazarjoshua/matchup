@@ -57,7 +57,9 @@ const Field = ({
       {label && (
         <span
           className={cn(
-            "w-6 text-[12px]",
+            // Sized to its own glyph rather than to a column: two fields share a
+            // row now, and a fixed label ate the width the number needed.
+            "flex-none text-[12px]",
             disabled ? "text-disabled" : "text-muted",
           )}
         >

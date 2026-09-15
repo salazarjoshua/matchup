@@ -1,5 +1,5 @@
 import { MatchupPanel, SidePanelPrompt } from "@/components/matchup";
-import { ACCEPTED_TYPES } from "@/utils/matchup-state";
+import { ACCEPTED_TYPES, lockAspect } from "@/utils/matchup-state";
 import { SIDE_PANEL_PORT } from "@/utils/side-panel";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
 import { useActiveTab } from "./useActiveTab";
@@ -123,6 +123,8 @@ export default function App() {
           anchor={settings.anchor}
           x={settings.x}
           y={settings.y}
+          width={settings.width ?? ""}
+          height={settings.height ?? ""}
           scale={settings.scale}
           error={error}
           hasSelection={Boolean(selected)}
@@ -175,8 +177,15 @@ export default function App() {
             })
           }
           onDeleteLayer={deleteLayer}
-          onXChange={(x) => patchLayer({ x })}
-          onYChange={(y) => patchLayer({ y })}
+          // See MatchupApp: an entered position releases the snap point.
+          onXChange={(x) => patchLayer({ x, anchor: null })}
+          onYChange={(y) => patchLayer({ y, anchor: null })}
+          onWidthChange={(width) =>
+            patchLayer(lockAspect(settings, "width", width))
+          }
+          onHeightChange={(height) =>
+            patchLayer(lockAspect(settings, "height", height))
+          }
           onScaleChange={(scale) => patchLayer({ scale })}
         />
       )}

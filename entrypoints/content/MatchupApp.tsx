@@ -2,7 +2,7 @@ import Overlay from "@/components/Overlay";
 import { MatchupPanel } from "@/components/matchup";
 import { clamp } from "@/utils/clamp";
 import { patchTab, readTab } from "@/utils/matchup-tab";
-import { ACCEPTED_TYPES } from "@/utils/matchup-state";
+import { ACCEPTED_TYPES, lockAspect } from "@/utils/matchup-state";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
 import { PAGE_STATE, TELL_REMOTE } from "@/utils/side-panel";
 import {
@@ -14,6 +14,7 @@ import {
 } from "react";
 import { browser } from "wxt/browser";
 import type { Dock } from "@/utils/matchup-tab";
+import type { LayerSettings, LayerSize } from "@/utils/matchup-state";
 import type { ShortcutAction } from "@/utils/matchup-settings";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
@@ -261,10 +262,17 @@ export default function MatchupApp() {
 
   /** Where the scaled image's top-left corner lands for a given snap point. */
   const anchoredPosition = useCallback(
-    (index: number, scale: number) => {
+    (
+      index: number,
+      layer: Pick<LayerSettings, "scale"> & Partial<LayerSize>,
+    ) => {
+      // The size on screen, which is the layer's own multiplied by scale — and the
+      // image's own only for a layer that never got a measurement.
       const image = overlayImage.current;
-      const width = (image?.naturalWidth ?? 0) * scale;
-      const height = (image?.naturalHeight ?? 0) * scale;
+      const scale = Number(layer.scale) || 1;
+      const width = (Number(layer.width) || image?.naturalWidth || 0) * scale;
+      const height =
+        (Number(layer.height) || image?.naturalHeight || 0) * scale;
       const col = index % 3;
       const row = Math.floor(index / 3);
       const axis = (cell: number, available: number, size: number) =>
@@ -285,17 +293,19 @@ export default function MatchupApp() {
     [settings.pinned, viewport.w, viewport.h, page.w, page.h],
   );
 
-  // An anchored layer re-solves its position when the window, scale or image changes.
+  // An anchored layer re-solves its position when the window, its size or the image changes.
   useLayoutEffect(() => {
     const layer = selectedRef.current;
     if (!layer || layer.anchor === null) return;
-    const next = anchoredPosition(layer.anchor, Number(layer.scale) || 1);
+    const next = anchoredPosition(layer.anchor, layer);
     if (layer.x === next.x && layer.y === next.y) return;
     patchLayer(next);
   }, [
     state.selectedId,
     selected?.anchor,
     selected?.scale,
+    selected?.width,
+    selected?.height,
     selected?.src,
     imageEpoch,
     anchoredPosition,
@@ -324,6 +334,26 @@ export default function MatchupApp() {
       y: String(Math.round((Number(layer.y) || 0) + shift * window.scrollY)),
     });
   }, [state.selectedId, selected?.pinned, patchLayer]);
+
+  /**
+   * The image is the only place a layer can learn its own size, so a layer added
+   * before sizes were stored — or one whose measurement failed — takes it here, on
+   * the first paint that has it. Written once: `width` is the user's from then on.
+   */
+  const onOverlayLoad = (size: {
+    naturalWidth: number;
+    naturalHeight: number;
+  }) => {
+    setImageEpoch((n) => n + 1);
+    const layer = selectedRef.current;
+    if (!layer || !size.naturalWidth || !size.naturalHeight) return;
+    if (layer.naturalWidth === size.naturalWidth && layer.width) return;
+    patchLayer({
+      ...size,
+      width: layer.width || String(size.naturalWidth),
+      height: layer.height || String(size.naturalHeight),
+    });
+  };
 
   const onOverlayPointerDown = (event: ReactPointerEvent) => {
     const layer = selectedRef.current;
@@ -476,13 +506,15 @@ export default function MatchupApp() {
           src={selected.src}
           x={Number(settings.x) || 0}
           y={Number(settings.y) || 0}
+          width={Number(settings.width) || undefined}
+          height={Number(settings.height) || undefined}
           scale={Number(settings.scale) || 1}
           opacity={settings.opacity}
           blendMode={settings.blendMode}
           pinned={settings.pinned}
           draggable={!settings.locked}
           onPointerDown={onOverlayPointerDown}
-          onLoad={() => setImageEpoch((n) => n + 1)}
+          onLoad={onOverlayLoad}
           imageRef={overlayImage}
         />
       )}
@@ -521,6 +553,8 @@ export default function MatchupApp() {
             anchor={settings.anchor}
             x={settings.x}
             y={settings.y}
+            width={settings.width ?? ""}
+            height={settings.height ?? ""}
             scale={settings.scale}
             error={error}
             panelOpen={state.panelOpen}
@@ -550,7 +584,7 @@ export default function MatchupApp() {
                   ? { anchor: null }
                   : {
                       anchor: index,
-                      ...anchoredPosition(index, Number(settings.scale) || 1),
+                      ...anchoredPosition(index, settings),
                     },
               )
             }
@@ -583,8 +617,17 @@ export default function MatchupApp() {
               })
             }
             onDeleteLayer={deleteLayer}
-            onXChange={(x) => patchLayer({ x })}
-            onYChange={(y) => patchLayer({ y })}
+            // Typing a position is as much a release from the snap point as
+            // dragging away from it is; leaving the anchor set would re-solve
+            // the layer back on top of whatever was entered.
+            onXChange={(x) => patchLayer({ x, anchor: null })}
+            onYChange={(y) => patchLayer({ y, anchor: null })}
+            onWidthChange={(width) =>
+              patchLayer(lockAspect(settings, "width", width))
+            }
+            onHeightChange={(height) =>
+              patchLayer(lockAspect(settings, "height", height))
+            }
             onScaleChange={(scale) => patchLayer({ scale })}
             onGripPointerDown={onGripPointerDown}
             onToggleSidePanel={() => {

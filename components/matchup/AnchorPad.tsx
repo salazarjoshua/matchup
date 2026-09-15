@@ -20,7 +20,7 @@ const AnchorPad = ({
 }: AnchorPadProps) => (
   <div
     className={cn(
-      "size-28 rounded-xl bg-surface grid flex-none grid-cols-3 grid-rows-3 place-items-center",
+      "size-24 rounded-xl bg-surface grid flex-none grid-cols-3 grid-rows-3 place-items-center",
       className,
     )}
     {...props}

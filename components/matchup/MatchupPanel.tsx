@@ -61,6 +61,9 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   anchor: number | null;
   x: string | number;
   y: string | number;
+  /** The overlay's size before scale. Empty for a layer whose image carries none. */
+  width: string | number;
+  height: string | number;
   scale: string | number;
   error?: string;
   /** The panel shows its content. Collapsed, only the toolbar shows. */
@@ -92,16 +95,18 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onToggleSidePanel?: () => void;
   onXChange?: (value: string) => void;
   onYChange?: (value: string) => void;
+  onWidthChange?: (value: string) => void;
+  onHeightChange?: (value: string) => void;
   onScaleChange?: (value: string) => void;
   onGripPointerDown?: (event: ReactPointerEvent) => void;
 };
 
 const gripClass = "cursor-grab touch-none select-none";
 
-/** Naming both states is the point — "not pinned" never said "scrolls with the page". */
+/** Naming both states is the point — "not fixed" never said "scrolls with the page". */
 const FRAMES = [
-  { value: "page", label: "Page" },
-  { value: "window", label: "Window" },
+  { value: "fixed", label: "Fixed" },
+  { value: "scroll", label: "Scroll" },
 ] as const;
 
 const MatchupPanel = ({
@@ -115,6 +120,8 @@ const MatchupPanel = ({
   anchor,
   x,
   y,
+  width,
+  height,
   scale,
   error,
   panelOpen = true,
@@ -143,6 +150,8 @@ const MatchupPanel = ({
   onToggleSidePanel,
   onXChange,
   onYChange,
+  onWidthChange,
+  onHeightChange,
   onScaleChange,
   onGripPointerDown,
   className,
@@ -151,7 +160,6 @@ const MatchupPanel = ({
   // Hiding the overlay disables everything below it; lock only freezes position.
   const positionDisabled = locked || !visible;
   const opacityDisabled = !visible;
-  const positionEditable = anchor === null && !positionDisabled;
 
   // The id is held on a ref as well as in state: state drives the lift, but it lands a
   // frame late, and the drop needs the source synchronously or it silently no-ops.
@@ -401,57 +409,78 @@ const MatchupPanel = ({
                   </LayerGrid>
 
                   <div className="border-hairline border-t flex flex-col gap-3 p-3">
-                    {/* Above the pad and the fields because it governs both: the
-                        nine snap points and X/Y are the page's or the window's,
-                        and nothing else on this card says which. */}
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={cn(
-                          "text-[12px]",
-                          positionDisabled ? "text-disabled" : "text-muted",
-                        )}
-                      >
-                        Frame
-                      </span>
-                      <Segmented
-                        className="flex-1"
-                        value={pinned ? "window" : "page"}
-                        disabled={positionDisabled}
-                        options={FRAMES}
-                        onChange={(next) => onPinnedChange?.(next === "window")}
-                      />
-                    </div>
                     <div className="flex items-start gap-3">
                       <AnchorPad
                         selected={anchor}
                         disabled={positionDisabled}
                         onSelect={onAnchorSelect}
                       />
-                      <div className="flex min-w-0 flex-1 flex-col gap-2">
-                        <Field
-                          label="X"
-                          value={x}
-                          editable={positionEditable}
-                          disabled={positionDisabled}
-                          onChange={onXChange}
-                        />
-                        <Field
-                          label="Y"
-                          value={y}
-                          editable={positionEditable}
-                          disabled={positionDisabled}
-                          onChange={onYChange}
-                        />
-                        <Field
-                          label={<ScaleIcon className="size-4 " />}
-                          value={scale}
-                          editable={!positionDisabled}
-                          disabled={positionDisabled}
-                          onChange={onScaleChange}
-                          step={0.1}
-                          min={0.01}
-                        />
+                      {/* Ruled into where the overlay is and how big it is: the pair
+                          above moves it, the pair below resizes it, and only the
+                          first pair is what the snap points on the left write to. */}
+                      <div className="flex h-24 min-w-0 flex-1 flex-col justify-between">
+                        <div className="flex min-w-0 gap-2">
+                          <Field
+                            label="X"
+                            className="min-w-0 flex-1"
+                            value={x}
+                            editable={!positionDisabled}
+                            disabled={positionDisabled}
+                            onChange={onXChange}
+                          />
+                          <Field
+                            label="Y"
+                            className="min-w-0 flex-1"
+                            value={y}
+                            editable={!positionDisabled}
+                            disabled={positionDisabled}
+                            onChange={onYChange}
+                          />
+                        </div>
+                        <div className="border-hairline border-t" />
+                        <div className="flex min-w-0 gap-2">
+                          <Field
+                            label="W"
+                            className="min-w-0 flex-1"
+                            value={width}
+                            editable={!positionDisabled}
+                            disabled={positionDisabled}
+                            onChange={onWidthChange}
+                            min={1}
+                          />
+                          <Field
+                            label="H"
+                            className="min-w-0 flex-1"
+                            value={height}
+                            editable={!positionDisabled}
+                            disabled={positionDisabled}
+                            onChange={onHeightChange}
+                            min={1}
+                          />
+                        </div>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {/* What X and Y are measured from, and what the snap points
+                          above are solved against — the window, or the page. */}
+                      <Segmented
+                        aria-label="Frame"
+                        className="w-24 flex-none"
+                        value={pinned ? "fixed" : "scroll"}
+                        disabled={positionDisabled}
+                        options={FRAMES}
+                        onChange={(next) => onPinnedChange?.(next === "fixed")}
+                      />
+                      <Field
+                        label={<ScaleIcon className="size-4 " />}
+                        className="min-w-0 flex-1"
+                        value={scale}
+                        editable={!positionDisabled}
+                        disabled={positionDisabled}
+                        onChange={onScaleChange}
+                        step={0.1}
+                        min={0.01}
+                      />
                     </div>
                   </div>
 
