@@ -369,7 +369,7 @@ export default function App() {
               }}
               className="text-muted hover:text-ink rounded-md text-xs focus-visible:ring-offset-2"
             >
-              Reset to defaults
+              Reset shortcuts
             </button>
           </div>
         </Section>

@@ -151,7 +151,7 @@ const OpacityBar = ({
           }}
           className={cn(
             "text-sm w-10 text-right tabular-nums rounded-sm",
-            disabled ? "text-disabled" : "text-ink hover:text-accent-blue",
+            disabled ? "text-disabled" : "text-ink hover:text-muted",
           )}
         >
           {value}%

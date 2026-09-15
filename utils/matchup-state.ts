@@ -95,9 +95,7 @@ export const LAYER_DEFAULTS: LayerSettings = {
   pinned: false,
   x: "0",
   y: "0",
-  // 1, because scale now multiplies the width and height rather than the image's
-  // own size: a new layer starts at the size it was drawn at.
-  scale: "1",
+  scale: "0.5",
 };
 
 export const MATCHUP_DEFAULTS: MatchupState = {
