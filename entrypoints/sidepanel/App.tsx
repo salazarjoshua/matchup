@@ -1,5 +1,5 @@
 import { MatchupPanel, SidePanelPrompt } from "@/components/matchup";
-import { ACCEPTED_TYPES } from "@/utils/matchup-state";
+import { ACCEPTED_TYPES, lockAspect } from "@/utils/matchup-state";
 import { SIDE_PANEL_PORT } from "@/utils/side-panel";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
 import { useActiveTab } from "./useActiveTab";
@@ -117,11 +117,14 @@ export default function App() {
           renamingId={renamingId}
           visible={settings.visible}
           locked={settings.locked}
-          difference={settings.difference}
+          blendMode={settings.blendMode}
+          pinned={settings.pinned}
           opacity={settings.opacity}
           anchor={settings.anchor}
           x={settings.x}
           y={settings.y}
+          width={settings.width ?? ""}
+          height={settings.height ?? ""}
           scale={settings.scale}
           error={error}
           hasSelection={Boolean(selected)}
@@ -134,9 +137,14 @@ export default function App() {
           }
           onToggleVisible={() => patchLayer({ visible: !settings.visible })}
           onToggleLocked={() => patchLayer({ locked: !settings.locked })}
-          onToggleDifference={() =>
-            patchLayer({ difference: !settings.difference })
+          onToggleInvert={() =>
+            patchLayer({
+              blendMode: settings.blendMode === "invert" ? "none" : "invert",
+            })
           }
+          // Only the flag: the page converts the coordinates on the way through,
+          // because it is the only side that knows how far it is scrolled.
+          onPinnedChange={(pinned) => patchLayer({ pinned })}
           onOpacityChange={(opacity) => patchLayer({ opacity })}
           onAnchorSelect={(index) =>
             patchLayer({ anchor: settings.anchor === index ? null : index })
@@ -169,8 +177,15 @@ export default function App() {
             })
           }
           onDeleteLayer={deleteLayer}
-          onXChange={(x) => patchLayer({ x })}
-          onYChange={(y) => patchLayer({ y })}
+          // See MatchupApp: an entered position releases the snap point.
+          onXChange={(x) => patchLayer({ x, anchor: null })}
+          onYChange={(y) => patchLayer({ y, anchor: null })}
+          onWidthChange={(width) =>
+            patchLayer(lockAspect(settings, "width", width))
+          }
+          onHeightChange={(height) =>
+            patchLayer(lockAspect(settings, "height", height))
+          }
           onScaleChange={(scale) => patchLayer({ scale })}
         />
       )}

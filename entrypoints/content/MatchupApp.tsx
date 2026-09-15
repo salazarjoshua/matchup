@@ -2,7 +2,7 @@ import Overlay from "@/components/Overlay";
 import { MatchupPanel } from "@/components/matchup";
 import { clamp } from "@/utils/clamp";
 import { patchTab, readTab } from "@/utils/matchup-tab";
-import { ACCEPTED_TYPES } from "@/utils/matchup-state";
+import { ACCEPTED_TYPES, lockAspect } from "@/utils/matchup-state";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
 import { PAGE_STATE, TELL_REMOTE } from "@/utils/side-panel";
 import {
@@ -14,6 +14,7 @@ import {
 } from "react";
 import { browser } from "wxt/browser";
 import type { Dock } from "@/utils/matchup-tab";
+import type { LayerSettings, LayerSize } from "@/utils/matchup-state";
 import type { ShortcutAction } from "@/utils/matchup-settings";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
@@ -103,6 +104,13 @@ export default function MatchupApp() {
     w: window.innerWidth,
     h: window.innerHeight,
   });
+  // The scrollable page, which is the frame an unpinned layer anchors against.
+  // Initialised synchronously for the same reason the viewport is: the anchor is
+  // re-solved in a layout effect, which runs before the effect below ever has.
+  const [page, setPage] = useState({
+    w: document.documentElement.scrollWidth,
+    h: document.documentElement.scrollHeight,
+  });
 
   const fileInput = useRef<HTMLInputElement>(null);
   const overlayImage = useRef<HTMLImageElement>(null);
@@ -117,11 +125,17 @@ export default function MatchupApp() {
   useEffect(() => {
     // A resize event never fires for a tab that was hidden when the script mounted,
     // which would leave the viewport reading 0 and disable position clamping.
-    const read = () =>
+    const read = () => {
+      const root = document.documentElement;
       setViewport({
-        w: document.documentElement.clientWidth || window.innerWidth,
-        h: document.documentElement.clientHeight || window.innerHeight,
+        w: root.clientWidth || window.innerWidth,
+        h: root.clientHeight || window.innerHeight,
       });
+      // Observing <html> catches this for a page whose height follows its content,
+      // which is most of them; one that scrolls an inner element instead only
+      // re-measures when the window does. Anchoring is a snap, not a live tie.
+      setPage({ w: root.scrollWidth, h: root.scrollHeight });
+    };
     read();
     const observer = new ResizeObserver(read);
     observer.observe(document.documentElement);
@@ -209,8 +223,11 @@ export default function MatchupApp() {
         case "toggleLocked":
           patchLayer({ locked: !selectedRef.current?.locked });
           break;
-        case "toggleDifference":
-          patchLayer({ difference: !selectedRef.current?.difference });
+        case "toggleInvert":
+          patchLayer({
+            blendMode:
+              selectedRef.current?.blendMode === "invert" ? "none" : "invert",
+          });
           break;
         case "togglePanel":
           setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
@@ -245,10 +262,17 @@ export default function MatchupApp() {
 
   /** Where the scaled image's top-left corner lands for a given snap point. */
   const anchoredPosition = useCallback(
-    (index: number, scale: number) => {
+    (
+      index: number,
+      layer: Pick<LayerSettings, "scale"> & Partial<LayerSize>,
+    ) => {
+      // The size on screen, which is the layer's own multiplied by scale — and the
+      // image's own only for a layer that never got a measurement.
       const image = overlayImage.current;
-      const width = (image?.naturalWidth ?? 0) * scale;
-      const height = (image?.naturalHeight ?? 0) * scale;
+      const scale = Number(layer.scale) || 1;
+      const width = (Number(layer.width) || image?.naturalWidth || 0) * scale;
+      const height =
+        (Number(layer.height) || image?.naturalHeight || 0) * scale;
       const col = index % 3;
       const row = Math.floor(index / 3);
       const axis = (cell: number, available: number, size: number) =>
@@ -257,45 +281,101 @@ export default function MatchupApp() {
           : cell === 1
             ? Math.round((available - size) / 2)
             : Math.round(available - size);
+      // Whatever a layer's coordinates are measured against is what its corners are:
+      // snapping an unpinned layer to the window would only ever mean "wherever I
+      // happen to have scrolled to", which is not a position at all.
+      const frame = settings.pinned ? viewport : page;
       return {
-        x: String(axis(col, viewport.w, width)),
-        y: String(axis(row, viewport.h, height)),
+        x: String(axis(col, frame.w, width)),
+        y: String(axis(row, frame.h, height)),
       };
     },
-    [viewport.w, viewport.h],
+    [settings.pinned, viewport.w, viewport.h, page.w, page.h],
   );
 
-  // An anchored layer re-solves its position when the window, scale or image changes.
+  // An anchored layer re-solves its position when the window, its size or the image changes.
   useLayoutEffect(() => {
     const layer = selectedRef.current;
     if (!layer || layer.anchor === null) return;
-    const next = anchoredPosition(layer.anchor, Number(layer.scale) || 1);
+    const next = anchoredPosition(layer.anchor, layer);
     if (layer.x === next.x && layer.y === next.y) return;
     patchLayer(next);
   }, [
     state.selectedId,
     selected?.anchor,
     selected?.scale,
+    selected?.width,
+    selected?.height,
     selected?.src,
     imageEpoch,
     anchoredPosition,
     patchLayer,
   ]);
 
+  /**
+   * Pinning and unpinning re-reads the same numbers against a different origin, so
+   * without this the image jumps by however far the page is scrolled. Done here on
+   * the change rather than in the toolbar's handler because the side panel can flip
+   * the same switch, and only the page knows its own scroll offset.
+   */
+  const pinnedBefore = useRef<{ id?: string; pinned?: boolean }>({});
+  useLayoutEffect(() => {
+    const layer = selectedRef.current;
+    if (!layer) return;
+    const previous = pinnedBefore.current;
+    pinnedBefore.current = { id: layer.id, pinned: layer.pinned };
+    // A different layer is a different set of coordinates, not a conversion; an
+    // anchored one is about to be re-solved against its new frame anyway.
+    if (previous.id !== layer.id || previous.pinned === layer.pinned) return;
+    if (layer.anchor !== null) return;
+    const shift = layer.pinned ? -1 : 1;
+    patchLayer({
+      x: String(Math.round((Number(layer.x) || 0) + shift * window.scrollX)),
+      y: String(Math.round((Number(layer.y) || 0) + shift * window.scrollY)),
+    });
+  }, [state.selectedId, selected?.pinned, patchLayer]);
+
+  /**
+   * The image is the only place a layer can learn its own size, so a layer added
+   * before sizes were stored — or one whose measurement failed — takes it here, on
+   * the first paint that has it. Written once: `width` is the user's from then on.
+   */
+  const onOverlayLoad = (size: {
+    naturalWidth: number;
+    naturalHeight: number;
+  }) => {
+    setImageEpoch((n) => n + 1);
+    const layer = selectedRef.current;
+    if (!layer || !size.naturalWidth || !size.naturalHeight) return;
+    if (layer.naturalWidth === size.naturalWidth && layer.width) return;
+    patchLayer({
+      ...size,
+      width: layer.width || String(size.naturalWidth),
+      height: layer.height || String(size.naturalHeight),
+    });
+  };
+
   const onOverlayPointerDown = (event: ReactPointerEvent) => {
     const layer = selectedRef.current;
     if (!layer || layer.locked) return;
     event.preventDefault();
+    // The pointer is in window coordinates and an unpinned layer is not, so the
+    // scroll offset closes the gap — read on every move rather than once, so a page
+    // that scrolls mid-drag still leaves the image under the cursor.
+    const offset = () =>
+      layer.pinned ? { x: 0, y: 0 } : { x: window.scrollX, y: window.scrollY };
+    const start = offset();
     overlayDrag.current = {
-      dx: event.clientX - (Number(layer.x) || 0),
-      dy: event.clientY - (Number(layer.y) || 0),
+      dx: event.clientX + start.x - (Number(layer.x) || 0),
+      dy: event.clientY + start.y - (Number(layer.y) || 0),
     };
     const onMove = (move: PointerEvent) => {
       if (!overlayDrag.current) return;
+      const from = offset();
       patchLayer({
         anchor: null,
-        x: String(Math.round(move.clientX - overlayDrag.current.dx)),
-        y: String(Math.round(move.clientY - overlayDrag.current.dy)),
+        x: String(Math.round(move.clientX + from.x - overlayDrag.current.dx)),
+        y: String(Math.round(move.clientY + from.y - overlayDrag.current.dy)),
       });
     };
     const onUp = () => {
@@ -426,12 +506,15 @@ export default function MatchupApp() {
           src={selected.src}
           x={Number(settings.x) || 0}
           y={Number(settings.y) || 0}
+          width={Number(settings.width) || undefined}
+          height={Number(settings.height) || undefined}
           scale={Number(settings.scale) || 1}
           opacity={settings.opacity}
-          difference={settings.difference}
+          blendMode={settings.blendMode}
+          pinned={settings.pinned}
           draggable={!settings.locked}
           onPointerDown={onOverlayPointerDown}
-          onLoad={() => setImageEpoch((n) => n + 1)}
+          onLoad={onOverlayLoad}
           imageRef={overlayImage}
         />
       )}
@@ -464,11 +547,14 @@ export default function MatchupApp() {
             renamingId={renamingId}
             visible={settings.visible}
             locked={settings.locked}
-            difference={settings.difference}
+            blendMode={settings.blendMode}
+            pinned={settings.pinned}
             opacity={settings.opacity}
             anchor={settings.anchor}
             x={settings.x}
             y={settings.y}
+            width={settings.width ?? ""}
+            height={settings.height ?? ""}
             scale={settings.scale}
             error={error}
             panelOpen={state.panelOpen}
@@ -485,9 +571,12 @@ export default function MatchupApp() {
             onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
             onToggleVisible={() => patchLayer({ visible: !settings.visible })}
             onToggleLocked={() => patchLayer({ locked: !settings.locked })}
-            onToggleDifference={() =>
-              patchLayer({ difference: !settings.difference })
+            onToggleInvert={() =>
+              patchLayer({
+                blendMode: settings.blendMode === "invert" ? "none" : "invert",
+              })
             }
+            onPinnedChange={(pinned) => patchLayer({ pinned })}
             onOpacityChange={(opacity) => patchLayer({ opacity })}
             onAnchorSelect={(index) =>
               patchLayer(
@@ -495,7 +584,7 @@ export default function MatchupApp() {
                   ? { anchor: null }
                   : {
                       anchor: index,
-                      ...anchoredPosition(index, Number(settings.scale) || 1),
+                      ...anchoredPosition(index, settings),
                     },
               )
             }
@@ -528,8 +617,17 @@ export default function MatchupApp() {
               })
             }
             onDeleteLayer={deleteLayer}
-            onXChange={(x) => patchLayer({ x })}
-            onYChange={(y) => patchLayer({ y })}
+            // Typing a position is as much a release from the snap point as
+            // dragging away from it is; leaving the anchor set would re-solve
+            // the layer back on top of whatever was entered.
+            onXChange={(x) => patchLayer({ x, anchor: null })}
+            onYChange={(y) => patchLayer({ y, anchor: null })}
+            onWidthChange={(width) =>
+              patchLayer(lockAspect(settings, "width", width))
+            }
+            onHeightChange={(height) =>
+              patchLayer(lockAspect(settings, "height", height))
+            }
             onScaleChange={(scale) => patchLayer({ scale })}
             onGripPointerDown={onGripPointerDown}
             onToggleSidePanel={() => {

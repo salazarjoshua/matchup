@@ -18,9 +18,12 @@ import { clampPercent } from "@/utils/clamp";
 import { cn } from "@/utils/cn";
 import { useEffect, useState } from "react";
 import type { MatchupSettings, ShortcutAction } from "@/utils/matchup-settings";
-import type { LayerSettings } from "@/utils/matchup-state";
-import type { ReactNode } from "react";
-import { LogoMark } from "@/components/icons";
+import { BLEND_MODES } from "@/utils/matchup-state";
+import type { BlendMode, LayerSettings } from "@/utils/matchup-state";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { ChevronDownSmallIcon, LogoMark } from "@/components/icons";
+
+type SelectProps = ComponentPropsWithoutRef<"select">;
 
 const Section = ({
   title,
@@ -58,8 +61,7 @@ const Row = ({
   </label>
 );
 
-const listClass =
-  "rounded-xl bg-surface flex flex-col divide-y divide-black/5";
+const listClass = "rounded-xl bg-surface flex flex-col divide-y divide-black/5";
 
 const kbdClass =
   "text-sm text-muted rounded-md min-w-12 px-2 py-0.5 text-center";
@@ -104,9 +106,23 @@ const ShortcutRow = ({
 );
 
 const selectClass =
-  "h-8 rounded-xl bg-surface text-sm text-ink w-44 px-3 outline-none";
+  "h-8 rounded-xl bg-surface text-sm text-ink w-44 appearance-none pl-3 pr-8 outline-none";
 const numberClass =
   "h-8 rounded-xl bg-surface text-sm text-ink w-24 px-3 text-right tabular-nums outline-none";
+
+/**
+ * The platform's own arrow sits where the platform wants it — off this panel's
+ * right edge by a hair, and a different glyph on every OS. Hidden, and the
+ * panel's own chevron laid over the same spot the fields use.
+ */
+const Select = ({ className, children, ...props }: SelectProps) => (
+  <span className="relative inline-flex items-center">
+    <select className={cn(selectClass, className)} {...props}>
+      {children}
+    </select>
+    <ChevronDownSmallIcon className="text-muted pointer-events-none absolute right-2 top-1/2 w-4 -translate-y-1/2" />
+  </span>
+);
 
 export default function App() {
   const [settings, setSettings] = useState<MatchupSettings>(SETTINGS_DEFAULTS);
@@ -195,7 +211,7 @@ export default function App() {
 
         <Section title="Panel">
           <Row label="Position" hint="Where the panel opens">
-            <select
+            <Select
               value={settings.panelPosition}
               onChange={(event) => {
                 // Read before the updater runs: React clears currentTarget once the
@@ -211,13 +227,13 @@ export default function App() {
                   {corner.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </Row>
         </Section>
 
         <Section title="New layers">
           <Row label="Anchor">
-            <select
+            <Select
               value={
                 defaults.anchor === null ? "none" : String(defaults.anchor)
               }
@@ -237,7 +253,20 @@ export default function App() {
                   {label}
                 </option>
               ))}
-            </select>
+            </Select>
+          </Row>
+
+          <Row label="Frame" hint="What position is measured from">
+            <Select
+              value={defaults.pinned ? "fixed" : "scroll"}
+              onChange={(event) =>
+                patchLayer({ pinned: event.currentTarget.value === "fixed" })
+              }
+              className={selectClass}
+            >
+              <option value="fixed">fixed</option>
+              <option value="scroll">scroll</option>
+            </Select>
           </Row>
 
           <Row label="Scale">
@@ -269,11 +298,28 @@ export default function App() {
             />
           </Row>
 
+          <Row label="Blend mode">
+            <Select
+              value={defaults.blendMode}
+              onChange={(event) =>
+                patchLayer({
+                  blendMode: event.currentTarget.value as BlendMode,
+                })
+              }
+              className={selectClass}
+            >
+              {BLEND_MODES.map((mode) => (
+                <option key={mode.value} value={mode.value}>
+                  {mode.label}
+                </option>
+              ))}
+            </Select>
+          </Row>
+
           {(
             [
               ["visible", "Visible"],
               ["locked", "Locked"],
-              ["difference", "Difference"],
             ] as const
           ).map(([key, label]) => (
             <Row key={key} label={label}>

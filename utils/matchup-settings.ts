@@ -40,7 +40,7 @@ export type ShortcutAction =
   | "togglePanel"
   | "toggleVisible"
   | "toggleLocked"
-  | "toggleDifference"
+  | "toggleInvert"
   | "upload";
 
 export type Shortcuts = Record<ShortcutAction, string>;
@@ -49,7 +49,7 @@ export const SHORTCUT_DEFAULTS: Shortcuts = {
   togglePanel: "Backquote",
   toggleVisible: "Digit1",
   toggleLocked: "Digit2",
-  toggleDifference: "Digit3",
+  toggleInvert: "Digit3",
   upload: "KeyU",
 };
 
@@ -57,7 +57,7 @@ export const LAYER_SHORTCUTS: { action: ShortcutAction; label: string }[] = [
   { action: "togglePanel", label: "Toggle panel" },
   { action: "toggleVisible", label: "Toggle visibility" },
   { action: "toggleLocked", label: "Toggle lock" },
-  { action: "toggleDifference", label: "Toggle difference" },
+  { action: "toggleInvert", label: "Toggle invert" },
 ];
 
 export const IMAGE_SHORTCUTS: { action: ShortcutAction; label: string }[] = [
@@ -121,16 +121,30 @@ export const SETTINGS_DEFAULTS: MatchupSettings = {
 };
 
 /**
+ * Rebuilt from the actions this version knows about rather than spread over
+ * them: a renamed action leaves its old key in storage still holding a code,
+ * and the lookup that resolves a keypress would match that dead entry first
+ * and swallow the chord.
+ */
+const restoreShortcuts = (stored?: Partial<Shortcuts>): Shortcuts =>
+  Object.fromEntries(
+    (Object.keys(SHORTCUT_DEFAULTS) as ShortcutAction[]).map((action) => [
+      action,
+      stored?.[action] ?? SHORTCUT_DEFAULTS[action],
+    ]),
+  ) as Shortcuts;
+
+/**
  * Merges stored settings over the defaults one level deep. A plain spread would
- * drop keys inside `layerDefaults` and `shortcuts` whenever storage predates a
- * newly added one, leaving an action with no key at all.
+ * drop keys inside `layerDefaults` whenever storage predates a newly added one,
+ * leaving a layer default undefined.
  */
 export const restoreSettings = (
   stored?: Partial<MatchupSettings>,
 ): MatchupSettings => ({
   panelPosition: stored?.panelPosition ?? SETTINGS_DEFAULTS.panelPosition,
   layerDefaults: { ...LAYER_DEFAULTS, ...stored?.layerDefaults },
-  shortcuts: { ...SHORTCUT_DEFAULTS, ...stored?.shortcuts },
+  shortcuts: restoreShortcuts(stored?.shortcuts),
 });
 
 export const matchupSettings = storage.defineItem<MatchupSettings>(

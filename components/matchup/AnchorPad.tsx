@@ -20,7 +20,7 @@ const AnchorPad = ({
 }: AnchorPadProps) => (
   <div
     className={cn(
-      "size-28 rounded-xl bg-surface grid flex-none grid-cols-3 grid-rows-3 place-items-center",
+      "size-24 rounded-xl bg-surface grid flex-none grid-cols-3 grid-rows-3 place-items-center",
       className,
     )}
     {...props}
@@ -35,7 +35,10 @@ const AnchorPad = ({
           aria-pressed={active}
           disabled={disabled}
           onClick={() => onSelect?.(i)}
-          className="size-full grid place-items-center rounded-xl"
+          className={cn(
+            "size-full grid place-items-center rounded-xl",
+            disabled && "cursor-not-allowed",
+          )}
         >
           <span
             className={cn(

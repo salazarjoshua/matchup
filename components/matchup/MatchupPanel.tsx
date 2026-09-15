@@ -5,6 +5,7 @@ import { Field } from "./Field";
 import { LayerGrid, UploadTile } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
+import { Segmented } from "./Segmented";
 import { DropOverlay } from "./DropOverlay";
 import { Toolbar } from "./Toolbar";
 import { ToolbarButton } from "./ToolbarButton";
@@ -20,6 +21,7 @@ import {
   LockIcon,
   SettingsIcon,
   SidePanelIcon,
+  UndockIcon,
   PlusIcon,
   MinusIcon,
   ScaleIcon,
@@ -29,6 +31,7 @@ import { hasFiles } from "@/utils/drag";
 import { SHORTCUT_DEFAULTS, shortcutLabel } from "@/utils/matchup-settings";
 import { useRef, useState } from "react";
 import type { Shortcuts } from "@/utils/matchup-settings";
+import type { BlendMode } from "@/utils/matchup-state";
 import type {
   ComponentPropsWithoutRef,
   PointerEvent as ReactPointerEvent,
@@ -51,12 +54,17 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   selectedId?: string;
   visible: boolean;
   locked: boolean;
-  difference: boolean;
+  blendMode: BlendMode;
+  /** The overlay holds its place in the window rather than scrolling with the page. */
+  pinned: boolean;
   opacity: number;
   /** Index 0–8 of the active snap point, or null when X/Y are free. */
   anchor: number | null;
   x: string | number;
   y: string | number;
+  /** The overlay's size before scale. Empty for a layer whose image carries none. */
+  width: string | number;
+  height: string | number;
   scale: string | number;
   error?: string;
   /** The panel shows its content. Collapsed, only the toolbar shows. */
@@ -64,7 +72,8 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   renamingId?: string;
   onToggleVisible?: () => void;
   onToggleLocked?: () => void;
-  onToggleDifference?: () => void;
+  onToggleInvert?: () => void;
+  onPinnedChange?: (pinned: boolean) => void;
   onOpacityChange?: (value: number) => void;
   onAnchorSelect?: (index: number) => void;
   onUpload?: () => void;
@@ -87,29 +96,41 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onToggleSidePanel?: () => void;
   onXChange?: (value: string) => void;
   onYChange?: (value: string) => void;
+  onWidthChange?: (value: string) => void;
+  onHeightChange?: (value: string) => void;
   onScaleChange?: (value: string) => void;
   onGripPointerDown?: (event: ReactPointerEvent) => void;
 };
 
 const gripClass = "cursor-grab touch-none select-none";
 
+/** Naming both states is the point — "not fixed" never said "scrolls with the page". */
+const FRAMES = [
+  { value: "scroll", label: "Scroll" },
+  { value: "fixed", label: "Fixed" },
+] as const;
+
 const MatchupPanel = ({
   layers,
   selectedId,
   visible,
   locked,
-  difference,
+  blendMode,
+  pinned,
   opacity,
   anchor,
   x,
   y,
+  width,
+  height,
   scale,
   error,
   panelOpen = true,
   renamingId,
   onToggleVisible,
   onToggleLocked,
-  onToggleDifference,
+  onToggleInvert,
+  onPinnedChange,
   onOpacityChange,
   onAnchorSelect,
   onUpload,
@@ -130,6 +151,8 @@ const MatchupPanel = ({
   onToggleSidePanel,
   onXChange,
   onYChange,
+  onWidthChange,
+  onHeightChange,
   onScaleChange,
   onGripPointerDown,
   className,
@@ -138,7 +161,6 @@ const MatchupPanel = ({
   // Hiding the overlay disables everything below it; lock only freezes position.
   const positionDisabled = locked || !visible;
   const opacityDisabled = !visible;
-  const positionEditable = anchor === null && !positionDisabled;
 
   // The id is held on a ref as well as in state: state drives the lift, but it lands a
   // frame late, and the drop needs the source synchronously or it silently no-ops.
@@ -213,9 +235,9 @@ const MatchupPanel = ({
               </ToolbarToggle>
               <ToolbarToggle
                 accent="pink"
-                on={difference}
-                onClick={onToggleDifference}
-                title={`Toggle difference (${shortcutLabel(shortcuts.toggleDifference)})`}
+                on={blendMode === "invert"}
+                onClick={onToggleInvert}
+                title={`Toggle invert (${shortcutLabel(shortcuts.toggleInvert)})`}
                 className="rounded-r-xl"
               >
                 <CircleHalfIcon className="w-5" />
@@ -238,15 +260,21 @@ const MatchupPanel = ({
                 <>
                   {onToggleSidePanel && (
                     <IconButton
+                      // The button names where it sends the panel, so docked it
+                      // offers the side panel and undocked it offers the page back.
                       aria-label={
-                        floating ? "Open in side panel" : "Show on the page"
+                        floating ? "Open in side panel" : "Undock to the page"
                       }
                       title={
-                        floating ? "Open in side panel" : "Show on the page"
+                        floating ? "Open in side panel" : "Undock to the page"
                       }
                       onClick={onToggleSidePanel}
                     >
-                      <SidePanelIcon className="w-4" />
+                      {floating ? (
+                        <SidePanelIcon className="w-4" />
+                      ) : (
+                        <UndockIcon className="w-4" />
+                      )}
                     </IconButton>
                   )}
                   <IconButton aria-label="About" onClick={onOpenHelp}>
@@ -387,38 +415,83 @@ const MatchupPanel = ({
                     </div>
                   </LayerGrid>
 
-                  <div className="border-hairline border-t p-3">
+                  <div className="border-hairline border-t flex flex-col gap-3 p-3">
                     <div className="flex items-start gap-3">
                       <AnchorPad
                         selected={anchor}
                         disabled={positionDisabled}
                         onSelect={onAnchorSelect}
                       />
-                      <div className="flex min-w-0 flex-1 flex-col gap-2">
-                        <Field
-                          label="X"
-                          value={x}
-                          editable={positionEditable}
-                          disabled={positionDisabled}
-                          onChange={onXChange}
-                        />
-                        <Field
-                          label="Y"
-                          value={y}
-                          editable={positionEditable}
-                          disabled={positionDisabled}
-                          onChange={onYChange}
-                        />
-                        <Field
-                          label={<ScaleIcon className="size-4 " />}
-                          value={scale}
-                          editable={!positionDisabled}
-                          disabled={positionDisabled}
-                          onChange={onScaleChange}
-                          step={0.1}
-                          min={0.01}
-                        />
+                      {/* Ruled into where the overlay is and how big it is: the pair
+                          above moves it, the pair below resizes it, and only the
+                          first pair is what the snap points on the left write to. */}
+                      <div className="flex h-24 min-w-0 flex-1 flex-col justify-between">
+                        <div className="flex min-w-0 gap-2">
+                          <Field
+                            label="X"
+                            className="min-w-0 flex-1"
+                            value={x}
+                            editable={!positionDisabled}
+                            disabled={positionDisabled}
+                            onChange={onXChange}
+                          />
+                          <Field
+                            label="Y"
+                            className="min-w-0 flex-1"
+                            value={y}
+                            editable={!positionDisabled}
+                            disabled={positionDisabled}
+                            onChange={onYChange}
+                          />
+                        </div>
+                        <div className="border-hairline border-t" />
+                        <div className="flex min-w-0">
+                          <Field
+                            label="W"
+                            className="min-w-0 flex-1 relative z-10"
+                            value={width}
+                            editable={!positionDisabled}
+                            disabled={positionDisabled}
+                            onChange={onWidthChange}
+                            min={1}
+                          />
+                          <div className="w-2 h-full flex flex-col justify-between bg-surface">
+                            <div className="w-full h-3.5 rounded-b-full bg-white" />
+                            <div className="w-full h-3.5 rounded-t-full bg-white" />
+                          </div>
+                          <Field
+                            label="H"
+                            className="min-w-0 flex-1 relative z-10"
+                            value={height}
+                            editable={!positionDisabled}
+                            disabled={positionDisabled}
+                            onChange={onHeightChange}
+                            min={1}
+                          />
+                        </div>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {/* What X and Y are measured from, and what the snap points
+                          above are solved against — the window, or the page. */}
+                      <Segmented
+                        aria-label="Frame"
+                        className="w-24 flex-none"
+                        value={pinned ? "fixed" : "scroll"}
+                        disabled={positionDisabled}
+                        options={FRAMES}
+                        onChange={(next) => onPinnedChange?.(next === "fixed")}
+                      />
+                      <Field
+                        label={<ScaleIcon className="size-4 " />}
+                        className="min-w-0 flex-1"
+                        value={scale}
+                        editable={!positionDisabled}
+                        disabled={positionDisabled}
+                        onChange={onScaleChange}
+                        step={0.1}
+                        min={0.01}
+                      />
                     </div>
                   </div>
 

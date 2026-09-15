@@ -18,7 +18,7 @@ const DropOverlay = ({ className, ...props }: DropOverlayProps) => (
     <div className="border-accent-blue bg-accent-blue/5 grid size-full place-items-center rounded-xl border-2 border-dashed">
       <div className="text-accent-blue flex flex-col items-center gap-1">
         <UploadImageIcon className="w-7" />
-        <span className="text-sm font-semibold">Drop to add a layer</span>
+        <span className="text-sm font-semibold">drop it like it's hot</span>
       </div>
     </div>
   </div>

@@ -1,17 +1,76 @@
 import { storage } from "wxt/utils/storage";
 
+/**
+ * How the overlay is composited over the page. Only inversion for now — the
+ * shape is a mode rather than a flag so a second one is an entry here, not a
+ * rewrite of every prop that carries it.
+ */
+export type BlendMode = "none" | "invert";
+
+export const BLEND_MODES: { value: BlendMode; label: string }[] = [
+  { value: "none", label: "none" },
+  { value: "invert", label: "invert" },
+];
+
 /** Everything a layer remembers on its own — images differ in size, so these can't be global. */
 export type LayerSettings = {
   visible: boolean;
   locked: boolean;
-  difference: boolean;
+  blendMode: BlendMode;
   /** 0–100. */
   opacity: number;
   /** Index 0–8 of the active snap point, or null when x/y are free. */
   anchor: number | null;
+  /**
+   * The overlay holds its place in the window instead of travelling with the page.
+   * Off by default: most things worth comparing — an email, a long landing page —
+   * run past one screenful, and an image that stays put can only ever be checked
+   * against the first of them.
+   */
+  pinned: boolean;
   x: string;
   y: string;
   scale: string;
+};
+
+/**
+ * The overlay's own size, before scale. Kept out of `LayerSettings` because it comes
+ * from the image rather than from a preference — there is nothing to default it to on
+ * the settings page — and optional because layers stored before it existed have none.
+ */
+export type LayerSize = {
+  /** CSS pixels. Strings for the reason x/y are: a half-typed number is still a value. */
+  width: string;
+  height: string;
+  /** The image as it comes, which the aspect lock is measured against. */
+  naturalWidth: number;
+  naturalHeight: number;
+};
+
+/** The ratio the size fields are held to, falling back to the pair on screen for a layer with no measurement. */
+const aspectOf = (size: Partial<LayerSize>) => {
+  const width = size.naturalWidth || Number(size.width) || 0;
+  const height = size.naturalHeight || Number(size.height) || 0;
+  return width > 0 && height > 0 ? width / height : 0;
+};
+
+/**
+ * Both dimensions for an edit to one of them. Derived from the image's own ratio
+ * rather than from the pair currently on screen, so rounding the far side doesn't
+ * feed into the next edit and walk the layer off its aspect a pixel at a time.
+ */
+export const lockAspect = (
+  size: Partial<LayerSize>,
+  axis: "width" | "height",
+  value: string,
+): Partial<LayerSize> => {
+  const ratio = aspectOf(size);
+  const entered = Number(value);
+  if (!ratio || !Number.isFinite(entered) || entered <= 0)
+    return { [axis]: value };
+  return axis === "width"
+    ? { width: value, height: String(Math.round(entered / ratio)) }
+    : { height: value, width: String(Math.round(entered * ratio)) };
 };
 
 /**
@@ -19,10 +78,11 @@ export type LayerSettings = {
  * layer's data URL runs to megabytes — carrying one through each write is what made the
  * side panel crawl. Sources live in their own store and are written only on add or delete.
  */
-export type MatchupLayer = LayerSettings & {
-  id: string;
-  name: string;
-};
+export type MatchupLayer = LayerSettings &
+  Partial<LayerSize> & {
+    id: string;
+    name: string;
+  };
 
 /** Layer id → data URL. Object URLs do not survive a page reload, so these are inline. */
 export type LayerSources = Record<string, string>;
@@ -40,12 +100,15 @@ export type MatchupState = {
 export const LAYER_DEFAULTS: LayerSettings = {
   visible: true,
   locked: false,
-  difference: false,
+  blendMode: "none",
   opacity: 50,
   anchor: null,
+  pinned: false,
   x: "0",
   y: "0",
-  scale: "0.5",
+  // 1, because scale now multiplies the width and height rather than the image's
+  // own size: a new layer starts at the size it was drawn at.
+  scale: "1",
 };
 
 export const MATCHUP_DEFAULTS: MatchupState = {
@@ -96,10 +159,9 @@ const defineStores = (origin: string) => ({
   state: storage.defineItem<MatchupState>(`local:matchup-state:${origin}`, {
     fallback: MATCHUP_DEFAULTS,
   }),
-  sources: storage.defineItem<LayerSources>(
-    `local:matchup-sources:${origin}`,
-    { fallback: {} },
-  ),
+  sources: storage.defineItem<LayerSources>(`local:matchup-sources:${origin}`, {
+    fallback: {},
+  }),
 });
 
 export const storesFor = (origin: string) => {

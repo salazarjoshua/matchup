@@ -27,7 +27,7 @@ const SidePanelPrompt = ({
 }: SidePanelPromptProps) => {
   const copy = restricted
     ? {
-        title: "Matchup can’t run here",
+        title: "Nothing to match up here",
         body: "Browser pages and extension stores are off limits. Switch to a site to get started.",
         action: undefined,
       }
@@ -38,11 +38,9 @@ const SidePanelPrompt = ({
           action: { label: "Reload page", run: onReload },
         }
       : {
-          title: "Matchup isn’t on this page",
-          body: host
-            ? `Turn it on to lay a design over ${host}. Layers are kept per site.`
-            : "Turn it on to lay a design over this page.",
-          action: { label: "Open on this page", run: onOpenPage },
+          title: "Matchup isn’t on yet",
+          body: `Ready when you are.`,
+          action: { label: "Start matching up", run: onOpenPage },
         };
 
   return (
