@@ -20,4 +20,3 @@ const TitleBar = ({ className, actions, ...props }: TitleBarProps) => (
 );
 
 export { TitleBar };
-export type { TitleBarProps };

@@ -1,16 +1,13 @@
 import {
   ANCHOR_LABELS,
-  LAYER_SHORTCUTS,
   IMAGE_SHORTCUTS,
+  LAYER_SHORTCUTS,
   PANEL_CORNERS,
   SETTINGS_DEFAULTS,
-  matchupSettings,
-} from "@/utils/matchup-settings";
-import {
-  FIXED_SHORTCUTS,
   SHORTCUT_DEFAULTS,
   SHORTCUT_LABELS,
   isBindableKey,
+  matchupSettings,
   restoreSettings,
   shortcutLabel,
 } from "@/utils/matchup-settings";
@@ -18,12 +15,9 @@ import { clampPercent } from "@/utils/clamp";
 import { cn } from "@/utils/cn";
 import { useEffect, useState } from "react";
 import type { MatchupSettings, ShortcutAction } from "@/utils/matchup-settings";
-import { BLEND_MODES } from "@/utils/matchup-state";
-import type { BlendMode, LayerSettings } from "@/utils/matchup-state";
+import type { LayerSettings } from "@/utils/matchup-state";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { ChevronDownSmallIcon, LogoMark } from "@/components/icons";
-
-type SelectProps = ComponentPropsWithoutRef<"select">;
 
 const Section = ({
   title,
@@ -36,7 +30,7 @@ const Section = ({
 }) => (
   <section className="flex flex-col gap-2">
     <div>
-      <h2 className="text-sm font-bold text-ink mb-1">{title}</h2>
+      <h2 className="text-sm font-semibold text-ink mb-1">{title}</h2>
       {hint && <span className="text-xs text-muted">{hint}</span>}
     </div>
     {children}
@@ -115,7 +109,11 @@ const numberClass =
  * right edge by a hair, and a different glyph on every OS. Hidden, and the
  * panel's own chevron laid over the same spot the fields use.
  */
-const Select = ({ className, children, ...props }: SelectProps) => (
+const Select = ({
+  className,
+  children,
+  ...props
+}: ComponentPropsWithoutRef<"select">) => (
   <span className="relative inline-flex items-center">
     <select className={cn(selectClass, className)} {...props}>
       {children}
@@ -298,28 +296,11 @@ export default function App() {
             />
           </Row>
 
-          <Row label="Blend mode">
-            <Select
-              value={defaults.blendMode}
-              onChange={(event) =>
-                patchLayer({
-                  blendMode: event.currentTarget.value as BlendMode,
-                })
-              }
-              className={selectClass}
-            >
-              {BLEND_MODES.map((mode) => (
-                <option key={mode.value} value={mode.value}>
-                  {mode.label}
-                </option>
-              ))}
-            </Select>
-          </Row>
-
           {(
             [
               ["visible", "Visible"],
               ["locked", "Locked"],
+              ["invert", "Invert"],
             ] as const
           ).map(([key, label]) => (
             <Row key={key} label={label}>
@@ -352,17 +333,12 @@ export default function App() {
                 onStartCapture={() => startCapture(action)}
               />
             ))}
-            {FIXED_SHORTCUTS.map((shortcut) => (
-              <li
-                key={shortcut.keys}
-                className="flex items-center justify-between px-3 py-2.5"
-              >
-                <span className="text-[13px]">{shortcut.label}</span>
-                <kbd className={cn(kbdClass, "text-disabled")}>
-                  {shortcut.keys}
-                </kbd>
-              </li>
-            ))}
+            {/* Not rebindable: pasting is a `paste` event rather than a keydown,
+                so the browser owns the chord. */}
+            <li className="flex items-center justify-between px-3 py-2.5">
+              <span className="text-[13px]">Paste image</span>
+              <kbd className={cn(kbdClass, "text-disabled")}>⌘V</kbd>
+            </li>
           </ul>
 
           <ul className={listClass}>
@@ -393,7 +369,7 @@ export default function App() {
               }}
               className="text-muted hover:text-ink rounded-md text-xs focus-visible:ring-offset-2"
             >
-              Reset to defaults
+              Reset shortcuts
             </button>
           </div>
         </Section>

@@ -32,19 +32,14 @@ export type TabState = {
  */
 const KEY = "matchup:tab";
 
-export const TAB_DEFAULTS: TabState = { open: false };
-
-const isOneOf = <T extends string>(
-  value: unknown,
-  ...allowed: T[]
-): value is T => allowed.includes(value as T);
+const TAB_DEFAULTS: TabState = { open: false };
 
 const parseDock = (value: unknown): Dock | undefined => {
   if (typeof value !== "object" || value === null) return undefined;
   const { x, y, edgeX, edgeY } = value as Record<string, unknown>;
   if (typeof x !== "number" || typeof y !== "number") return undefined;
-  if (!isOneOf(edgeX, "left", "right")) return undefined;
-  if (!isOneOf(edgeY, "top", "bottom")) return undefined;
+  if (edgeX !== "left" && edgeX !== "right") return undefined;
+  if (edgeY !== "top" && edgeY !== "bottom") return undefined;
   return { x, y, edgeX, edgeY };
 };
 

@@ -20,4 +20,3 @@ const IconButton = ({ className, children, ...props }: IconButtonProps) => (
 );
 
 export { IconButton };
-export type { IconButtonProps };

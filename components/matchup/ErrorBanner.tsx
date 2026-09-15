@@ -37,4 +37,3 @@ const ErrorBanner = ({
 );
 
 export { ErrorBanner };
-export type { ErrorBannerProps };

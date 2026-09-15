@@ -5,7 +5,6 @@ import { browser } from "wxt/browser";
 export type ActiveTab = {
   id: number;
   origin: string;
-  host: string;
   /** Matchup runs no content script here, so there is nothing to turn on. */
   restricted: boolean;
 };
@@ -13,16 +12,9 @@ export type ActiveTab = {
 const read = async (): Promise<ActiveTab | undefined> => {
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
   if (tab?.id == null || !tab.url) return undefined;
-  if (isRestricted(tab.url))
-    return { id: tab.id, origin: "", host: "", restricted: true };
+  if (isRestricted(tab.url)) return { id: tab.id, origin: "", restricted: true };
   try {
-    const url = new URL(tab.url);
-    return {
-      id: tab.id,
-      origin: url.origin,
-      host: url.host,
-      restricted: false,
-    };
+    return { id: tab.id, origin: new URL(tab.url).origin, restricted: false };
   } catch {
     return undefined;
   }

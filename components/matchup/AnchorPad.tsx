@@ -54,4 +54,3 @@ const AnchorPad = ({
 );
 
 export { AnchorPad };
-export type { AnchorPadProps };

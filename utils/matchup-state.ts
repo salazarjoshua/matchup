@@ -1,22 +1,11 @@
 import { storage } from "wxt/utils/storage";
 
-/**
- * How the overlay is composited over the page. Only inversion for now — the
- * shape is a mode rather than a flag so a second one is an entry here, not a
- * rewrite of every prop that carries it.
- */
-export type BlendMode = "none" | "invert";
-
-export const BLEND_MODES: { value: BlendMode; label: string }[] = [
-  { value: "none", label: "none" },
-  { value: "invert", label: "invert" },
-];
-
 /** Everything a layer remembers on its own — images differ in size, so these can't be global. */
 export type LayerSettings = {
   visible: boolean;
   locked: boolean;
-  blendMode: BlendMode;
+  /** Composited over the page inverted, which is what makes differences pop. */
+  invert: boolean;
   /** 0–100. */
   opacity: number;
   /** Index 0–8 of the active snap point, or null when x/y are free. */
@@ -100,15 +89,13 @@ export type MatchupState = {
 export const LAYER_DEFAULTS: LayerSettings = {
   visible: true,
   locked: false,
-  blendMode: "none",
+  invert: false,
   opacity: 50,
   anchor: null,
   pinned: false,
   x: "0",
   y: "0",
-  // 1, because scale now multiplies the width and height rather than the image's
-  // own size: a new layer starts at the size it was drawn at.
-  scale: "1",
+  scale: "0.5",
 };
 
 export const MATCHUP_DEFAULTS: MatchupState = {
@@ -125,7 +112,14 @@ export const restoreState = (stored?: Partial<MatchupState>): MatchupState => ({
   // Each layer is rebuilt over the defaults too, so a settings key added in a later
   // version reaches layers that were stored before it existed.
   layers: Array.isArray(stored?.layers)
-    ? stored.layers.map((layer) => ({ ...LAYER_DEFAULTS, ...layer }))
+    ? stored.layers.map((layer) => ({
+        ...LAYER_DEFAULTS,
+        ...layer,
+        // Layers stored before inversion was a flag carried `blendMode: "invert"`.
+        invert:
+          layer.invert ??
+          (layer as { blendMode?: string }).blendMode === "invert",
+      }))
     : MATCHUP_DEFAULTS.layers,
   selectedId:
     typeof stored?.selectedId === "string" ? stored.selectedId : undefined,
@@ -141,12 +135,6 @@ export const ACCEPTED_TYPES = [
   "image/webp",
   "image/svg+xml",
 ];
-/**
- * Columns in the layer grid — the knob for trying out tile densities. There is
- * no row limit: the grid scrolls, so it holds as many layers as you add.
- * How tall it gets before scrolling is the `max-h-*` on LayerGrid.
- */
-export const LAYER_COLUMNS = 3;
 
 /**
  * Keyed by origin: a mockup belongs to the site it was drawn for, and one shared store

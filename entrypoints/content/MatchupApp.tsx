@@ -1,8 +1,7 @@
 import Overlay from "@/components/Overlay";
-import { MatchupPanel } from "@/components/matchup";
+import { MatchupPanel } from "@/components/matchup/MatchupPanel";
 import { clamp } from "@/utils/clamp";
 import { patchTab, readTab } from "@/utils/matchup-tab";
-import { ACCEPTED_TYPES, lockAspect } from "@/utils/matchup-state";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
 import { PAGE_STATE, TELL_REMOTE } from "@/utils/side-panel";
 import {
@@ -64,11 +63,11 @@ const isEditable = (event: KeyboardEvent) => {
   );
 };
 
+/** Mounted only while Matchup is open on this page — the content script entry owns that
+ *  flag, because it has to be reachable with nothing rendered. */
 export default function MatchupApp() {
-  // Both read synchronously: sessionStorage is not async, and hydrating in an effect
-  // would flash the widget at the settings corner before it jumped to the dragged
-  // position.
-  const [open, setOpen] = useState(() => readTab().open);
+  // Read synchronously: sessionStorage is not async, and hydrating in an effect would
+  // flash the widget at the settings corner before it jumped to the dragged position.
   const [dock, setDock] = useState<Dock | undefined>(() => readTab().dock);
   /** True while a side panel is showing this tab, which is the page's cue to stand
    *  down — and, when it drops, to come back. */
@@ -76,30 +75,18 @@ export default function MatchupApp() {
   const prefs = useMatchupSettings();
   const prefsRef = useRef(prefs);
   prefsRef.current = prefs;
-  // Nothing is read until Matchup is actually open on this page. The content script
-  // runs on every URL, and sources can be megabytes — no page should pay for that
-  // just by existing.
   const {
     state,
     setState,
-    layers,
     selected,
     settings,
     hydrated,
-    error,
-    setError,
+    pickFiles,
     patch,
     patchLayer,
     addFiles,
-    deleteLayer,
-    pasteFromClipboard,
-  } = useMatchupStore(
-    open ? window.location.origin : undefined,
-    prefs.layerDefaults,
-  );
-  const [renamingId, setRenamingId] = useState<string>();
-  const openRef = useRef(open);
-  openRef.current = open;
+    panelProps,
+  } = useMatchupStore(window.location.origin, prefs);
   const [viewport, setViewport] = useState({
     w: window.innerWidth,
     h: window.innerHeight,
@@ -112,7 +99,6 @@ export default function MatchupApp() {
     h: document.documentElement.scrollHeight,
   });
 
-  const fileInput = useRef<HTMLInputElement>(null);
   const overlayImage = useRef<HTMLImageElement>(null);
   const [imageEpoch, setImageEpoch] = useState(0);
   const widget = useRef<HTMLDivElement>(null);
@@ -175,38 +161,16 @@ export default function MatchupApp() {
     return () => browser.runtime.onMessage.removeListener(onRemote);
   }, []);
 
-  // Reported on mount and on every toggle. This script is rebuilt by each navigation,
-  // and a side panel already open has no other way to learn either fact.
+  // Announced on mount, which is what survives a navigation: a side panel already open
+  // has no other way to learn Matchup is running here. Turning it off is announced by
+  // the entry instead, since this is gone by then.
   useEffect(() => {
     void browser.runtime
-      .sendMessage({ type: PAGE_STATE, open })
+      .sendMessage({ type: PAGE_STATE, open: true })
       .catch(() => undefined);
-  }, [open]);
-
-  useEffect(() => {
-    const onMessage = (message: unknown) => {
-      const request = message as { type?: string; open?: boolean };
-      if (request?.type === "matchup:toggle") {
-        // An explicit value when the side panel asks, so it can't blindly flip Matchup
-        // back off if its view of the page is a moment stale.
-        const next =
-          typeof request.open === "boolean" ? request.open : !openRef.current;
-        // Claimed on the ref immediately, so two clicks landing in one task
-        // can't both read the same pre-toggle value and cancel each other out.
-        openRef.current = next;
-        setOpen(next);
-        // Written here rather than from an effect on `open`, so that merely
-        // visiting a page never touches its sessionStorage: the content script
-        // runs on every URL, and only a deliberate toggle should leave a trace.
-        patchTab({ open: next });
-      }
-    };
-    browser.runtime.onMessage.addListener(onMessage);
-    return () => browser.runtime.onMessage.removeListener(onMessage);
   }, []);
 
   useEffect(() => {
-    if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey || event.metaKey || event.ctrlKey) return;
       if (isEditable(event)) return;
@@ -224,10 +188,7 @@ export default function MatchupApp() {
           patchLayer({ locked: !selectedRef.current?.locked });
           break;
         case "toggleInvert":
-          patchLayer({
-            blendMode:
-              selectedRef.current?.blendMode === "invert" ? "none" : "invert",
-          });
+          patchLayer({ invert: !selectedRef.current?.invert });
           break;
         case "togglePanel":
           setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
@@ -235,7 +196,7 @@ export default function MatchupApp() {
         case "upload":
           // A keydown carries user activation, which is what the file dialog
           // needs; preventDefault below doesn't spend it.
-          fileInput.current?.click();
+          pickFiles();
           break;
         default:
           return;
@@ -255,7 +216,7 @@ export default function MatchupApp() {
       window.removeEventListener("keydown", onKeyDown, true);
       window.removeEventListener("paste", onPaste, true);
     };
-  }, [open, addFiles, patchLayer]);
+  }, [addFiles, pickFiles, patchLayer]);
 
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
@@ -378,13 +339,19 @@ export default function MatchupApp() {
         y: String(Math.round(move.clientY + from.y - overlayDrag.current.dy)),
       });
     };
+    // pointercancel as well as pointerup, the same as the grip drag: the browser
+    // takes the pointer away often enough — a touch turning into a scroll, the tab
+    // losing focus — and without it the listeners stay on and the image goes on
+    // following a pointer that is no longer down.
     const onUp = () => {
       overlayDrag.current = null;
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
   };
 
   const corner = prefs.panelPosition;
@@ -497,7 +464,7 @@ export default function MatchupApp() {
     window.addEventListener("pointercancel", onUp);
   };
 
-  if (!hydrated || !open) return null;
+  if (!hydrated) return null;
 
   return (
     <>
@@ -510,7 +477,7 @@ export default function MatchupApp() {
           height={Number(settings.height) || undefined}
           scale={Number(settings.scale) || 1}
           opacity={settings.opacity}
-          blendMode={settings.blendMode}
+          invert={settings.invert}
           pinned={settings.pinned}
           draggable={!settings.locked}
           onPointerDown={onOverlayPointerDown}
@@ -518,18 +485,6 @@ export default function MatchupApp() {
           imageRef={overlayImage}
         />
       )}
-
-      <input
-        ref={fileInput}
-        type="file"
-        accept={ACCEPTED_TYPES.join(",")}
-        multiple
-        hidden
-        onChange={(event) => {
-          void addFiles(Array.from(event.currentTarget.files ?? []));
-          event.currentTarget.value = "";
-        }}
-      />
 
       {!remote && (
         <div
@@ -542,99 +497,24 @@ export default function MatchupApp() {
           }}
         >
           <MatchupPanel
-            layers={layers}
-            selectedId={state.selectedId}
-            renamingId={renamingId}
-            visible={settings.visible}
-            locked={settings.locked}
-            blendMode={settings.blendMode}
-            pinned={settings.pinned}
-            opacity={settings.opacity}
-            anchor={settings.anchor}
-            x={settings.x}
-            y={settings.y}
-            width={settings.width ?? ""}
-            height={settings.height ?? ""}
-            scale={settings.scale}
-            error={error}
+            {...panelProps}
             panelOpen={state.panelOpen}
-            hasSelection={Boolean(selected)}
-            shortcuts={prefs.shortcuts}
-            onOpenSettings={() =>
-              void browser.runtime.sendMessage({
-                type: "matchup:open-settings",
-              })
-            }
-            onOpenHelp={() =>
-              void browser.runtime.sendMessage({ type: "matchup:open-help" })
-            }
             onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
-            onToggleVisible={() => patchLayer({ visible: !settings.visible })}
-            onToggleLocked={() => patchLayer({ locked: !settings.locked })}
-            onToggleInvert={() =>
-              patchLayer({
-                blendMode: settings.blendMode === "invert" ? "none" : "invert",
-              })
-            }
-            onPinnedChange={(pinned) => patchLayer({ pinned })}
-            onOpacityChange={(opacity) => patchLayer({ opacity })}
+            // Unlike the side panel, the page knows what frame the layer is in, so a
+            // snap point can be solved to real coordinates the moment it is picked.
             onAnchorSelect={(index) =>
               patchLayer(
                 settings.anchor === index
                   ? { anchor: null }
-                  : {
-                      anchor: index,
-                      ...anchoredPosition(index, settings),
-                    },
+                  : { anchor: index, ...anchoredPosition(index, settings) },
               )
             }
-            onUpload={() => fileInput.current?.click()}
-            onPaste={() => void pasteFromClipboard()}
-            onDismissError={() => setError(undefined)}
-            onDropFiles={(files) => void addFiles(files)}
-            onSelectLayer={(id) => patch({ selectedId: id })}
-            onStartRename={setRenamingId}
-            onRenameLayer={(id, name) => {
-              patch({
-                layers: state.layers.map((layer) =>
-                  layer.id === id ? { ...layer, name } : layer,
-                ),
-              });
-              setRenamingId(undefined);
-            }}
-            onReorderLayers={(fromId, toId, before) =>
-              setState((current) => {
-                const from = current.layers.findIndex((l) => l.id === fromId);
-                const target = current.layers.findIndex((l) => l.id === toId);
-                if (from < 0 || target < 0 || from === target) return current;
-                const layers = [...current.layers];
-                const [moved] = layers.splice(from, 1);
-                if (!moved) return current;
-                // Pulling the layer out shifts the target down one when it sat after it.
-                const at = from < target ? target - 1 : target;
-                layers.splice(before ? at : at + 1, 0, moved);
-                return { ...current, layers };
-              })
-            }
-            onDeleteLayer={deleteLayer}
-            // Typing a position is as much a release from the snap point as
-            // dragging away from it is; leaving the anchor set would re-solve
-            // the layer back on top of whatever was entered.
-            onXChange={(x) => patchLayer({ x, anchor: null })}
-            onYChange={(y) => patchLayer({ y, anchor: null })}
-            onWidthChange={(width) =>
-              patchLayer(lockAspect(settings, "width", width))
-            }
-            onHeightChange={(height) =>
-              patchLayer(lockAspect(settings, "height", height))
-            }
-            onScaleChange={(scale) => patchLayer({ scale })}
             onGripPointerDown={onGripPointerDown}
-            onToggleSidePanel={() => {
+            onToggleSidePanel={() =>
               void browser.runtime.sendMessage({
                 type: "matchup:open-side-panel",
-              });
-            }}
+              })
+            }
           />
         </div>
       )}

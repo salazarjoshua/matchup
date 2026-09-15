@@ -8,18 +8,10 @@ import { browser } from "wxt/browser";
 import { defineBackground } from "wxt/utils/define-background";
 
 const HELP_URL = "https://joshuasalazar.me/";
-const SIDE_PANEL_PATH = "sidepanel.html";
 
 /** Chrome only, and absent before 114, so it is reached structurally rather than through
  *  the polyfill. Firefox builds get a sidebar the user opens themselves. */
-type SidePanelApi = {
-  setOptions: (o: {
-    tabId: number;
-    path?: string;
-    enabled: boolean;
-  }) => Promise<void>;
-  open: (o: { tabId: number }) => Promise<void>;
-};
+type SidePanelApi = { open: (o: { tabId: number }) => Promise<void> };
 
 const sidePanel = (
   globalThis as unknown as { chrome?: { sidePanel?: SidePanelApi } }
@@ -39,28 +31,16 @@ const openSidePanel = (tabId?: number) => {
     );
 };
 
-/** Disabling is the only way to close a side panel; re-enabling straight after leaves it
- *  shut but openable, which keeps the gesture-sensitive open() above free of setup. */
-const closeSidePanel = async () => {
-  if (!sidePanel) return;
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (tab?.id == null) return;
-  await sidePanel.setOptions({ tabId: tab.id, enabled: false });
-  await sidePanel.setOptions({
-    tabId: tab.id,
-    path: SIDE_PANEL_PATH,
-    enabled: true,
-  });
-};
-
-/** Tabs a side panel is currently showing. Held here because the background outlives
- *  both the panel and any page in it, and a side panel's port keeps it awake. */
-const panelTabs = new Set<number>();
 /** Tabs where Matchup is actually running. The flag itself lives in each page's own
  *  sessionStorage, so this is the only place the side panel can learn it from. */
 const liveTabs = new Set<number>();
-/** Each open side panel and the tab it is currently speaking for. */
+/** Each open side panel and the tab it is currently speaking for. Held here because the
+ *  background outlives both the panel and any page in it, and a side panel's port keeps
+ *  it awake. Which tabs a panel is showing is read back off this rather than tracked
+ *  alongside it, so the two can't disagree. */
 const panelPorts = new Map<Browser.runtime.Port, number | undefined>();
+
+const hasPanel = (tabId: number) => [...panelPorts.values()].includes(tabId);
 
 const tellPanels = (tabId: number, extra?: { needsReload?: boolean }) => {
   for (const [port, watching] of panelPorts) {
@@ -71,7 +51,7 @@ const tellPanels = (tabId: number, extra?: { needsReload?: boolean }) => {
 
 const tellTab = (tabId: number) => {
   void browser.tabs
-    .sendMessage(tabId, { type: TELL_REMOTE, remote: panelTabs.has(tabId) })
+    .sendMessage(tabId, { type: TELL_REMOTE, remote: hasPanel(tabId) })
     .catch(() => undefined);
 };
 
@@ -85,8 +65,6 @@ export default defineBackground(() => {
       void browser.tabs.create({ url: HELP_URL });
     } else if (type === "matchup:open-side-panel") {
       openSidePanel(sender.tab?.id);
-    } else if (type === "matchup:close-side-panel") {
-      void closeSidePanel();
     } else if (type === PAGE_STATE) {
       // Announced by every content script as it mounts, which is what survives a
       // refresh. Answered by pushing rather than replying: `browser` here is Chrome's
@@ -108,10 +86,11 @@ export default defineBackground(() => {
     let watching: number | undefined;
     const release = () => {
       if (watching == null) return;
-      panelTabs.delete(watching);
-      tellTab(watching);
+      const released = watching;
       watching = undefined;
+      // Cleared before the page is told, so `hasPanel` no longer counts this port.
       panelPorts.set(port, undefined);
+      tellTab(released);
     };
     panelPorts.set(port, undefined);
 
@@ -126,7 +105,6 @@ export default defineBackground(() => {
         release();
         watching = request.tabId;
         panelPorts.set(port, watching);
-        panelTabs.add(watching);
         tellTab(watching);
         tellPanels(watching);
         return;
@@ -160,24 +138,24 @@ export default defineBackground(() => {
 
   browser.tabs.onRemoved.addListener((tabId) => {
     liveTabs.delete(tabId);
-    panelTabs.delete(tabId);
   });
 
   // No popup: the icon toggles the panel straight away, and again to close it.
   browser.action.onClicked.addListener(async (tab) => {
-    if (!tab.id || !tab.url || isRestricted(tab.url)) return;
+    const tabId = tab.id;
+    if (!tabId || !tab.url || isRestricted(tab.url)) return;
     try {
-      await browser.tabs.sendMessage(tab.id, { type: "matchup:toggle" });
+      await browser.tabs.sendMessage(tabId, { type: "matchup:toggle" });
     } catch {
       // The content script isn't in this tab yet — it only injects on load.
-      await browser.action.setBadgeText({ tabId: tab.id, text: "!" });
+      await browser.action.setBadgeText({ tabId, text: "!" });
       await browser.action.setTitle({
-        tabId: tab.id,
+        tabId,
         title: "Matchup — reload this page once, then try again",
       });
       setTimeout(() => {
-        void browser.action.setBadgeText({ tabId: tab.id!, text: "" });
-        void browser.action.setTitle({ tabId: tab.id!, title: "Matchup" });
+        void browser.action.setBadgeText({ tabId, text: "" });
+        void browser.action.setTitle({ tabId, title: "Matchup" });
       }, 4000);
     }
   });
