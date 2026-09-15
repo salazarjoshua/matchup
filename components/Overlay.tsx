@@ -64,6 +64,12 @@ const Overlay = ({
   const probe = useRef<HTMLDivElement>(null);
   const [origin, setOrigin] = useState({ x: 0, y: 0 });
 
+  /** The size on screen: what the layer is set to, times scale. */
+  const drawn =
+    width && height
+      ? { width: width * scale, height: height * scale }
+      : undefined;
+
   /**
    * Where the box an absolute overlay is positioned from actually starts, in page
    * coordinates. Usually (0, 0) — but this tree hangs off the host page's <body>,
@@ -135,9 +141,18 @@ const Overlay = ({
             display: "block",
             opacity: opacity / 100,
             maxWidth: "none",
-            width: width ? `${width}px` : undefined,
-            height: height ? `${height}px` : undefined,
-            transform: `scale(${scale})`,
+            /**
+             * Scale is laid out, not transformed. A transform shrinks what you see
+             * and leaves the layout box at full size, and an absolute box is part of
+             * the page's scrollable area — so a 2000px screenshot at half scale sat
+             * 1:1 over a 1000px page while giving it 2000px of scroll in both axes.
+             */
+            width: drawn ? `${drawn.width}px` : undefined,
+            height: drawn ? `${drawn.height}px` : undefined,
+            // Only where there is no measurement to scale — an SVG carrying no size
+            // of its own. The layout box is wrong there in the same way, but nothing
+            // here knows what the right one would be.
+            transform: drawn ? undefined : `scale(${scale})`,
             transformOrigin: "top left",
           }}
         />
