@@ -30,7 +30,7 @@ const Section = ({
 }) => (
   <section className="flex flex-col gap-2">
     <div>
-      <h2 className="text-sm font-bold text-ink mb-1">{title}</h2>
+      <h2 className="text-sm font-semibold text-ink mb-1">{title}</h2>
       {hint && <span className="text-xs text-muted">{hint}</span>}
     </div>
     {children}

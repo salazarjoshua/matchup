@@ -193,7 +193,7 @@ const LayerTile = ({
             if (event.key === "Enter") event.currentTarget.blur();
             if (event.key === "Escape") onRename?.(name);
           }}
-          className="h-4.5 w-full rounded-md border-[1.5px] border-focus bg-white px-1.25 text-micro text-ink focus-visible:ring-0"
+          className="h-4.5 w-full rounded-md border-2 border-focus bg-white px-1.25 text-micro text-ink focus-visible:ring-0"
         />
       ) : (
         <div
@@ -211,4 +211,3 @@ const LayerTile = ({
 };
 
 export { LayerTile };
-

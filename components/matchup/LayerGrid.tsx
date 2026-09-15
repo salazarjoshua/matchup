@@ -87,7 +87,7 @@ const UploadTile = ({
   <button
     type="button"
     className={cn(
-      "border-[1.5px] h-16 rounded-xl border-placeholder text-placeholder grid place-items-center border-dashed",
+      "border-2 h-16 rounded-xl border-placeholder text-placeholder grid place-items-center border-dashed",
       "transition-[background] hover:bg-surface focus-visible:border-transparent",
       className,
     )}
