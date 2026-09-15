@@ -339,13 +339,19 @@ export default function MatchupApp() {
         y: String(Math.round(move.clientY + from.y - overlayDrag.current.dy)),
       });
     };
+    // pointercancel as well as pointerup, the same as the grip drag: the browser
+    // takes the pointer away often enough — a touch turning into a scroll, the tab
+    // losing focus — and without it the listeners stay on and the image goes on
+    // following a pointer that is no longer down.
     const onUp = () => {
       overlayDrag.current = null;
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
   };
 
   const corner = prefs.panelPosition;

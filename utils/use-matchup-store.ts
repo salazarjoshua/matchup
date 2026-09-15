@@ -224,18 +224,29 @@ export const useMatchupStore = (
               src,
             };
           }),
-        );
+        ).catch(() => undefined);
+        // A file the reader can't decode rejects the lot. Said out loud rather than
+        // left as an unhandled rejection: to anyone watching, the drop did nothing.
+        if (!decoded) {
+          setError("Couldn’t read that image. Try another file.");
+          return;
+        }
+
         const store = storesFor(origin);
-        // Sources are written straight through rather than debounced: they change only
-        // here and on delete, and the meta record below refers to them.
-        const nextSources = { ...(await store.sources.getValue()) };
-        for (const { meta, src } of decoded) nextSources[meta.id] = src;
-        await store.sources
-          .setValue(nextSources)
-          .catch(() =>
-            setError("Ran out of extension storage. Delete a layer first."),
-          );
-        setSources(nextSources);
+        try {
+          // Sources are written straight through rather than debounced: they change
+          // only here and on delete, and the meta record below refers to them.
+          const nextSources = { ...(await store.sources.getValue()) };
+          for (const { meta, src } of decoded) nextSources[meta.id] = src;
+          await store.sources.setValue(nextSources);
+          setSources(nextSources);
+        } catch {
+          // The layers are deliberately not added. A record whose image never reached
+          // storage is a layer that survives the next reload with nothing to draw.
+          setError("Ran out of extension storage. Delete a layer first.");
+          return;
+        }
+
         setState((current) => ({
           ...current,
           layers: [...current.layers, ...decoded.map((d) => d.meta)],

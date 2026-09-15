@@ -479,7 +479,12 @@ const MatchupPanel = ({
                         onChange={(next) => onPinnedChange?.(next === "fixed")}
                       />
                       <Field
-                        label={<ScaleIcon className="size-4 " />}
+                        label={
+                          <>
+                            <ScaleIcon className="size-4" aria-hidden />
+                            <span className="sr-only">Scale</span>
+                          </>
+                        }
                         className="min-w-0 flex-1"
                         value={scale}
                         disabled={positionDisabled}

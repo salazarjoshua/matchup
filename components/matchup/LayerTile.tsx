@@ -185,6 +185,7 @@ const LayerTile = ({
       {renaming ? (
         <input
           ref={input}
+          aria-label="Layer name"
           defaultValue={name.replace(/\.[^.]+$/, "")}
           onBlur={(event) =>
             onRename?.(event.currentTarget.value.trim() || name)

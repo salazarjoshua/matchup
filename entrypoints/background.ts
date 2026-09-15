@@ -142,19 +142,20 @@ export default defineBackground(() => {
 
   // No popup: the icon toggles the panel straight away, and again to close it.
   browser.action.onClicked.addListener(async (tab) => {
-    if (!tab.id || !tab.url || isRestricted(tab.url)) return;
+    const tabId = tab.id;
+    if (!tabId || !tab.url || isRestricted(tab.url)) return;
     try {
-      await browser.tabs.sendMessage(tab.id, { type: "matchup:toggle" });
+      await browser.tabs.sendMessage(tabId, { type: "matchup:toggle" });
     } catch {
       // The content script isn't in this tab yet — it only injects on load.
-      await browser.action.setBadgeText({ tabId: tab.id, text: "!" });
+      await browser.action.setBadgeText({ tabId, text: "!" });
       await browser.action.setTitle({
-        tabId: tab.id,
+        tabId,
         title: "Matchup — reload this page once, then try again",
       });
       setTimeout(() => {
-        void browser.action.setBadgeText({ tabId: tab.id!, text: "" });
-        void browser.action.setTitle({ tabId: tab.id!, title: "Matchup" });
+        void browser.action.setBadgeText({ tabId, text: "" });
+        void browser.action.setTitle({ tabId, title: "Matchup" });
       }, 4000);
     }
   });
