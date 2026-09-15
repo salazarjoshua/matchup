@@ -35,7 +35,10 @@ const AnchorPad = ({
           aria-pressed={active}
           disabled={disabled}
           onClick={() => onSelect?.(i)}
-          className="size-full grid place-items-center rounded-xl"
+          className={cn(
+            "size-full grid place-items-center rounded-xl",
+            disabled && "cursor-not-allowed",
+          )}
         >
           <span
             className={cn(

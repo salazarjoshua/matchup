@@ -59,8 +59,7 @@ const Row = ({
   </label>
 );
 
-const listClass =
-  "rounded-xl bg-surface flex flex-col divide-y divide-black/5";
+const listClass = "rounded-xl bg-surface flex flex-col divide-y divide-black/5";
 
 const kbdClass =
   "text-sm text-muted rounded-md min-w-12 px-2 py-0.5 text-center";

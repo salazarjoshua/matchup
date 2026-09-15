@@ -105,8 +105,8 @@ const gripClass = "cursor-grab touch-none select-none";
 
 /** Naming both states is the point — "not fixed" never said "scrolls with the page". */
 const FRAMES = [
-  { value: "fixed", label: "Fixed" },
   { value: "scroll", label: "Scroll" },
+  { value: "fixed", label: "Fixed" },
 ] as const;
 
 const MatchupPanel = ({
@@ -438,19 +438,23 @@ const MatchupPanel = ({
                           />
                         </div>
                         <div className="border-hairline border-t" />
-                        <div className="flex min-w-0 gap-2">
+                        <div className="flex min-w-0">
                           <Field
                             label="W"
-                            className="min-w-0 flex-1"
+                            className="min-w-0 flex-1 relative z-10"
                             value={width}
                             editable={!positionDisabled}
                             disabled={positionDisabled}
                             onChange={onWidthChange}
                             min={1}
                           />
+                          <div className="w-2 h-full flex flex-col justify-between bg-surface">
+                            <div className="w-full h-3.5 rounded-b-full bg-white" />
+                            <div className="w-full h-3.5 rounded-t-full bg-white" />
+                          </div>
                           <Field
                             label="H"
-                            className="min-w-0 flex-1"
+                            className="min-w-0 flex-1 relative z-10"
                             value={height}
                             editable={!positionDisabled}
                             disabled={positionDisabled}

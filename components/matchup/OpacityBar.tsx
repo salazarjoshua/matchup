@@ -83,7 +83,7 @@ const OpacityBar = ({
         onPointerMove={onPointerMove}
         onKeyDown={onKeyDown}
         className={cn(
-          "h-8 rounded-xl bg-surface group relative flex-1 overflow-hidden",
+          "h-10 rounded-xl bg-surface group relative flex-1 overflow-hidden",
           !disabled && "cursor-pointer",
         )}
       >

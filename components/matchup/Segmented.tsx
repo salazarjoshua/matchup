@@ -28,10 +28,7 @@ const Segmented = ({
 }: SegmentedProps) => (
   <div
     role="radiogroup"
-    className={cn(
-      "h-8 rounded-xl bg-surface flex items-center gap-1 p-1",
-      className,
-    )}
+    className={cn("h-10 rounded-xl bg-surface flex items-center", className)}
     {...props}
   >
     {options.map((option) => {
@@ -46,12 +43,11 @@ const Segmented = ({
           onClick={() => onChange?.(option.value)}
           className={cn(
             "duration-120 h-full flex-1 rounded-lg text-[12px] transition-colors ease-out",
-            // White on a hairline is this panel's mark for a live surface — the
-            // same treatment the X/Y fields carry a few pixels below.
-            active && "border-hairline border bg-white",
+            "border-2 border-transparent",
+            active && "border-hairline bg-white",
             // The raise is the whole signal for which one is on, so it goes when
             // the block is disabled: a frozen layer shouldn't read as a live choice.
-            active && !disabled && "text-ink shadow-panel",
+            active && !disabled && "text-ink",
             !active && !disabled && "text-muted hover:text-ink",
             disabled && "cursor-not-allowed text-disabled",
           )}

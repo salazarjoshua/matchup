@@ -44,12 +44,13 @@ const Field = ({
   return (
     <div
       className={cn(
-        "h-8 rounded-xl duration-120 flex items-center gap-2 transition-colors ease-out",
+        "h-10 rounded-xl duration-120 flex items-center gap-2 transition-colors ease-out",
+        "px-3 border-0 bg-surface",
         focused && interactive
-          ? "border-[1.5px] border-focus bg-white px-[11.5px]"
+          ? "focus-within:ring-2 focus-within:ring-focus"
           : editable && !disabled
-            ? "border-hairline border bg-white px-3"
-            : "bg-surface border border-transparent px-3",
+            ? "border-hairline"
+            : "border-transparent",
         className,
       )}
       {...props}
@@ -104,7 +105,7 @@ const Field = ({
         <span
           className={cn(
             "text-sm flex-1 tabular-nums",
-            disabled ? "text-disabled" : "text-muted",
+            disabled ? "text-disabled cursor-not-allowed" : "text-muted",
           )}
         >
           {value}
