@@ -1,10 +1,22 @@
 import { storage } from "wxt/utils/storage";
 
+/**
+ * How the overlay is composited over the page. Only inversion for now — the
+ * shape is a mode rather than a flag so a second one is an entry here, not a
+ * rewrite of every prop that carries it.
+ */
+export type BlendMode = "none" | "invert";
+
+export const BLEND_MODES: { value: BlendMode; label: string }[] = [
+  { value: "none", label: "none" },
+  { value: "invert", label: "invert" },
+];
+
 /** Everything a layer remembers on its own — images differ in size, so these can't be global. */
 export type LayerSettings = {
   visible: boolean;
   locked: boolean;
-  difference: boolean;
+  blendMode: BlendMode;
   /** 0–100. */
   opacity: number;
   /** Index 0–8 of the active snap point, or null when x/y are free. */
@@ -47,7 +59,7 @@ export type MatchupState = {
 export const LAYER_DEFAULTS: LayerSettings = {
   visible: true,
   locked: false,
-  difference: false,
+  blendMode: "none",
   opacity: 50,
   anchor: null,
   pinned: false,
