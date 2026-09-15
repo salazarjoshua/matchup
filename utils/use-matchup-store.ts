@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   DrawnLayer,
   LayerSettings,
+  LayerSize,
   LayerSources,
   MatchupState,
 } from "./matchup-state";
@@ -46,6 +47,30 @@ const rejectionMessage = (rejected: File[], addedAny: boolean) => {
     ? `${what} isn’t supported. ${ACCEPTED_COPY}`
     : `${what} aren’t supported. ${ACCEPTED_COPY}`;
 };
+
+/**
+ * The image's own size, so a new layer opens at the size it was drawn at and the
+ * aspect lock has a ratio to hold to. Resolves to nothing rather than rejecting on a
+ * failure or on an SVG with no intrinsic size — the overlay falls back to laying the
+ * image out itself, which is what it did before any of this was stored.
+ */
+const measure = (src: string) =>
+  new Promise<Partial<LayerSize>>((resolve) => {
+    const image = new Image();
+    image.onload = () =>
+      resolve(
+        image.naturalWidth > 0 && image.naturalHeight > 0
+          ? {
+              width: String(image.naturalWidth),
+              height: String(image.naturalHeight),
+              naturalWidth: image.naturalWidth,
+              naturalHeight: image.naturalHeight,
+            }
+          : {},
+      );
+    image.onerror = () => resolve({});
+    image.src = src;
+  });
 
 const readAsDataUrl = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -160,7 +185,7 @@ export const useMatchupStore = (
 
   /** Settings live on the layer, so every edit targets the selected one. */
   const patchLayer = useCallback(
-    (next: Partial<LayerSettings>) =>
+    (next: Partial<LayerSettings & LayerSize>) =>
       setState((current) => ({
         ...current,
         layers: current.layers.map((layer) =>
@@ -184,14 +209,18 @@ export const useMatchupStore = (
 
       if (accepted.length > 0) {
         const decoded = await Promise.all(
-          accepted.map(async (file) => ({
-            meta: {
-              ...defaults.current,
-              id: crypto.randomUUID(),
-              name: file.name || "pasted.png",
-            },
-            src: await readAsDataUrl(file),
-          })),
+          accepted.map(async (file) => {
+            const src = await readAsDataUrl(file);
+            return {
+              meta: {
+                ...defaults.current,
+                ...(await measure(src)),
+                id: crypto.randomUUID(),
+                name: file.name || "pasted.png",
+              },
+              src,
+            };
+          }),
         );
         const store = storesFor(origin);
         // Sources are written straight through rather than debounced: they change only
@@ -275,7 +304,8 @@ export const useMatchupStore = (
     setState,
     layers,
     selected,
-    settings: (selected ?? LAYER_DEFAULTS) as LayerSettings,
+    settings: (selected ?? LAYER_DEFAULTS) as LayerSettings &
+      Partial<LayerSize>,
     hydrated,
     error,
     setError,

@@ -6,6 +6,14 @@ type OverlayProps = {
   src: string;
   x: number;
   y: number;
+  /**
+   * The size the image is laid out at, before scale. Left off for a layer with no
+   * measurement — an SVG that carries none, or one stored before sizes were — and the
+   * image falls back to its own.
+   */
+  width?: number;
+  height?: number;
+  /** Multiplies the size above rather than replacing it, so W and H keep reading as drawn. */
   scale: number;
   /** 0–100. */
   opacity: number;
@@ -15,7 +23,8 @@ type OverlayProps = {
   /** Locking the layer hands clicks back to the page underneath. */
   draggable?: boolean;
   onPointerDown?: (event: ReactPointerEvent) => void;
-  onLoad?: () => void;
+  /** Carries the image's own size, which is the only place a layer can learn it. */
+  onLoad?: (size: { naturalWidth: number; naturalHeight: number }) => void;
   imageRef?: Ref<HTMLImageElement>;
 };
 
@@ -41,6 +50,8 @@ const Overlay = ({
   src,
   x,
   y,
+  width,
+  height,
   scale,
   opacity,
   blendMode,
@@ -113,12 +124,19 @@ const Overlay = ({
           src={src}
           alt=""
           draggable={false}
-          onLoad={onLoad}
+          onLoad={(event) =>
+            onLoad?.({
+              naturalWidth: event.currentTarget.naturalWidth,
+              naturalHeight: event.currentTarget.naturalHeight,
+            })
+          }
           style={{
             userSelect: "none",
             display: "block",
             opacity: opacity / 100,
             maxWidth: "none",
+            width: width ? `${width}px` : undefined,
+            height: height ? `${height}px` : undefined,
             transform: `scale(${scale})`,
             transformOrigin: "top left",
           }}
