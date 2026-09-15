@@ -30,6 +30,7 @@ import { hasFiles } from "@/utils/drag";
 import { SHORTCUT_DEFAULTS, shortcutLabel } from "@/utils/matchup-settings";
 import { useRef, useState } from "react";
 import type { Shortcuts } from "@/utils/matchup-settings";
+import type { BlendMode } from "@/utils/matchup-state";
 import type {
   ComponentPropsWithoutRef,
   PointerEvent as ReactPointerEvent,
@@ -52,7 +53,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   selectedId?: string;
   visible: boolean;
   locked: boolean;
-  difference: boolean;
+  blendMode: BlendMode;
   /** The overlay holds its place in the window rather than scrolling with the page. */
   pinned: boolean;
   opacity: number;
@@ -67,7 +68,7 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   renamingId?: string;
   onToggleVisible?: () => void;
   onToggleLocked?: () => void;
-  onToggleDifference?: () => void;
+  onToggleInvert?: () => void;
   onPinnedChange?: (pinned: boolean) => void;
   onOpacityChange?: (value: number) => void;
   onAnchorSelect?: (index: number) => void;
@@ -108,7 +109,7 @@ const MatchupPanel = ({
   selectedId,
   visible,
   locked,
-  difference,
+  blendMode,
   pinned,
   opacity,
   anchor,
@@ -120,7 +121,7 @@ const MatchupPanel = ({
   renamingId,
   onToggleVisible,
   onToggleLocked,
-  onToggleDifference,
+  onToggleInvert,
   onPinnedChange,
   onOpacityChange,
   onAnchorSelect,
@@ -225,9 +226,9 @@ const MatchupPanel = ({
               </ToolbarToggle>
               <ToolbarToggle
                 accent="pink"
-                on={difference}
-                onClick={onToggleDifference}
-                title={`Toggle difference (${shortcutLabel(shortcuts.toggleDifference)})`}
+                on={blendMode === "invert"}
+                onClick={onToggleInvert}
+                title={`Toggle invert (${shortcutLabel(shortcuts.toggleInvert)})`}
                 className="rounded-r-xl"
               >
                 <CircleHalfIcon className="w-5" />

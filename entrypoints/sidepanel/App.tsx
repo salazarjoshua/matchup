@@ -117,7 +117,7 @@ export default function App() {
           renamingId={renamingId}
           visible={settings.visible}
           locked={settings.locked}
-          difference={settings.difference}
+          blendMode={settings.blendMode}
           pinned={settings.pinned}
           opacity={settings.opacity}
           anchor={settings.anchor}
@@ -135,8 +135,10 @@ export default function App() {
           }
           onToggleVisible={() => patchLayer({ visible: !settings.visible })}
           onToggleLocked={() => patchLayer({ locked: !settings.locked })}
-          onToggleDifference={() =>
-            patchLayer({ difference: !settings.difference })
+          onToggleInvert={() =>
+            patchLayer({
+              blendMode: settings.blendMode === "invert" ? "none" : "invert",
+            })
           }
           // Only the flag: the page converts the coordinates on the way through,
           // because it is the only side that knows how far it is scrolled.

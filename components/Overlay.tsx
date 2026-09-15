@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, Ref } from "react";
+import type { BlendMode } from "@/utils/matchup-state";
 
 type OverlayProps = {
   src: string;
@@ -8,7 +9,7 @@ type OverlayProps = {
   scale: number;
   /** 0–100. */
   opacity: number;
-  difference: boolean;
+  blendMode: BlendMode;
   /** x/y are read against the window rather than the page — see below. */
   pinned?: boolean;
   /** Locking the layer hands clicks back to the page underneath. */
@@ -42,7 +43,7 @@ const Overlay = ({
   y,
   scale,
   opacity,
-  difference,
+  blendMode,
   pinned = false,
   draggable = false,
   onPointerDown,
@@ -98,8 +99,10 @@ const Overlay = ({
           position: pinned ? "fixed" : "absolute",
           left: `${pinned ? x : x - origin.x}px`,
           top: `${pinned ? y : y - origin.y}px`,
-          mixBlendMode: difference ? "difference" : "normal",
           pointerEvents: draggable ? "auto" : "none",
+          // Inversion is a CSS filter rather than a blend mode; the layer calls
+          // it a blend mode because that is what it is for.
+          filter: blendMode === "invert" ? "invert(1)" : "none",
           cursor: "move",
           touchAction: draggable ? "none" : undefined,
           zIndex: 2147483646,

@@ -18,7 +18,8 @@ import { clampPercent } from "@/utils/clamp";
 import { cn } from "@/utils/cn";
 import { useEffect, useState } from "react";
 import type { MatchupSettings, ShortcutAction } from "@/utils/matchup-settings";
-import type { LayerSettings } from "@/utils/matchup-state";
+import { BLEND_MODES } from "@/utils/matchup-state";
+import type { BlendMode, LayerSettings } from "@/utils/matchup-state";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/components/icons";
 
@@ -282,11 +283,28 @@ export default function App() {
             />
           </Row>
 
+          <Row label="Blend mode">
+            <select
+              value={defaults.blendMode}
+              onChange={(event) =>
+                patchLayer({
+                  blendMode: event.currentTarget.value as BlendMode,
+                })
+              }
+              className={selectClass}
+            >
+              {BLEND_MODES.map((mode) => (
+                <option key={mode.value} value={mode.value}>
+                  {mode.label}
+                </option>
+              ))}
+            </select>
+          </Row>
+
           {(
             [
               ["visible", "Visible"],
               ["locked", "Locked"],
-              ["difference", "Difference"],
             ] as const
           ).map(([key, label]) => (
             <Row key={key} label={label}>

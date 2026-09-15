@@ -222,8 +222,11 @@ export default function MatchupApp() {
         case "toggleLocked":
           patchLayer({ locked: !selectedRef.current?.locked });
           break;
-        case "toggleDifference":
-          patchLayer({ difference: !selectedRef.current?.difference });
+        case "toggleInvert":
+          patchLayer({
+            blendMode:
+              selectedRef.current?.blendMode === "invert" ? "none" : "invert",
+          });
           break;
         case "togglePanel":
           setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
@@ -475,7 +478,7 @@ export default function MatchupApp() {
           y={Number(settings.y) || 0}
           scale={Number(settings.scale) || 1}
           opacity={settings.opacity}
-          difference={settings.difference}
+          blendMode={settings.blendMode}
           pinned={settings.pinned}
           draggable={!settings.locked}
           onPointerDown={onOverlayPointerDown}
@@ -512,7 +515,7 @@ export default function MatchupApp() {
             renamingId={renamingId}
             visible={settings.visible}
             locked={settings.locked}
-            difference={settings.difference}
+            blendMode={settings.blendMode}
             pinned={settings.pinned}
             opacity={settings.opacity}
             anchor={settings.anchor}
@@ -534,8 +537,10 @@ export default function MatchupApp() {
             onTogglePanel={() => patch({ panelOpen: !state.panelOpen })}
             onToggleVisible={() => patchLayer({ visible: !settings.visible })}
             onToggleLocked={() => patchLayer({ locked: !settings.locked })}
-            onToggleDifference={() =>
-              patchLayer({ difference: !settings.difference })
+            onToggleInvert={() =>
+              patchLayer({
+                blendMode: settings.blendMode === "invert" ? "none" : "invert",
+              })
             }
             onPinnedChange={(pinned) => patchLayer({ pinned })}
             onOpacityChange={(opacity) => patchLayer({ opacity })}
