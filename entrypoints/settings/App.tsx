@@ -243,14 +243,14 @@ export default function App() {
 
           <Row label="Frame" hint="What position is measured from">
             <select
-              value={defaults.pinned ? "window" : "page"}
+              value={defaults.pinned ? "fixed" : "scroll"}
               onChange={(event) =>
-                patchLayer({ pinned: event.currentTarget.value === "window" })
+                patchLayer({ pinned: event.currentTarget.value === "fixed" })
               }
               className={selectClass}
             >
-              <option value="page">page</option>
-              <option value="window">window</option>
+              <option value="fixed">fixed</option>
+              <option value="scroll">scroll</option>
             </select>
           </Row>
 
