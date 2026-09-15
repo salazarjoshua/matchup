@@ -99,9 +99,9 @@ const OpacityBar = ({
             <span
               key={tick}
               className={cn(
-                "pointer-events-none absolute top-1/2 h-2.5 w-px -translate-y-1/2 rounded-full",
-                "opacity-0 transition-opacity duration-120 ease-out",
-                "group-hover:opacity-100 group-focus-visible:opacity-100",
+                "pointer-events-none absolute top-1/2 h-1.5 w-px -translate-y-1/2 rounded-full",
+                "transition-height duration-120 ease-out",
+                "group-hover:h-2.5 group-focus-visible:h-2.5",
                 tick <= value ? "bg-white/55" : "bg-ink/15",
               )}
               style={{ left: `${tick}%` }}
