@@ -15,7 +15,7 @@ export default defineConfig({
     // A plain page entrypoint, also registered as the options UI so the browser's
     // own "Options" menu and runtime.openOptionsPage() both land on it.
     options_ui: { page: "settings.html", open_in_tab: true },
-    description: "Design & code. Let's see how they match up.",
+    description: "Overlay any image on any page. See how they match up.",
     permissions: ["storage", "unlimitedStorage", "clipboardRead", "sidePanel"],
     // The panel's font is fetched by the content script from the page's own
     // context, so the page has to be allowed to read it.
