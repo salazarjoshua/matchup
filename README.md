@@ -2,30 +2,32 @@
 
 # Matchup
 
-Matchup is a simple tool for comparing your design with your website. Drop your design on the page, line things up, and spot what's off.
+Overlay any image on any page. See how they match up.
+
+Drop your design on the page, line things up, and spot what's off.
 
 ## Install
 
 1. [Download Matchup](https://github.com/salazarjoshua/matchup/releases/latest/download/matchup.zip).
 2. Unzip it.
 3. Open `chrome://extensions`.
-4. Turn on **Developer mode**.
-5. Click **Load unpacked** and select the `matchup` folder.
-6. Done. 🎉
+4. Turn on Developer mode.
+5. Click Load unpacked and select the `matchup` folder.
+6. Done.
 
 ## What you can do
 
-- **Supports** `PNG`, `JPG`, `WebP`, and `SVG`
-- **Fine-tune** position, size, scale, and opacity
-- **Snap** to 9 positions
-- **Spot** pixel differences
-- **Lock or hide** layers
-- **Reorder** layers
-- **Scroll** the overlay with the page, or fix it to the window
-- **Side panel** for smaller screens
-- **Customize** your shortcuts
+- Overlay any image on any page. `PNG`, `JPG`, `WebP`, and `SVG`.
+- Position, size, scale, and opacity. Snap to 9 spots in 1 click.
+- Invert a layer to spot what's off.
+- Lock a layer and click through to the page underneath.
+- Unlimited layers. Delete, rename, reorder.
+- Layers saved per site.
+- Scroll the overlay with the page, or fix it to the window.
+- Dock the panel in the browser's side panel.
+- Set your own defaults and shortcuts.
 
-### Shortcuts
+## Shortcuts
 
 Customize them to your preference.
 
@@ -40,6 +42,4 @@ Customize them to your preference.
 
 ## Update
 
-Download the latest ZIP, replace the old folder, and hit **Refresh**.
-
-That's it.
+Download the latest ZIP, replace the old folder, and hit Refresh.
