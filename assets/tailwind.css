@@ -62,6 +62,10 @@
 }
 
 @layer base {
+  html {
+    @apply bg-canvas;
+  }
+
   :focus-visible {
     @apply ring-2 ring-focus outline-none;
   }
