@@ -1,3 +1,4 @@
+import { browser } from "wxt/browser";
 import { storage } from "wxt/utils/storage";
 
 /** Everything a layer remembers on its own — images differ in size, so these can't be global. */
@@ -159,3 +160,35 @@ export const storesFor = (origin: string) => {
   stores.set(origin, created);
   return created;
 };
+
+/** Underlying keys of the `local:` items above, without WXT's prefix. */
+const ORIGIN_KEY = /^matchup-(state|sources):/;
+
+export type StoredSite = {
+  origin: string;
+  /** Both keys, empty ones included, so clearing leaves nothing behind. */
+  keys: string[];
+  layers: number;
+  bytes: number;
+};
+
+/** What every origin holds, largest first. `getKeys` is too recent to rely on. */
+export const storedSites = async (): Promise<StoredSite[]> => {
+  const all = await browser.storage.local.get(null);
+  const sites = new Map<string, StoredSite>();
+  for (const [key, value] of Object.entries(all)) {
+    const origin = key.replace(ORIGIN_KEY, "");
+    if (origin === key) continue;
+    const site = sites.get(origin) ?? { origin, keys: [], layers: 0, bytes: 0 };
+    site.keys.push(key);
+    site.bytes += key.length + JSON.stringify(value ?? "").length;
+    if (key.startsWith("matchup-sources:"))
+      site.layers = Object.keys((value ?? {}) as LayerSources).length;
+    sites.set(origin, site);
+  }
+  return [...sites.values()].sort((a, b) => b.bytes - a.bytes);
+};
+
+/** Settings untouched. Open panels follow through their own `watch`. */
+export const clearStoredLayers = (keys: string[]) =>
+  browser.storage.local.remove(keys);

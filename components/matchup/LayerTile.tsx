@@ -119,7 +119,7 @@ const LayerTile = ({
       className={cn(
         // select-none: a stray selection in the filename is dragged as text instead
         // of the layer, which kills the drag with no sign of why.
-        "relative flex min-w-0 select-none flex-col gap-2.5 transition-[scale_rotate]",
+        "relative flex min-w-0 select-none flex-col gap-2 transition-[scale_rotate]",
         lifted && "z-10 -rotate-2 scale-[0.9]",
         className,
       )}

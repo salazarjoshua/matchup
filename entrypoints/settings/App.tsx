@@ -11,11 +11,12 @@ import {
   restoreSettings,
   shortcutLabel,
 } from "@/utils/matchup-settings";
+import { clearStoredLayers, storedSites } from "@/utils/matchup-state";
 import { clampPercent } from "@/utils/clamp";
 import { cn } from "@/utils/cn";
 import { useEffect, useState } from "react";
 import type { MatchupSettings, ShortcutAction } from "@/utils/matchup-settings";
-import type { LayerSettings } from "@/utils/matchup-state";
+import type { LayerSettings, StoredSite } from "@/utils/matchup-state";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { ChevronDownSmallIcon, LogoMark } from "@/components/icons";
 
@@ -98,6 +99,21 @@ const ShortcutRow = ({
     {conflict && <span className="text-accent-red text-xs">{conflict}</span>}
   </li>
 );
+
+/** An "is it worth clearing?" number, not an audit. */
+const formatBytes = (bytes: number) => {
+  const mb = bytes / 1024 / 1024;
+  return mb >= 1 ? `${Math.round(mb)} MB` : `${Math.round(bytes / 1024)} KB`;
+};
+
+const plural = (count: number, noun: string) =>
+  `${count} ${noun}${count === 1 ? "" : "s"}`;
+
+/** Scheme dropped: the row is narrow and it never disambiguates. */
+const siteLabel = (origin: string) => origin.replace(/^https?:\/\//, "");
+
+const clearClass =
+  "text-accent-red hover:bg-surface-strong disabled:text-disabled shrink-0 h-7 rounded-lg px-2.5 text-xs disabled:hover:bg-transparent";
 
 const selectClass =
   "h-8 rounded-xl bg-surface text-sm text-ink w-44 appearance-none pl-3 pr-8 outline-none";
@@ -196,6 +212,26 @@ export default function App() {
       ...current,
       layerDefaults: { ...current.layerDefaults, ...next },
     }));
+
+  const [sites, setSites] = useState<StoredSite[]>([]);
+
+  const readStorage = () =>
+    storedSites()
+      .then(setSites)
+      .catch(() => undefined);
+
+  useEffect(() => {
+    void readStorage();
+  }, []);
+
+  const clear = async (keys: string[], what: string) => {
+    if (!window.confirm(`Delete ${what}? This can't be undone.`)) return;
+    await clearStoredLayers(keys);
+    await readStorage();
+  };
+
+  const used = sites.filter((site) => site.layers > 0);
+  const totalBytes = sites.reduce((sum, site) => sum + site.bytes, 0);
 
   const defaults = settings.layerDefaults;
 
@@ -370,6 +406,66 @@ export default function App() {
               className="text-muted hover:text-ink rounded-md text-xs focus-visible:ring-offset-2"
             >
               Reset shortcuts
+            </button>
+          </div>
+        </Section>
+
+        <Section
+          title="Storage"
+          hint="Layers stay on the site they were added to until they're deleted."
+        >
+          {used.length === 0 ? (
+            <span className="text-muted rounded-xl bg-surface px-3 py-2.5 text-[13px]">
+              Nothing stored.
+            </span>
+          ) : (
+            <ul className={listClass}>
+              {used.map((site) => (
+                <li
+                  key={site.origin}
+                  className="flex items-center justify-between gap-3 px-3 py-2.5"
+                >
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    <span className="truncate text-[13px]">
+                      {siteLabel(site.origin)}
+                    </span>
+                    <span className="text-muted text-xs">
+                      {plural(site.layers, "layer")} · {formatBytes(site.bytes)}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void clear(
+                        site.keys,
+                        `${plural(site.layers, "layer")} on ${siteLabel(site.origin)}`,
+                      )
+                    }
+                    className={clearClass}
+                  >
+                    Clear
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="mt-1 flex items-center justify-between gap-3 px-1">
+            <span className="text-muted text-xs">
+              {formatBytes(totalBytes)} across {plural(used.length, "site")}
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                void clear(
+                  sites.flatMap((site) => site.keys),
+                  `every Matchup layer on ${plural(used.length, "site")}`,
+                )
+              }
+              disabled={used.length === 0}
+              className={clearClass}
+            >
+              Clear all
             </button>
           </div>
         </Section>
