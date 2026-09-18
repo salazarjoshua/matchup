@@ -224,8 +224,8 @@ export default function App() {
     void readStorage();
   }, []);
 
-  const clear = async (keys: string[], what: string) => {
-    if (!window.confirm(`Delete ${what}? This can't be undone.`)) return;
+  const clear = async (keys: string[], ask: string) => {
+    if (!window.confirm(ask)) return;
     await clearStoredLayers(keys);
     await readStorage();
   };
@@ -412,11 +412,11 @@ export default function App() {
 
         <Section
           title="Storage"
-          hint="Layers stay on the site they were added to until they're deleted."
+          hint="Layers are saved per site, in this browser."
         >
           {used.length === 0 ? (
             <span className="text-muted rounded-xl bg-surface px-3 py-2.5 text-[13px]">
-              Nothing stored.
+              No layers saved yet.
             </span>
           ) : (
             <ul className={listClass}>
@@ -438,7 +438,7 @@ export default function App() {
                     onClick={() =>
                       void clear(
                         site.keys,
-                        `${plural(site.layers, "layer")} on ${siteLabel(site.origin)}`,
+                        `Delete ${plural(site.layers, "layer")} on ${siteLabel(site.origin)}?`,
                       )
                     }
                     className={clearClass}
@@ -452,14 +452,16 @@ export default function App() {
 
           <div className="mt-1 flex items-center justify-between gap-3 px-1">
             <span className="text-muted text-xs">
-              {formatBytes(totalBytes)} across {plural(used.length, "site")}
+              {used.length === 0
+                ? "Nothing to clear"
+                : `${formatBytes(totalBytes)} across ${plural(used.length, "site")}`}
             </span>
             <button
               type="button"
               onClick={() =>
                 void clear(
                   sites.flatMap((site) => site.keys),
-                  `every Matchup layer on ${plural(used.length, "site")}`,
+                  `Delete every layer on ${plural(used.length, "site")}? This can't be undone.`,
                 )
               }
               disabled={used.length === 0}
