@@ -7,7 +7,7 @@ import {
 import { browser } from "wxt/browser";
 import { defineBackground } from "wxt/utils/define-background";
 
-const HELP_URL = "https://joshuasalazar.me/";
+const HELP_URL = "https://joshuasalazar.me/matchup";
 
 /** Chrome only, and absent before 114, so it is reached structurally rather than through
  *  the polyfill. Firefox builds get a sidebar the user opens themselves. */
