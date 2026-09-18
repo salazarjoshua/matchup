@@ -112,9 +112,6 @@ const plural = (count: number, noun: string) =>
 /** Scheme dropped: the row is narrow and it never disambiguates. */
 const siteLabel = (origin: string) => origin.replace(/^https?:\/\//, "");
 
-const clearClass =
-  "text-accent-red hover:bg-surface-strong disabled:text-disabled shrink-0 h-7 rounded-lg px-2.5 text-xs disabled:hover:bg-transparent";
-
 const selectClass =
   "h-8 rounded-xl bg-surface text-sm text-ink w-44 appearance-none pl-3 pr-8 outline-none";
 const numberClass =
@@ -415,15 +412,15 @@ export default function App() {
           hint="Layers are saved per site, in this browser."
         >
           {used.length === 0 ? (
-            <span className="text-muted rounded-xl bg-surface px-3 py-2.5 text-[13px]">
+            <p className="text-muted bg-surface rounded-xl px-3 py-2.5 text-[13px]">
               No layers saved yet.
-            </span>
+            </p>
           ) : (
             <ul className={listClass}>
               {used.map((site) => (
                 <li
                   key={site.origin}
-                  className="flex items-center justify-between gap-3 px-3 py-2.5"
+                  className="flex items-center justify-between gap-4 px-3 py-2.5"
                 >
                   <span className="flex min-w-0 flex-col gap-0.5">
                     <span className="truncate text-[13px]">
@@ -441,7 +438,11 @@ export default function App() {
                         `Delete ${plural(site.layers, "layer")} on ${siteLabel(site.origin)}?`,
                       )
                     }
-                    className={clearClass}
+                    aria-label={`Clear layers on ${siteLabel(site.origin)}`}
+                    className={cn(
+                      kbdClass,
+                      "text-accent-red hover:bg-surface-strong shrink-0 bg-white",
+                    )}
                   >
                     Clear
                   </button>
@@ -450,7 +451,7 @@ export default function App() {
             </ul>
           )}
 
-          <div className="mt-1 flex items-center justify-between gap-3 px-1">
+          <div className="mt-2 flex flex-col items-center gap-1 px-1">
             <span className="text-muted text-xs">
               {used.length === 0
                 ? "Nothing to clear"
@@ -465,7 +466,7 @@ export default function App() {
                 )
               }
               disabled={used.length === 0}
-              className={clearClass}
+              className="text-muted hover:text-accent-red disabled:text-disabled rounded-md text-xs"
             >
               Clear all
             </button>
