@@ -52,7 +52,7 @@ const travel = (available: number, size: number) => {
  * field, or any input on the host page. `composedPath` because the listener sits on
  * window, which only ever sees the shadow host as the target.
  */
-const isEditable = (event: KeyboardEvent) => {
+const isEditable = (event: Event) => {
   const target = event.composedPath()[0];
   if (!(target instanceof HTMLElement)) return false;
   return (
@@ -204,6 +204,8 @@ export default function MatchupApp() {
       event.preventDefault();
     };
     const onPaste = (event: ClipboardEvent) => {
+      // A paste into the page's own field is the page's, image or not.
+      if (isEditable(event)) return;
       const files = Array.from(event.clipboardData?.files ?? []);
       if (files.length > 0) {
         event.preventDefault();
