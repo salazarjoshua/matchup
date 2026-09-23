@@ -181,70 +181,74 @@ const MatchupPanel = ({
         )}
         {...props}
       >
-        <div
-          onPointerDown={floating ? onGripPointerDown : undefined}
-          className={cn(
-            "w-panel flex flex-none items-center gap-1",
-            floating ? gripClass : "w-full",
-          )}
-        >
-          {floating && (
-            <ToolbarButton
-              onClick={onTogglePanel}
-              aria-expanded={panelOpen}
-              aria-label={panelOpen ? "Hide panel" : "Show panel"}
-              title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
-              className={cn(
-                "rounded-xl hover:bg-toolbar-hover",
-                hasSelection ? "w-10" : "flex-1",
-              )}
-            >
-              {panelOpen ? (
-                <MinusIcon className="w-5" />
-              ) : (
-                <PlusIcon className="w-5" />
-              )}
-            </ToolbarButton>
-          )}
-          {hasSelection && (
-            <div className="flex flex-1">
-              <ToolbarToggle
-                accent="blue"
-                on={visible}
-                onClick={onToggleVisible}
-                title={`Toggle visibility (${shortcutLabel(shortcuts.toggleVisible)})`}
-                className="rounded-l-xl"
-              >
-                {visible ? (
-                  <EyeIcon className="w-5" />
-                ) : (
-                  <EyeSlashIcon className="w-5" />
+        {/* Docked with no layer the row is empty, and the column's gap would still
+            push the card down by it. */}
+        {(floating || hasSelection) && (
+          <div
+            onPointerDown={floating ? onGripPointerDown : undefined}
+            className={cn(
+              "w-panel flex flex-none items-center gap-1",
+              floating ? gripClass : "w-full",
+            )}
+          >
+            {floating && (
+              <ToolbarButton
+                onClick={onTogglePanel}
+                aria-expanded={panelOpen}
+                aria-label={panelOpen ? "Hide panel" : "Show panel"}
+                title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
+                className={cn(
+                  "rounded-xl hover:bg-toolbar-hover",
+                  hasSelection ? "w-10" : "flex-1",
                 )}
-              </ToolbarToggle>
-              <ToolbarToggle
-                accent="yellow"
-                on={locked}
-                onClick={onToggleLocked}
-                title={`Toggle lock (${shortcutLabel(shortcuts.toggleLocked)})`}
               >
-                {locked ? (
-                  <LockIcon className="w-5" />
+                {panelOpen ? (
+                  <MinusIcon className="w-5" />
                 ) : (
-                  <UnlockIcon className="w-5" />
+                  <PlusIcon className="w-5" />
                 )}
-              </ToolbarToggle>
-              <ToolbarToggle
-                accent="pink"
-                on={invert}
-                onClick={onToggleInvert}
-                title={`Toggle invert (${shortcutLabel(shortcuts.toggleInvert)})`}
-                className="rounded-r-xl"
-              >
-                <CircleHalfIcon className="w-5" />
-              </ToolbarToggle>
-            </div>
-          )}
-        </div>
+              </ToolbarButton>
+            )}
+            {hasSelection && (
+              <div className="flex flex-1">
+                <ToolbarToggle
+                  accent="blue"
+                  on={visible}
+                  onClick={onToggleVisible}
+                  title={`Toggle visibility (${shortcutLabel(shortcuts.toggleVisible)})`}
+                  className="rounded-l-xl"
+                >
+                  {visible ? (
+                    <EyeIcon className="w-5" />
+                  ) : (
+                    <EyeSlashIcon className="w-5" />
+                  )}
+                </ToolbarToggle>
+                <ToolbarToggle
+                  accent="yellow"
+                  on={locked}
+                  onClick={onToggleLocked}
+                  title={`Toggle lock (${shortcutLabel(shortcuts.toggleLocked)})`}
+                >
+                  {locked ? (
+                    <LockIcon className="w-5" />
+                  ) : (
+                    <UnlockIcon className="w-5" />
+                  )}
+                </ToolbarToggle>
+                <ToolbarToggle
+                  accent="pink"
+                  on={invert}
+                  onClick={onToggleInvert}
+                  title={`Toggle invert (${shortcutLabel(shortcuts.toggleInvert)})`}
+                  className="rounded-r-xl"
+                >
+                  <CircleHalfIcon className="w-5" />
+                </ToolbarToggle>
+              </div>
+            )}
+          </div>
+        )}
 
         {(panelOpen || !floating) && (
           <div

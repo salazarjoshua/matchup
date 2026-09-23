@@ -1,7 +1,7 @@
 import MatchupApp from "./MatchupApp";
 import { loadInterFont } from "@/utils/matchup-font";
 import { patchTab, readTab } from "@/utils/matchup-tab";
-import { PAGE_STATE } from "@/utils/side-panel";
+import { PAGE_QUERY, PAGE_STATE } from "@/utils/side-panel";
 import ReactDOM from "react-dom/client";
 import { browser } from "wxt/browser";
 import { createShadowRootUi } from "wxt/utils/content-script-ui/shadow-root";
@@ -61,18 +61,24 @@ export default defineContentScript({
      * icon and the side panel's own prompt both have to reach a page that has Matchup
      * turned off, and there is no React mounted there to hear them.
      */
-    browser.runtime.onMessage.addListener((message: unknown) => {
-      const request = message as { type?: string; open?: boolean };
-      if (request?.type !== "matchup:toggle") return;
-      // An explicit value when the side panel asks, so it can't blindly flip Matchup
-      // back off if its view of the page is a moment stale.
-      open = typeof request.open === "boolean" ? request.open : !open;
-      // Written only for a deliberate toggle, so merely visiting a page still leaves
-      // nothing behind in its sessionStorage.
-      patchTab({ open });
-      if (open) void show();
-      else hide();
-    });
+    browser.runtime.onMessage.addListener(
+      (message: unknown, _, sendResponse) => {
+        const request = message as { type?: string; open?: boolean };
+        if (request?.type === PAGE_QUERY) {
+          sendResponse({ open });
+          return;
+        }
+        if (request?.type !== "matchup:toggle") return;
+        // An explicit value when the side panel asks, so it can't blindly flip Matchup
+        // back off if its view of the page is a moment stale.
+        open = typeof request.open === "boolean" ? request.open : !open;
+        // Written only for a deliberate toggle, so merely visiting a page still leaves
+        // nothing behind in its sessionStorage.
+        patchTab({ open });
+        if (open) void show();
+        else hide();
+      },
+    );
 
     if (open) void show();
   },

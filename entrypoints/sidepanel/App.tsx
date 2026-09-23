@@ -36,7 +36,15 @@ export default function App() {
       // The worker is recycled freely; without this the page would be left thinking
       // no side panel is open.
       next.onMessage.addListener((message: unknown) => {
-        const state = message as { open?: boolean; needsReload?: boolean };
+        const state = message as {
+          open?: boolean;
+          needsReload?: boolean;
+          turnedOff?: boolean;
+        };
+        if (state.turnedOff) {
+          window.close();
+          return;
+        }
         setPage({
           open: state.open === true,
           needsReload: state.needsReload === true,

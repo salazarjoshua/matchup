@@ -10,6 +10,10 @@ export const SIDE_PANEL_PORT = "matchup:side-panel";
  *  copy of that flag, which lives in the page's own sessionStorage. */
 export const PAGE_STATE = "matchup:page-state";
 
+/** Background → page, answered with `{ open }`. Asked rather than remembered, because
+ *  the background worker does not live long enough to remember anything. */
+export const PAGE_QUERY = "matchup:page-query";
+
 /** Background → page: a side panel is showing this tab, so stand down. */
 export const TELL_REMOTE = "matchup:remote";
 
