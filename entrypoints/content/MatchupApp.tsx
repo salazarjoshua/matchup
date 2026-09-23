@@ -49,11 +49,14 @@ const travel = (available: number, size: number) => {
 
 /**
  * Whether the keystroke is going somewhere text is being typed — the layer rename
- * field, or any input on the host page. `composedPath` because the listener sits on
- * window, which only ever sees the shadow host as the target.
+ * field, or any input on the host page. `composedPath` for the page's own shadow
+ * roots; ours is closed, so from window its focused field only shows as the host and
+ * is looked up through the root instead.
  */
-const isEditable = (event: Event) => {
-  const target = event.composedPath()[0];
+const isEditable = (event: Event, ours?: Node) => {
+  let target = event.composedPath()[0];
+  if (ours instanceof ShadowRoot && target === ours.host)
+    target = ours.activeElement ?? target;
   if (!(target instanceof HTMLElement)) return false;
   return (
     target.isContentEditable ||
@@ -173,7 +176,7 @@ export default function MatchupApp() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey || event.metaKey || event.ctrlKey) return;
-      if (isEditable(event)) return;
+      if (isEditable(event, widget.current?.getRootNode())) return;
       // Read from settings rather than hardcoded, and from the ref so a rebind
       // takes effect without re-subscribing this listener.
       const bindings = prefsRef.current.shortcuts;
@@ -205,7 +208,7 @@ export default function MatchupApp() {
     };
     const onPaste = (event: ClipboardEvent) => {
       // A paste into the page's own field is the page's, image or not.
-      if (isEditable(event)) return;
+      if (isEditable(event, widget.current?.getRootNode())) return;
       const files = Array.from(event.clipboardData?.files ?? []);
       if (files.length > 0) {
         event.preventDefault();

@@ -19,6 +19,9 @@ export default defineContentScript({
         name: "matchup-panel",
         position: "inline",
         anchor: "body",
+        // Closed, so the host page's scripts — analytics, session replay — can't reach
+        // in and read the mockups, which sit in here as data URLs.
+        mode: "closed",
         // Out of the page's flow: a body laid out as a grid or a gapped flex takes even
         // an empty host as one more item, and nudges the page to make room for it.
         // Declared here rather than on the element, because WXT's own `:host` reset
