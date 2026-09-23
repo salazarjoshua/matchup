@@ -254,12 +254,18 @@ const MatchupPanel = ({
           <div
             className={cn(
               "rounded-2xl border-hairline shadow-panel flex-none overflow-hidden border bg-white",
-              floating ? "w-panel" : "w-full",
+              // Capped to the window when floating, with the body scrolling inside:
+              // a 300×250 banner is shorter than the panel, and clamping alone left
+              // everything below the layers off-screen for good. 60px is the toolbar,
+              // the gap under it and the widget's margin at either edge.
+              floating
+                ? "w-panel flex max-h-[calc(100vh-60px)] flex-col"
+                : "w-full",
             )}
           >
             <TitleBar
               onPointerDown={floating ? onGripPointerDown : undefined}
-              className={cn(floating && gripClass)}
+              className={cn("flex-none", floating && gripClass)}
               actions={
                 <>
                   {onToggleSidePanel && (
@@ -292,7 +298,10 @@ const MatchupPanel = ({
             />
 
             <div
-              className="relative"
+              className={cn(
+                "relative",
+                floating && "scrollbar-panel min-h-0 overflow-y-auto",
+              )}
               onDragEnter={(event) => {
                 if (!hasFiles(event)) return;
                 event.preventDefault();
