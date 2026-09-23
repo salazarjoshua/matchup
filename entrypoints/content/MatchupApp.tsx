@@ -283,8 +283,13 @@ export default function MatchupApp() {
    * without this the image jumps by however far the page is scrolled. Done here on
    * the change rather than in the toolbar's handler because the side panel can flip
    * the same switch, and only the page knows its own scroll offset.
+   *
+   * Only in the tab the switch was flipped for — its own panel, or a side panel on
+   * it. Every tab of a site shares the layer, so the change reaches the others too,
+   * and each converting by its own scroll offset walked the image off by the sum.
    */
   const pinnedBefore = useRef<{ id?: string; pinned?: boolean }>({});
+  const pinnedHere = useRef(false);
   useLayoutEffect(() => {
     const layer = selectedRef.current;
     if (!layer) return;
@@ -293,13 +298,15 @@ export default function MatchupApp() {
     // A different layer is a different set of coordinates, not a conversion; an
     // anchored one is about to be re-solved against its new frame anyway.
     if (previous.id !== layer.id || previous.pinned === layer.pinned) return;
-    if (layer.anchor !== null) return;
+    const mine = pinnedHere.current || remote;
+    pinnedHere.current = false;
+    if (!mine || layer.anchor !== null) return;
     const shift = layer.pinned ? -1 : 1;
     patchLayer({
       x: String(Math.round((Number(layer.x) || 0) + shift * window.scrollX)),
       y: String(Math.round((Number(layer.y) || 0) + shift * window.scrollY)),
     });
-  }, [state.selectedId, selected?.pinned, patchLayer]);
+  }, [state.selectedId, selected?.pinned, patchLayer, remote]);
 
   /**
    * The image is the only place a layer can learn its own size, so a layer added
@@ -514,6 +521,10 @@ export default function MatchupApp() {
                   : { anchor: index, ...anchoredPosition(index, settings) },
               )
             }
+            onPinnedChange={(pinned) => {
+              pinnedHere.current = true;
+              panelProps.onPinnedChange(pinned);
+            }}
             onGripPointerDown={onGripPointerDown}
             onToggleSidePanel={() =>
               void browser.runtime.sendMessage({
