@@ -148,9 +148,6 @@ const defineStores = (origin: string) => ({
   state: storage.defineItem<MatchupState>(`local:matchup-state:${origin}`, {
     fallback: MATCHUP_DEFAULTS,
   }),
-  sources: storage.defineItem<LayerSources>(`local:matchup-sources:${origin}`, {
-    fallback: {},
-  }),
 });
 
 export const storesFor = (origin: string) => {
@@ -161,12 +158,91 @@ export const storesFor = (origin: string) => {
   return created;
 };
 
+/**
+ * One key per image rather than one map per site. The map was rewritten whole on every
+ * add and delete — every image the site held, shipped old and new to each open context —
+ * and two writes racing each other could drop a new layer's image or bring a deleted one
+ * back. `#` never appears in an origin, so the split is unambiguous.
+ */
+const SOURCE_PREFIX = "matchup-source:";
+const sourceKey = (origin: string, id: string) =>
+  `${SOURCE_PREFIX}${origin}#${id}`;
+
+/** Where every site's images lived before they had a key each. */
+const legacySourcesKey = (origin: string) => `matchup-sources:${origin}`;
+
+/**
+ * The images for these layers. A site still on the old single map is split into keys
+ * the first time it is read, then the map is dropped; running twice at once only
+ * writes the same keys twice.
+ */
+export const readSources = async (
+  origin: string,
+  ids: string[],
+): Promise<LayerSources> => {
+  const legacyKey = legacySourcesKey(origin);
+  const stored = await browser.storage.local.get([
+    legacyKey,
+    ...ids.map((id) => sourceKey(origin, id)),
+  ]);
+  const legacy = stored[legacyKey] as LayerSources | undefined;
+  if (legacy) {
+    await writeSources(origin, legacy);
+    await browser.storage.local.remove(legacyKey);
+  }
+  const sources: LayerSources = { ...legacy };
+  for (const id of ids) {
+    const src = stored[sourceKey(origin, id)];
+    if (typeof src === "string") sources[id] = src;
+  }
+  return sources;
+};
+
+export const writeSources = (origin: string, sources: LayerSources) =>
+  browser.storage.local.set(
+    Object.fromEntries(
+      Object.entries(sources).map(([id, src]) => [sourceKey(origin, id), src]),
+    ),
+  );
+
+export const removeSource = (origin: string, id: string) =>
+  browser.storage.local.remove(sourceKey(origin, id));
+
+/**
+ * Images arriving from other contexts, as layer id → data URL, or undefined for one
+ * that was removed. Only this origin's keys are passed on.
+ */
+export const watchSources = (
+  origin: string,
+  onChange: (changed: Record<string, string | undefined>) => void,
+) => {
+  const prefix = sourceKey(origin, "");
+  const listener = (
+    changes: Record<string, { newValue?: unknown }>,
+    area: string,
+  ) => {
+    if (area !== "local") return;
+    const changed: Record<string, string | undefined> = {};
+    let any = false;
+    for (const [key, change] of Object.entries(changes)) {
+      if (!key.startsWith(prefix)) continue;
+      const src = change.newValue;
+      changed[key.slice(prefix.length)] =
+        typeof src === "string" ? src : undefined;
+      any = true;
+    }
+    if (any) onChange(changed);
+  };
+  browser.storage.onChanged.addListener(listener);
+  return () => browser.storage.onChanged.removeListener(listener);
+};
+
 /** Underlying keys of the `local:` items above, without WXT's prefix. */
-const ORIGIN_KEY = /^matchup-(state|sources):/;
+const ORIGIN_KEY = /^matchup-(?:state|sources|source):/;
 
 export type StoredSite = {
   origin: string;
-  /** Both keys, empty ones included, so clearing leaves nothing behind. */
+  /** Every key the site holds, empty ones included, so clearing leaves nothing behind. */
   keys: string[];
   layers: number;
   bytes: number;
@@ -177,13 +253,16 @@ export const storedSites = async (): Promise<StoredSite[]> => {
   const all = await browser.storage.local.get(null);
   const sites = new Map<string, StoredSite>();
   for (const [key, value] of Object.entries(all)) {
-    const origin = key.replace(ORIGIN_KEY, "");
-    if (origin === key) continue;
+    const rest = key.replace(ORIGIN_KEY, "");
+    if (rest === key) continue;
+    const isSource = key.startsWith(SOURCE_PREFIX);
+    const origin = isSource ? rest.slice(0, rest.lastIndexOf("#")) : rest;
     const site = sites.get(origin) ?? { origin, keys: [], layers: 0, bytes: 0 };
     site.keys.push(key);
     site.bytes += key.length + JSON.stringify(value ?? "").length;
-    if (key.startsWith("matchup-sources:"))
-      site.layers = Object.keys((value ?? {}) as LayerSources).length;
+    if (isSource) site.layers += 1;
+    else if (key.startsWith("matchup-sources:"))
+      site.layers += Object.keys((value ?? {}) as LayerSources).length;
     sites.set(origin, site);
   }
   return [...sites.values()].sort((a, b) => b.bytes - a.bytes);
