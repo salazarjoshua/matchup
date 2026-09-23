@@ -19,6 +19,11 @@ export default defineContentScript({
         name: "matchup-panel",
         position: "inline",
         anchor: "body",
+        // Out of the page's flow: a body laid out as a grid or a gapped flex takes even
+        // an empty host as one more item, and nudges the page to make room for it.
+        // Declared here rather than on the element, because WXT's own `:host` reset
+        // outranks any inline style.
+        css: ":host { position: absolute !important; top: 0 !important; left: 0 !important; }",
         onMount: (container) => {
           const root = ReactDOM.createRoot(container);
           root.render(<MatchupApp />);
