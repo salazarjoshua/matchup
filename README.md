@@ -6,14 +6,7 @@ Overlay any image on any page. See how they match up.
 
 Drop your design on the page, line things up, and spot what's off.
 
-## Install
-
-1. [Download Matchup](https://github.com/salazarjoshua/matchup/releases/latest/download/matchup.zip).
-2. Unzip it.
-3. Open `chrome://extensions`.
-4. Turn on Developer mode.
-5. Click Load unpacked and select the `matchup` folder.
-6. Done.
+[Get Matchup](https://chromewebstore.google.com/detail/matchup/gpcahlemdmogeablcigdfpgcbmbpefek)
 
 ## What you can do
 
@@ -39,7 +32,3 @@ Customize them to your preference.
 | <kbd>⌥</kbd><kbd>3</kbd> | Toggle invert     |
 | <kbd>⌥</kbd><kbd>U</kbd> | Upload image      |
 | <kbd>⌘</kbd><kbd>V</kbd> | Paste image       |
-
-## Update
-
-Download the latest ZIP, replace the old folder, and hit Refresh.
