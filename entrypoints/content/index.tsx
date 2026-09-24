@@ -1,7 +1,7 @@
 import MatchupApp from "./MatchupApp";
 import { loadInterFont } from "@/utils/matchup-font";
 import { patchTab, readTab } from "@/utils/matchup-tab";
-import { PAGE_STATE } from "@/utils/side-panel";
+import { PAGE_QUERY, PAGE_STATE } from "@/utils/side-panel";
 import ReactDOM from "react-dom/client";
 import { browser } from "wxt/browser";
 import { createShadowRootUi } from "wxt/utils/content-script-ui/shadow-root";
@@ -19,6 +19,14 @@ export default defineContentScript({
         name: "matchup-panel",
         position: "inline",
         anchor: "body",
+        // Closed, so the host page's scripts — analytics, session replay — can't reach
+        // in and read the mockups, which sit in here as data URLs.
+        mode: "closed",
+        // Out of the page's flow: a body laid out as a grid or a gapped flex takes even
+        // an empty host as one more item, and nudges the page to make room for it.
+        // Declared here rather than on the element, because WXT's own `:host` reset
+        // outranks any inline style.
+        css: ":host { position: absolute !important; top: 0 !important; left: 0 !important; }",
         onMount: (container) => {
           const root = ReactDOM.createRoot(container);
           root.render(<MatchupApp />);
@@ -61,18 +69,24 @@ export default defineContentScript({
      * icon and the side panel's own prompt both have to reach a page that has Matchup
      * turned off, and there is no React mounted there to hear them.
      */
-    browser.runtime.onMessage.addListener((message: unknown) => {
-      const request = message as { type?: string; open?: boolean };
-      if (request?.type !== "matchup:toggle") return;
-      // An explicit value when the side panel asks, so it can't blindly flip Matchup
-      // back off if its view of the page is a moment stale.
-      open = typeof request.open === "boolean" ? request.open : !open;
-      // Written only for a deliberate toggle, so merely visiting a page still leaves
-      // nothing behind in its sessionStorage.
-      patchTab({ open });
-      if (open) void show();
-      else hide();
-    });
+    browser.runtime.onMessage.addListener(
+      (message: unknown, _, sendResponse) => {
+        const request = message as { type?: string; open?: boolean };
+        if (request?.type === PAGE_QUERY) {
+          sendResponse({ open });
+          return;
+        }
+        if (request?.type !== "matchup:toggle") return;
+        // An explicit value when the side panel asks, so it can't blindly flip Matchup
+        // back off if its view of the page is a moment stale.
+        open = typeof request.open === "boolean" ? request.open : !open;
+        // Written only for a deliberate toggle, so merely visiting a page still leaves
+        // nothing behind in its sessionStorage.
+        patchTab({ open });
+        if (open) void show();
+        else hide();
+      },
+    );
 
     if (open) void show();
   },

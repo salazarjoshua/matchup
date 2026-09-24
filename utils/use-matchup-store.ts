@@ -3,8 +3,12 @@ import {
   LAYER_DEFAULTS,
   MATCHUP_DEFAULTS,
   lockAspect,
+  readSources,
+  removeSource,
   restoreState,
   storesFor,
+  watchSources,
+  writeSources,
 } from "./matchup-state";
 import {
   SETTINGS_DEFAULTS,
@@ -126,13 +130,18 @@ export const useMatchupStore = (
     let live = true;
     setHydrated(false);
 
-    void Promise.all([store.state.getValue(), store.sources.getValue()])
-      .then(([storedState, storedSources]) => {
-        if (!live) return;
+    void store.state
+      .getValue()
+      .then(async (storedState) => {
         const restored = restoreState(storedState);
+        const storedSources = await readSources(
+          origin,
+          restored.layers.map((layer) => layer.id),
+        );
+        if (!live) return;
         synced.current = JSON.stringify(restored);
         setState(restored);
-        setSources(storedSources ?? {});
+        setSources(storedSources);
       })
       .catch(() => undefined)
       .finally(() => live && setHydrated(true));
@@ -144,8 +153,15 @@ export const useMatchupStore = (
       synced.current = serialised;
       setState(restored);
     });
-    const unwatchSources = store.sources.watch((next) =>
-      setSources(next ?? {}),
+    const unwatchSources = watchSources(origin, (changed) =>
+      setSources((current) => {
+        const next = { ...current };
+        for (const [id, src] of Object.entries(changed)) {
+          if (src === undefined) delete next[id];
+          else next[id] = src;
+        }
+        return next;
+      }),
     );
     return () => {
       live = false;
@@ -232,14 +248,14 @@ export const useMatchupStore = (
           return;
         }
 
-        const store = storesFor(origin);
         try {
           // Sources are written straight through rather than debounced: they change
           // only here and on delete, and the meta record below refers to them.
-          const nextSources = { ...(await store.sources.getValue()) };
-          for (const { meta, src } of decoded) nextSources[meta.id] = src;
-          await store.sources.setValue(nextSources);
-          setSources(nextSources);
+          const added = Object.fromEntries(
+            decoded.map(({ meta, src }) => [meta.id, src]),
+          );
+          await writeSources(origin, added);
+          setSources((current) => ({ ...current, ...added }));
         } catch {
           // The layers are deliberately not added. A record whose image never reached
           // storage is a layer that survives the next reload with nothing to draw.
@@ -275,13 +291,12 @@ export const useMatchupStore = (
         };
       });
       if (!origin) return;
-      const store = storesFor(origin);
-      void store.sources.getValue().then((stored) => {
-        const next = { ...stored };
+      setSources((current) => {
+        const next = { ...current };
         delete next[id];
-        setSources(next);
-        return store.sources.setValue(next);
+        return next;
       });
+      void removeSource(origin, id).catch(() => undefined);
     },
     [origin],
   );

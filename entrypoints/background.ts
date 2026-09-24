@@ -1,4 +1,5 @@
 import {
+  PAGE_QUERY,
   PAGE_STATE,
   SIDE_PANEL_PORT,
   TELL_REMOTE,
@@ -31,22 +32,36 @@ const openSidePanel = (tabId?: number) => {
     );
 };
 
-/** Tabs where Matchup is actually running. The flag itself lives in each page's own
- *  sessionStorage, so this is the only place the side panel can learn it from. */
-const liveTabs = new Set<number>();
-/** Each open side panel and the tab it is currently speaking for. Held here because the
- *  background outlives both the panel and any page in it, and a side panel's port keeps
- *  it awake. Which tabs a panel is showing is read back off this rather than tracked
- *  alongside it, so the two can't disagree. */
+/** Each open side panel and the tab it is currently speaking for. Rebuilt whenever the
+ *  worker is: a panel reconnects on its own and says again which tab it is showing. */
 const panelPorts = new Map<Browser.runtime.Port, number | undefined>();
 
 const hasPanel = (tabId: number) => [...panelPorts.values()].includes(tabId);
 
-const tellPanels = (tabId: number, extra?: { needsReload?: boolean }) => {
+const tellPanels = (
+  tabId: number,
+  open: boolean,
+  extra?: { needsReload?: boolean; turnedOff?: boolean },
+) => {
   for (const [port, watching] of panelPorts) {
     if (watching !== tabId) continue;
-    port.postMessage({ open: liveTabs.has(tabId), ...extra });
+    port.postMessage({ open, ...extra });
   }
+};
+
+/**
+ * Asked of the page every time rather than remembered here. Chrome recycles this worker
+ * after half a minute idle — an open port does not keep it awake — and a copy held in
+ * memory went with it, so a panel that reconnected was told Matchup was off while the
+ * overlay sat right there. A rejection means no content script to ask.
+ */
+const syncPanels = (tabId: number) => {
+  void browser.tabs
+    .sendMessage(tabId, { type: PAGE_QUERY })
+    .then((reply) =>
+      tellPanels(tabId, (reply as { open?: boolean })?.open === true),
+    )
+    .catch(() => tellPanels(tabId, false));
 };
 
 const tellTab = (tabId: number) => {
@@ -73,10 +88,10 @@ export default defineBackground(() => {
       const tabId = sender.tab?.id;
       if (tabId == null) return;
       const open = (message as { open?: boolean }).open === true;
-      if (open) liveTabs.add(tabId);
-      else liveTabs.delete(tabId);
       tellTab(tabId);
-      tellPanels(tabId);
+      // Only the toolbar icon turns Matchup off, and a side panel left open on a page
+      // with nothing to drive is one more thing to close by hand.
+      tellPanels(tabId, open, open ? undefined : { turnedOff: true });
     }
   });
 
@@ -106,7 +121,7 @@ export default defineBackground(() => {
         watching = request.tabId;
         panelPorts.set(port, watching);
         tellTab(watching);
-        tellPanels(watching);
+        syncPanels(watching);
         return;
       }
       if (watching == null) return;
@@ -120,7 +135,7 @@ export default defineBackground(() => {
         const target = watching;
         void browser.tabs
           .sendMessage(target, { type: "matchup:toggle", open: true })
-          .catch(() => tellPanels(target, { needsReload: true }));
+          .catch(() => tellPanels(target, false, { needsReload: true }));
       }
     });
 
@@ -131,13 +146,10 @@ export default defineBackground(() => {
   });
 
   browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
-    if (changeInfo.status !== "loading") return;
-    liveTabs.delete(tabId);
-    tellPanels(tabId);
-  });
-
-  browser.tabs.onRemoved.addListener((tabId) => {
-    liveTabs.delete(tabId);
+    // Asked rather than assumed off: a single-page app reports "loading" on its own
+    // route changes, and the content script there never remounts to say it is still on.
+    if (changeInfo.status !== "loading" || !hasPanel(tabId)) return;
+    syncPanels(tabId);
   });
 
   // No popup: the icon toggles the panel straight away, and again to close it.
