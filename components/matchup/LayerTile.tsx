@@ -45,12 +45,14 @@ type LayerTileProps = Omit<
   insertion?: "before" | "after";
 };
 
-// Hover is unavailable on touch and in device emulation, so the selected tile never
-// depends on it; the rest reveal on hover or keyboard focus. Hidden actions stay in
-// the layout and tab order but ignore the pointer, so a stray tap can't hit them.
+// A mouse reveals a tile's actions on hover or keyboard focus. Touch and device
+// emulation can't hover, so there the selected tile shows them by default. Hidden
+// actions stay in the layout and tab order but ignore the pointer, so a stray tap
+// can't hit them.
 const ACTION_HIDDEN =
   "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-has-[:focus-visible]:opacity-100 group-has-[:focus-visible]:pointer-events-auto";
-const ACTION_SHOWN = "opacity-100 pointer-events-auto";
+const ACTION_SHOWN_ON_TOUCH =
+  "pointer-coarse:opacity-100 pointer-coarse:pointer-events-auto";
 
 const ThumbAction = ({
   label,
@@ -62,7 +64,7 @@ const ThumbAction = ({
     type="button"
     aria-label={label}
     className={cn(
-      "relative grid size-6 place-items-center rounded-full bg-surface text-ink",
+      "relative grid size-6 place-items-center rounded-full bg-surface text-ink pointer-coarse:border pointer-coarse:border-placeholder/50",
       className,
     )}
     {...props}
@@ -105,7 +107,7 @@ const LayerTile = ({
     }
   }, [renaming]);
 
-  const actionState = selected ? ACTION_SHOWN : ACTION_HIDDEN;
+  const actionState = cn(ACTION_HIDDEN, selected && ACTION_SHOWN_ON_TOUCH);
 
   return (
     <div
