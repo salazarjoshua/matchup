@@ -155,10 +155,6 @@ const MatchupPanel = ({
   className,
   ...props
 }: MatchupPanelProps) => {
-  // Hiding the overlay disables everything below it; lock only freezes position.
-  const positionDisabled = locked || !visible;
-  const opacityDisabled = !visible;
-
   // The id is held on a ref as well as in state: state drives the lift, but it lands a
   // frame late, and the drop needs the source synchronously or it silently no-ops.
   const dragging = useRef<string>(undefined);
@@ -432,7 +428,6 @@ const MatchupPanel = ({
                     <div className="flex items-start gap-3">
                       <AnchorPad
                         selected={anchor}
-                        disabled={positionDisabled}
                         onSelect={onAnchorSelect}
                       />
                       {/* Ruled into where the overlay is and how big it is: the pair
@@ -444,14 +439,12 @@ const MatchupPanel = ({
                             label="X"
                             className="min-w-0 flex-1"
                             value={x}
-                            disabled={positionDisabled}
                             onChange={onXChange}
                           />
                           <Field
                             label="Y"
                             className="min-w-0 flex-1"
                             value={y}
-                            disabled={positionDisabled}
                             onChange={onYChange}
                           />
                         </div>
@@ -461,7 +454,6 @@ const MatchupPanel = ({
                             label="W"
                             className="min-w-0 flex-1 relative z-10"
                             value={width}
-                            disabled={positionDisabled}
                             onChange={onWidthChange}
                             min={1}
                           />
@@ -473,7 +465,6 @@ const MatchupPanel = ({
                             label="H"
                             className="min-w-0 flex-1 relative z-10"
                             value={height}
-                            disabled={positionDisabled}
                             onChange={onHeightChange}
                             min={1}
                           />
@@ -487,7 +478,6 @@ const MatchupPanel = ({
                         aria-label="Frame"
                         className="w-24 flex-none"
                         value={pinned ? "fixed" : "scroll"}
-                        disabled={positionDisabled}
                         options={FRAMES}
                         onChange={(next) => onPinnedChange?.(next === "fixed")}
                       />
@@ -500,7 +490,6 @@ const MatchupPanel = ({
                         }
                         className="min-w-0 flex-1"
                         value={scale}
-                        disabled={positionDisabled}
                         onChange={onScaleChange}
                         step={0.1}
                         min={0.01}
@@ -510,7 +499,6 @@ const MatchupPanel = ({
 
                   <OpacityBar
                     value={opacity}
-                    disabled={opacityDisabled}
                     onChange={onOpacityChange}
                     className="p-3 pt-0"
                   />

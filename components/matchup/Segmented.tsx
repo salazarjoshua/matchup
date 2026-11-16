@@ -46,7 +46,7 @@ const Segmented = ({
             "border-2 border-transparent",
             active && "border-hairline bg-white",
             // The raise is the whole signal for which one is on, so it goes when
-            // the block is disabled: a frozen layer shouldn't read as a live choice.
+            // the block is disabled: a dead control shouldn't read as a live choice.
             active && !disabled && "text-ink",
             !active && !disabled && "text-muted hover:text-ink",
             disabled && "cursor-not-allowed text-disabled",
