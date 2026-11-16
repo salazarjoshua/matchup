@@ -1,6 +1,7 @@
 import Overlay from "@/components/Overlay";
 import { MatchupPanel } from "@/components/matchup/MatchupPanel";
 import { clamp } from "@/utils/clamp";
+import { matchupSettings, restoreSettings } from "@/utils/matchup-settings";
 import { patchTab, readTab } from "@/utils/matchup-tab";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
 import { PAGE_STATE, TELL_REMOTE } from "@/utils/side-panel";
@@ -21,6 +22,8 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 const PANEL_WIDTH = 300;
 const EDGE = 8;
 const TOOLBAR_HEIGHT = 40;
+/** Below this the floating panel covers most of the page being checked. */
+const NARROW_VIEWPORT = 600;
 const DRAG_THRESHOLD = 4;
 
 const swallowClick = (event: MouseEvent) => {
@@ -530,6 +533,20 @@ export default function MatchupApp() {
               void browser.runtime.sendMessage({
                 type: "matchup:open-side-panel",
               })
+            }
+            dockHint={viewport.w < NARROW_VIEWPORT && !prefs.dockHintDismissed}
+            // Read fresh rather than spread from prefs, which hold defaults until
+            // storage answers and would overwrite every saved setting.
+            onDismissDockHint={() =>
+              void matchupSettings
+                .getValue()
+                .then((stored) =>
+                  matchupSettings.setValue({
+                    ...restoreSettings(stored),
+                    dockHintDismissed: true,
+                  }),
+                )
+                .catch(() => undefined)
             }
           />
         </div>

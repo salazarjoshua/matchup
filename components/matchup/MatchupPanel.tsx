@@ -6,6 +6,7 @@ import { LayerGrid, UploadTile } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
 import { Segmented } from "./Segmented";
+import { DockHint } from "./DockHint";
 import { DropOverlay } from "./DropOverlay";
 import { ToolbarButton } from "./ToolbarButton";
 import { ToolbarToggle } from "./ToolbarToggle";
@@ -89,6 +90,9 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   /** False when the panel has a dock of its own: no drag grip, no collapsing. */
   floating?: boolean;
   onToggleSidePanel?: () => void;
+  /** Suggest the side panel. Only ever shown while floating. */
+  dockHint?: boolean;
+  onDismissDockHint?: () => void;
   onXChange?: (value: string) => void;
   onYChange?: (value: string) => void;
   onWidthChange?: (value: string) => void;
@@ -143,6 +147,8 @@ const MatchupPanel = ({
   shortcuts = SHORTCUT_DEFAULTS,
   floating = true,
   onToggleSidePanel,
+  dockHint = false,
+  onDismissDockHint,
   onXChange,
   onYChange,
   onWidthChange,
@@ -322,6 +328,13 @@ const MatchupPanel = ({
 
               {error && (
                 <ErrorBanner message={error} onDismiss={onDismissError} />
+              )}
+
+              {floating && dockHint && (
+                <DockHint
+                  onDock={onToggleSidePanel}
+                  onDismiss={onDismissDockHint}
+                />
               )}
 
               {layers.length === 0 && (

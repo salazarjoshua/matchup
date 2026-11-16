@@ -153,6 +153,21 @@ export default function App() {
     void matchupSettings.setValue(settings);
   }, [settings, hydrated]);
 
+  // A page dismisses the dock hint while this one is open, and the whole object is
+  // written back on the next edit — so follow that flag, or it comes back to nag.
+  useEffect(
+    () =>
+      matchupSettings.watch((next) => {
+        const { dockHintDismissed } = restoreSettings(next);
+        setSettings((current) =>
+          current.dockHintDismissed === dockHintDismissed
+            ? current
+            : { ...current, dockHintDismissed },
+        );
+      }),
+    [],
+  );
+
   const [capturing, setCapturing] = useState<ShortcutAction>();
   const [conflict, setConflict] = useState<{
     action: ShortcutAction;
