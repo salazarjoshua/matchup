@@ -97,32 +97,6 @@ export const SettingsIcon = (props: IconProps) => (
   </svg>
 );
 
-export const InfoIcon = (props: IconProps) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    {...props}
-  >
-    <path
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M11 11h1v5m9-4a9 9 0 1 1-18 0 9 9 0 0 1 18 0"
-    />
-    <path
-      fill="currentColor"
-      stroke="currentColor"
-      strokeWidth=".5"
-      d="M12 7.25a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z"
-    />
-  </svg>
-);
-
 export const WarningIcon = (props: IconProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"

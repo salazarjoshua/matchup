@@ -15,7 +15,6 @@ import {
   CircleHalfIcon,
   EyeIcon,
   EyeSlashIcon,
-  InfoIcon,
   UnlockIcon,
   LockIcon,
   SettingsIcon,
@@ -84,7 +83,6 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onAddFiles?: (files: File[]) => void;
   onTogglePanel?: () => void;
   onOpenSettings?: () => void;
-  onOpenHelp?: () => void;
   /** Settings belong to a layer, so the toolbar is inert until one is selected. */
   hasSelection?: boolean;
   shortcuts?: Shortcuts;
@@ -141,7 +139,6 @@ const MatchupPanel = ({
   onAddFiles,
   onTogglePanel,
   onOpenSettings,
-  onOpenHelp,
   hasSelection = true,
   shortcuts = SHORTCUT_DEFAULTS,
   floating = true,
@@ -283,9 +280,6 @@ const MatchupPanel = ({
                       )}
                     </IconButton>
                   )}
-                  <IconButton aria-label="About" onClick={onOpenHelp}>
-                    <InfoIcon className="w-4" />
-                  </IconButton>
                   <IconButton aria-label="Settings" onClick={onOpenSettings}>
                     <SettingsIcon className="w-4" />
                   </IconButton>

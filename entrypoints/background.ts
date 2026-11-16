@@ -8,8 +8,6 @@ import {
 import { browser } from "wxt/browser";
 import { defineBackground } from "wxt/utils/define-background";
 
-const HELP_URL = "https://joshuasalazar.me/matchup";
-
 /** Chrome only, and absent before 114, so it is reached structurally rather than through
  *  the polyfill. Firefox builds get a sidebar the user opens themselves. */
 type SidePanelApi = { open: (o: { tabId: number }) => Promise<void> };
@@ -76,8 +74,6 @@ export default defineBackground(() => {
     const type = (message as { type?: string })?.type;
     if (type === "matchup:open-settings") {
       void browser.runtime.openOptionsPage();
-    } else if (type === "matchup:open-help") {
-      void browser.tabs.create({ url: HELP_URL });
     } else if (type === "matchup:open-side-panel") {
       openSidePanel(sender.tab?.id);
     } else if (type === PAGE_STATE) {
