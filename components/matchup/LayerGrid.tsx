@@ -70,7 +70,7 @@ const LayerGrid = ({
       ref={root}
       className={cn(
         "grid grid-cols-3 gap-2.5 p-3",
-        "max-h-66 scrollbar-panel overflow-y-auto",
+        "max-h-66 scrollbar-panel overflow-y-auto overscroll-contain",
         className,
       )}
       {...props}
@@ -88,7 +88,7 @@ const UploadTile = ({
     type="button"
     className={cn(
       "border-2 h-16 rounded-xl border-placeholder text-placeholder grid place-items-center border-dashed",
-      "transition-[background] hover:bg-surface focus-visible:border-transparent",
+      "transition-[background] hover:bg-surface active:bg-surface focus-visible:border-transparent",
       className,
     )}
     {...props}

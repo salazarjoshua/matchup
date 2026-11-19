@@ -68,7 +68,7 @@ const SidePanelPrompt = ({
         <button
           type="button"
           onClick={onClose}
-          className="text-muted hover:text-ink h-8 rounded-md px-2 text-xs"
+          className="text-muted hover:text-ink active:text-ink h-8 rounded-md px-2 text-xs"
         >
           Close side panel
         </button>

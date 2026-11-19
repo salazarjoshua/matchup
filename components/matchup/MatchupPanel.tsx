@@ -171,8 +171,10 @@ const MatchupPanel = ({
     setOver(undefined);
   };
 
+  // manipulation: a host page with no mobile viewport tag otherwise holds every tap
+  // back to wait for a double-tap zoom. The grip keeps its own touch-none.
   return (
-    <div className="w-full justify-center items-center flex">
+    <div className="w-full justify-center items-center flex touch-manipulation">
       <div
         className={cn(
           "flex flex-col items-start gap-1 font-sans w-panel",
@@ -197,7 +199,7 @@ const MatchupPanel = ({
                 aria-label={panelOpen ? "Hide panel" : "Show panel"}
                 title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
                 className={cn(
-                  "rounded-xl hover:bg-toolbar-hover",
+                  "rounded-xl hover:bg-toolbar-hover active:bg-toolbar-hover",
                   hasSelection ? "w-10" : "flex-1",
                 )}
               >
@@ -258,7 +260,7 @@ const MatchupPanel = ({
               // everything below the layers off-screen for good. 60px is the toolbar,
               // the gap under it and the widget's margin at either edge.
               floating
-                ? "w-panel flex max-h-[calc(100vh-60px)] flex-col"
+                ? "w-panel flex max-h-[calc(100dvh-60px)] flex-col"
                 : "w-full",
             )}
           >
@@ -296,7 +298,8 @@ const MatchupPanel = ({
             <div
               className={cn(
                 "relative",
-                floating && "scrollbar-panel min-h-0 overflow-y-auto",
+                floating &&
+                  "scrollbar-panel min-h-0 overflow-y-auto overscroll-contain",
               )}
               onDragEnter={(event) => {
                 if (!hasFiles(event)) return;

@@ -48,7 +48,7 @@ const Segmented = ({
             // The raise is the whole signal for which one is on, so it goes when
             // the block is disabled: a dead control shouldn't read as a live choice.
             active && !disabled && "text-ink",
-            !active && !disabled && "text-muted hover:text-ink",
+            !active && !disabled && "text-muted hover:text-ink active:text-ink",
             disabled && "cursor-not-allowed text-disabled",
           )}
         >

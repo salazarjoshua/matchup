@@ -74,7 +74,26 @@
     @apply bg-accent-blue text-white;
   }
 
+  /* Preflight sets this on :host too, but WXT's `all: initial` host reset can drop it,
+     so it goes on every element rather than relying on inheritance. Only the tap flash
+     goes — focus rings are separate. */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   button {
     @apply cursor-pointer;
+  }
+
+  /* A long press in device mode otherwise selects a button's or a label's text. */
+  button,
+  label {
+    @apply select-none;
+  }
+
+  /* Explicit, so ⌘A and selecting a value still work inside a field in a label. */
+  input,
+  textarea {
+    @apply select-text;
   }
 }
