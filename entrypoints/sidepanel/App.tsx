@@ -2,6 +2,7 @@ import { MatchupPanel } from "@/components/matchup/MatchupPanel";
 import { SidePanelPrompt } from "@/components/matchup/SidePanelPrompt";
 import { SIDE_PANEL_PORT } from "@/utils/side-panel";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
+import { useShortcuts } from "@/utils/use-shortcuts";
 import { useActiveTab } from "./useActiveTab";
 import { useEffect, useRef, useState } from "react";
 import { browser } from "wxt/browser";
@@ -14,10 +15,19 @@ export default function App() {
   const [page, setPage] = useState<{ open: boolean; needsReload?: boolean }>({
     open: false,
   });
-  const { hydrated, panelProps } = useMatchupStore(
-    page.open ? tab?.origin : undefined,
-    prefs,
-  );
+  const { hydrated, selected, patchLayer, pickFiles, addFiles, panelProps } =
+    useMatchupStore(page.open ? tab?.origin : undefined, prefs);
+  const editing = Boolean(tab && !tab.restricted && page.open && hydrated);
+
+  // No shadow root here, so the event's own target already says whether it's a field.
+  useShortcuts({
+    enabled: editing,
+    selected,
+    shortcuts: prefs.shortcuts,
+    patchLayer,
+    pickFiles,
+    addFiles,
+  });
 
   const port = useRef<ReturnType<typeof browser.runtime.connect>>(undefined);
   const watching = useRef<number>(undefined);

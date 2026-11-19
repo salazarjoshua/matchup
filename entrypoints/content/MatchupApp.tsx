@@ -4,6 +4,7 @@ import { clamp } from "@/utils/clamp";
 import { matchupSettings, restoreSettings } from "@/utils/matchup-settings";
 import { patchTab, readTab } from "@/utils/matchup-tab";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
+import { useShortcuts } from "@/utils/use-shortcuts";
 import { PAGE_STATE, TELL_REMOTE } from "@/utils/side-panel";
 import {
   useCallback,
@@ -15,7 +16,6 @@ import {
 import { browser } from "wxt/browser";
 import type { Dock } from "@/utils/matchup-tab";
 import type { LayerSettings, LayerSize } from "@/utils/matchup-state";
-import type { ShortcutAction } from "@/utils/matchup-settings";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
 /** Only a first guess: the real size is measured after the first render below. */
@@ -50,25 +50,6 @@ const travel = (available: number, size: number) => {
     : { min: 0, max: Math.max(0, available - size) };
 };
 
-/**
- * Whether the keystroke is going somewhere text is being typed — the layer rename
- * field, or any input on the host page. `composedPath` for the page's own shadow
- * roots; ours is closed, so from window its focused field only shows as the host and
- * is looked up through the root instead.
- */
-const isEditable = (event: Event, ours?: Node) => {
-  let target = event.composedPath()[0];
-  if (ours instanceof ShadowRoot && target === ours.host)
-    target = ours.activeElement ?? target;
-  if (!(target instanceof HTMLElement)) return false;
-  return (
-    target.isContentEditable ||
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement
-  );
-};
-
 /** Mounted only while Matchup is open on this page — the content script entry owns that
  *  flag, because it has to be reachable with nothing rendered. */
 export default function MatchupApp() {
@@ -79,8 +60,6 @@ export default function MatchupApp() {
    *  down — and, when it drops, to come back. */
   const [remote, setRemote] = useState(() => readTab().remote === true);
   const prefs = useMatchupSettings();
-  const prefsRef = useRef(prefs);
-  prefsRef.current = prefs;
   const {
     state,
     setState,
@@ -176,58 +155,18 @@ export default function MatchupApp() {
       .catch(() => undefined);
   }, []);
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (!event.altKey || event.metaKey || event.ctrlKey) return;
-      if (isEditable(event, widget.current?.getRootNode())) return;
-      // Read from settings rather than hardcoded, and from the ref so a rebind
-      // takes effect without re-subscribing this listener.
-      const bindings = prefsRef.current.shortcuts;
-      const action = (Object.keys(bindings) as ShortcutAction[]).find(
-        (candidate) => bindings[candidate] === event.code,
-      );
-      switch (action) {
-        case "toggleVisible":
-          patchLayer({ visible: !selectedRef.current?.visible });
-          break;
-        case "toggleLocked":
-          patchLayer({ locked: !selectedRef.current?.locked });
-          break;
-        case "toggleInvert":
-          patchLayer({ invert: !selectedRef.current?.invert });
-          break;
-        case "togglePanel":
-          setState((c) => ({ ...c, panelOpen: !c.panelOpen }));
-          break;
-        case "upload":
-          // A keydown carries user activation, which is what the file dialog
-          // needs; preventDefault below doesn't spend it.
-          pickFiles();
-          break;
-        default:
-          return;
-      }
-      event.preventDefault();
-    };
-    const onPaste = (event: ClipboardEvent) => {
-      // A paste into the page's own field is the page's, image or not.
-      if (isEditable(event, widget.current?.getRootNode())) return;
-      const files = Array.from(event.clipboardData?.files ?? []);
-      if (files.length > 0) {
-        event.preventDefault();
-        void addFiles(files);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown, true);
-    window.addEventListener("paste", onPaste, true);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown, true);
-      window.removeEventListener("paste", onPaste, true);
-    };
-  }, [addFiles, pickFiles, patchLayer]);
-
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
+
+  useShortcuts({
+    selected,
+    shortcuts: prefs.shortcuts,
+    patchLayer,
+    pickFiles,
+    addFiles,
+    onTogglePanel: () => setState((c) => ({ ...c, panelOpen: !c.panelOpen })),
+    root: () => widget.current?.getRootNode(),
+  });
 
   /** Where the scaled image's top-left corner lands for a given snap point. */
   const anchoredPosition = useCallback(
