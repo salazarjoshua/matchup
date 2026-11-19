@@ -3,12 +3,12 @@ import { SidePanelPrompt } from "@/components/matchup/SidePanelPrompt";
 import { SIDE_PANEL_PORT } from "@/utils/side-panel";
 import { useMatchupSettings, useMatchupStore } from "@/utils/use-matchup-store";
 import { useShortcuts } from "@/utils/use-shortcuts";
-import { useActiveTab } from "./useActiveTab";
+import { usePanelTab } from "./usePanelTab";
 import { useEffect, useRef, useState } from "react";
 import { browser } from "wxt/browser";
 
 export default function App() {
-  const tab = useActiveTab();
+  const tab = usePanelTab();
   const prefs = useMatchupSettings();
   /** Whether Matchup is running on the tab being shown. Editing layers for a page that
    *  is not listening would draw nothing, so the panel offers to turn it on instead. */

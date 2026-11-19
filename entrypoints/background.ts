@@ -1,4 +1,5 @@
 import {
+  PANEL_TAB_PARAM,
   PAGE_QUERY,
   PAGE_STATE,
   SIDE_PANEL_PORT,
@@ -10,7 +11,14 @@ import { defineBackground } from "wxt/utils/define-background";
 
 /** Chrome only, and absent before 114, so it is reached structurally rather than through
  *  the polyfill. Firefox builds get a sidebar the user opens themselves. */
-type SidePanelApi = { open: (o: { tabId: number }) => Promise<void> };
+type SidePanelApi = {
+  open: (o: { tabId: number }) => Promise<void>;
+  setOptions: (o: {
+    tabId?: number;
+    path?: string;
+    enabled?: boolean;
+  }) => Promise<void>;
+};
 
 const sidePanel = (
   globalThis as unknown as { chrome?: { sidePanel?: SidePanelApi } }
@@ -18,16 +26,25 @@ const sidePanel = (
 
 /**
  * Chrome only accepts this while the click that asked for it is still in hand, and the
- * gesture does not survive an await — so open() is called first with nothing awaited
- * ahead of it. The manifest's default_path already registers the page.
+ * gesture does not survive an await — so open() is called with nothing awaited ahead of
+ * it. setOptions isn't awaited either: Chrome applies the two calls in order.
+ *
+ * A panel of this tab's own, rather than the window-wide default, so it stays with the
+ * page it was opened on and Chrome hides it on every other tab. The tab id rides in the
+ * path because that is the only thing the panel's document is sure to be handed.
  */
 const openSidePanel = (tabId?: number) => {
   if (!sidePanel || tabId == null) return;
+  const warn = (reason: unknown) =>
+    console.warn("Matchup: couldn’t open the side panel", reason);
   sidePanel
-    .open({ tabId })
-    .catch((reason: unknown) =>
-      console.warn("Matchup: couldn’t open the side panel", reason),
-    );
+    .setOptions({
+      tabId,
+      path: `sidepanel.html?${PANEL_TAB_PARAM}=${tabId}`,
+      enabled: true,
+    })
+    .catch(warn);
+  sidePanel.open({ tabId }).catch(warn);
 };
 
 /** Each open side panel and the tab it is currently speaking for. Rebuilt whenever the
@@ -69,6 +86,10 @@ const tellTab = (tabId: number) => {
 };
 
 export default defineBackground(() => {
+  // The manifest's default_path would open one panel for the whole window, following
+  // whichever tab is active. Every panel is opened per tab instead, above.
+  void sidePanel?.setOptions({ enabled: false }).catch(() => undefined);
+
   // Only extension pages may open the options page, so the panel asks us to.
   browser.runtime.onMessage.addListener((message: unknown, sender) => {
     const type = (message as { type?: string })?.type;
@@ -93,7 +114,8 @@ export default defineBackground(() => {
 
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== SIDE_PANEL_PORT) return;
-    // One side panel serves a window, so the tab it speaks for changes as tabs do.
+    // Chrome's panel names its tab once. Firefox's sidebar serves a window, so the tab
+    // it speaks for changes as tabs do.
     let watching: number | undefined;
     const release = () => {
       if (watching == null) return;
