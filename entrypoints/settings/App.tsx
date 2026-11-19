@@ -19,6 +19,7 @@ import type { MatchupSettings, ShortcutAction } from "@/utils/matchup-settings";
 import type { LayerSettings, StoredSite } from "@/utils/matchup-state";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { ChevronDownSmallIcon, LogoMark } from "@/components/icons";
+import { browser } from "wxt/browser";
 
 const Section = ({
   title,
@@ -152,6 +153,21 @@ export default function App() {
     void matchupSettings.setValue(settings);
   }, [settings, hydrated]);
 
+  // A page dismisses the dock hint while this one is open, and the whole object is
+  // written back on the next edit — so follow that flag, or it comes back to nag.
+  useEffect(
+    () =>
+      matchupSettings.watch((next) => {
+        const { dockHintDismissed } = restoreSettings(next);
+        setSettings((current) =>
+          current.dockHintDismissed === dockHintDismissed
+            ? current
+            : { ...current, dockHintDismissed },
+        );
+      }),
+    [],
+  );
+
   const [capturing, setCapturing] = useState<ShortcutAction>();
   const [conflict, setConflict] = useState<{
     action: ShortcutAction;
@@ -237,8 +253,29 @@ export default function App() {
       <div className="mx-auto flex max-w-md flex-col gap-8 px-6 py-10">
         <header className="flex flex-col gap-1">
           <LogoMark className="max-w-12" />
-          <h1 className="text-xl font-semibold tracking-[-0.02em]">Settings</h1>
+          <a
+            href="https://joshuasalazar.me"
+            target="_blank"
+            rel="noreferrer"
+            className="text-muted text-xs rounded-md hover:text-ink hover:underline"
+          >
+            Made by Joshua Salazar
+          </a>
+          <div className="flex gap-1 text-muted text-xs">
+            <a
+              href="https://joshuasalazar.me/matchup"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-ink hover:underline"
+            >
+              Website
+            </a>
+            <div>·</div>
+            <div>v{browser.runtime.getManifest().version}</div>
+          </div>
         </header>
+
+        <h1 className="text-xl font-semibold tracking-[-0.02em]">Settings</h1>
 
         <Section title="Panel">
           <Row label="Position" hint="Where the panel opens">

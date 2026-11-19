@@ -15,6 +15,8 @@ export type MatchupSettings = {
   layerDefaults: LayerSettings;
   /** Action → physical key. The ⌥ modifier is fixed. */
   shortcuts: Shortcuts;
+  /** The floating panel's narrow-view nudge toward the side panel, gone for good once closed. */
+  dockHintDismissed: boolean;
 };
 
 export const PANEL_CORNERS: { value: PanelCorner; label: string }[] = [
@@ -112,6 +114,7 @@ export const SETTINGS_DEFAULTS: MatchupSettings = {
   panelPosition: "top-right",
   layerDefaults: LAYER_DEFAULTS,
   shortcuts: SHORTCUT_DEFAULTS,
+  dockHintDismissed: false,
 };
 
 /**
@@ -139,6 +142,8 @@ export const restoreSettings = (
   panelPosition: stored?.panelPosition ?? SETTINGS_DEFAULTS.panelPosition,
   layerDefaults: { ...LAYER_DEFAULTS, ...stored?.layerDefaults },
   shortcuts: restoreShortcuts(stored?.shortcuts),
+  dockHintDismissed:
+    stored?.dockHintDismissed ?? SETTINGS_DEFAULTS.dockHintDismissed,
 });
 
 export const matchupSettings = storage.defineItem<MatchupSettings>(

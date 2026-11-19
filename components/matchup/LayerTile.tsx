@@ -45,6 +45,15 @@ type LayerTileProps = Omit<
   insertion?: "before" | "after";
 };
 
+// A mouse reveals a tile's actions on hover or keyboard focus. Touch and device
+// emulation can't hover, so there the selected tile shows them by default. Hidden
+// actions stay in the layout and tab order but ignore the pointer, so a stray tap
+// can't hit them.
+const ACTION_HIDDEN =
+  "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-has-[:focus-visible]:opacity-100 group-has-[:focus-visible]:pointer-events-auto";
+const ACTION_SHOWN_ON_TOUCH =
+  "pointer-coarse:opacity-100 pointer-coarse:pointer-events-auto";
+
 const ThumbAction = ({
   label,
   children,
@@ -55,7 +64,7 @@ const ThumbAction = ({
     type="button"
     aria-label={label}
     className={cn(
-      "relative grid size-6 place-items-center rounded-full bg-surface text-ink pointer-events-auto",
+      "relative grid size-6 place-items-center rounded-full bg-surface text-ink pointer-coarse:border pointer-coarse:border-placeholder/50",
       className,
     )}
     {...props}
@@ -97,6 +106,8 @@ const LayerTile = ({
       input.current?.select();
     }
   }, [renaming]);
+
+  const actionState = cn(ACTION_HIDDEN, selected && ACTION_SHOWN_ON_TOUCH);
 
   return (
     <div
@@ -167,16 +178,25 @@ const LayerTile = ({
 
         <div
           className={cn(
-            "pointer-events-none aspect-4/3 absolute inset-0 p-1 items-start justify-between hidden group-hover:flex",
+            "pointer-events-none aspect-4/3 absolute inset-0 p-1 items-start justify-between flex",
             lifted && `opacity-0`,
           )}
         >
-          <div className="pointer-events-none absolute inset-0 rounded-xl bg-black/15 backdrop-blur-[2px]" />
-          <ThumbAction label={`Rename ${name}`} onClick={onStartRename}>
+          {/* The tint is for hover and focus only, so the selected thumbnail stays clear. */}
+          <div className="pointer-events-none absolute inset-0 rounded-xl bg-black/15 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100" />
+          <ThumbAction
+            label={`Rename ${name}`}
+            className={actionState}
+            onClick={onStartRename}
+          >
             <EditIcon className="w-3 text-accent-blue" />
           </ThumbAction>
 
-          <ThumbAction label={`Delete ${name}`} onClick={onDelete}>
+          <ThumbAction
+            label={`Delete ${name}`}
+            className={actionState}
+            onClick={onDelete}
+          >
             <DeleteIcon className="w-3 text-accent-red" />
           </ThumbAction>
         </div>

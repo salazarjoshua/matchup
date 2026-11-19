@@ -6,6 +6,7 @@ import { LayerGrid, UploadTile } from "./LayerGrid";
 import { LayerTile } from "./LayerTile";
 import { OpacityBar } from "./OpacityBar";
 import { Segmented } from "./Segmented";
+import { DockHint } from "./DockHint";
 import { DropOverlay } from "./DropOverlay";
 import { ToolbarButton } from "./ToolbarButton";
 import { ToolbarToggle } from "./ToolbarToggle";
@@ -15,7 +16,6 @@ import {
   CircleHalfIcon,
   EyeIcon,
   EyeSlashIcon,
-  InfoIcon,
   UnlockIcon,
   LockIcon,
   SettingsIcon,
@@ -84,13 +84,15 @@ type MatchupPanelProps = Omit<ComponentPropsWithoutRef<"div">, "children"> & {
   onAddFiles?: (files: File[]) => void;
   onTogglePanel?: () => void;
   onOpenSettings?: () => void;
-  onOpenHelp?: () => void;
   /** Settings belong to a layer, so the toolbar is inert until one is selected. */
   hasSelection?: boolean;
   shortcuts?: Shortcuts;
   /** False when the panel has a dock of its own: no drag grip, no collapsing. */
   floating?: boolean;
   onToggleSidePanel?: () => void;
+  /** Suggest the side panel. Only ever shown while floating. */
+  dockHint?: boolean;
+  onDismissDockHint?: () => void;
   onXChange?: (value: string) => void;
   onYChange?: (value: string) => void;
   onWidthChange?: (value: string) => void;
@@ -141,11 +143,12 @@ const MatchupPanel = ({
   onAddFiles,
   onTogglePanel,
   onOpenSettings,
-  onOpenHelp,
   hasSelection = true,
   shortcuts = SHORTCUT_DEFAULTS,
   floating = true,
   onToggleSidePanel,
+  dockHint = false,
+  onDismissDockHint,
   onXChange,
   onYChange,
   onWidthChange,
@@ -155,10 +158,6 @@ const MatchupPanel = ({
   className,
   ...props
 }: MatchupPanelProps) => {
-  // Hiding the overlay disables everything below it; lock only freezes position.
-  const positionDisabled = locked || !visible;
-  const opacityDisabled = !visible;
-
   // The id is held on a ref as well as in state: state drives the lift, but it lands a
   // frame late, and the drop needs the source synchronously or it silently no-ops.
   const dragging = useRef<string>(undefined);
@@ -172,8 +171,10 @@ const MatchupPanel = ({
     setOver(undefined);
   };
 
+  // manipulation: a host page with no mobile viewport tag otherwise holds every tap
+  // back to wait for a double-tap zoom. The grip keeps its own touch-none.
   return (
-    <div className="w-full justify-center items-center flex">
+    <div className="w-full justify-center items-center flex touch-manipulation">
       <div
         className={cn(
           "flex flex-col items-start gap-1 font-sans w-panel",
@@ -198,7 +199,7 @@ const MatchupPanel = ({
                 aria-label={panelOpen ? "Hide panel" : "Show panel"}
                 title={`${panelOpen ? "Hide" : "Show"} panel (${shortcutLabel(shortcuts.togglePanel)})`}
                 className={cn(
-                  "rounded-xl hover:bg-toolbar-hover",
+                  "rounded-xl hover:bg-toolbar-hover active:bg-toolbar-hover",
                   hasSelection ? "w-10" : "flex-1",
                 )}
               >
@@ -259,7 +260,7 @@ const MatchupPanel = ({
               // everything below the layers off-screen for good. 60px is the toolbar,
               // the gap under it and the widget's margin at either edge.
               floating
-                ? "w-panel flex max-h-[calc(100vh-60px)] flex-col"
+                ? "w-panel flex max-h-[calc(100dvh-60px)] flex-col"
                 : "w-full",
             )}
           >
@@ -287,9 +288,6 @@ const MatchupPanel = ({
                       )}
                     </IconButton>
                   )}
-                  <IconButton aria-label="About" onClick={onOpenHelp}>
-                    <InfoIcon className="w-4" />
-                  </IconButton>
                   <IconButton aria-label="Settings" onClick={onOpenSettings}>
                     <SettingsIcon className="w-4" />
                   </IconButton>
@@ -300,7 +298,8 @@ const MatchupPanel = ({
             <div
               className={cn(
                 "relative",
-                floating && "scrollbar-panel min-h-0 overflow-y-auto",
+                floating &&
+                  "scrollbar-panel min-h-0 overflow-y-auto overscroll-contain",
               )}
               onDragEnter={(event) => {
                 if (!hasFiles(event)) return;
@@ -332,6 +331,13 @@ const MatchupPanel = ({
 
               {error && (
                 <ErrorBanner message={error} onDismiss={onDismissError} />
+              )}
+
+              {floating && dockHint && (
+                <DockHint
+                  onDock={onToggleSidePanel}
+                  onDismiss={onDismissDockHint}
+                />
               )}
 
               {layers.length === 0 && (
@@ -432,7 +438,6 @@ const MatchupPanel = ({
                     <div className="flex items-start gap-3">
                       <AnchorPad
                         selected={anchor}
-                        disabled={positionDisabled}
                         onSelect={onAnchorSelect}
                       />
                       {/* Ruled into where the overlay is and how big it is: the pair
@@ -444,14 +449,12 @@ const MatchupPanel = ({
                             label="X"
                             className="min-w-0 flex-1"
                             value={x}
-                            disabled={positionDisabled}
                             onChange={onXChange}
                           />
                           <Field
                             label="Y"
                             className="min-w-0 flex-1"
                             value={y}
-                            disabled={positionDisabled}
                             onChange={onYChange}
                           />
                         </div>
@@ -461,7 +464,6 @@ const MatchupPanel = ({
                             label="W"
                             className="min-w-0 flex-1 relative z-10"
                             value={width}
-                            disabled={positionDisabled}
                             onChange={onWidthChange}
                             min={1}
                           />
@@ -473,7 +475,6 @@ const MatchupPanel = ({
                             label="H"
                             className="min-w-0 flex-1 relative z-10"
                             value={height}
-                            disabled={positionDisabled}
                             onChange={onHeightChange}
                             min={1}
                           />
@@ -487,7 +488,6 @@ const MatchupPanel = ({
                         aria-label="Frame"
                         className="w-24 flex-none"
                         value={pinned ? "fixed" : "scroll"}
-                        disabled={positionDisabled}
                         options={FRAMES}
                         onChange={(next) => onPinnedChange?.(next === "fixed")}
                       />
@@ -500,7 +500,6 @@ const MatchupPanel = ({
                         }
                         className="min-w-0 flex-1"
                         value={scale}
-                        disabled={positionDisabled}
                         onChange={onScaleChange}
                         step={0.1}
                         min={0.01}
@@ -510,7 +509,6 @@ const MatchupPanel = ({
 
                   <OpacityBar
                     value={opacity}
-                    disabled={opacityDisabled}
                     onChange={onOpacityChange}
                     className="p-3 pt-0"
                   />

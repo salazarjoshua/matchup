@@ -25,3 +25,6 @@ web-ext.config.ts
 *.sln
 *.sw?
 .claude/
+
+# Local issue tracker (see docs/agents/issue-tracker.md)
+.scratch/

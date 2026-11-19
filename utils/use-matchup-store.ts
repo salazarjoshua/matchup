@@ -396,8 +396,6 @@ export const useMatchupStore = (
     hasSelection: Boolean(selected),
     onOpenSettings: () =>
       void browser.runtime.sendMessage({ type: "matchup:open-settings" }),
-    onOpenHelp: () =>
-      void browser.runtime.sendMessage({ type: "matchup:open-help" }),
     onToggleVisible: () => patchLayer({ visible: !settings.visible }),
     onToggleLocked: () => patchLayer({ locked: !settings.locked }),
     onToggleInvert: () => patchLayer({ invert: !settings.invert }),

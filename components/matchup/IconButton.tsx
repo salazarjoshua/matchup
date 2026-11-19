@@ -10,7 +10,7 @@ const IconButton = ({ className, children, ...props }: IconButtonProps) => (
     type="button"
     className={cn(
       "size-7 rounded-[10px] text-muted duration-120 grid place-items-center transition-colors ease-out",
-      "hover:bg-surface",
+      "hover:bg-surface active:bg-surface",
       className,
     )}
     {...props}

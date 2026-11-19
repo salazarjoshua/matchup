@@ -14,6 +14,10 @@ export const PAGE_STATE = "matchup:page-state";
  *  the background worker does not live long enough to remember anything. */
 export const PAGE_QUERY = "matchup:page-query";
 
+/** The side panel page's query parameter naming the one tab it belongs to. Chrome only:
+ *  Firefox's sidebar serves a whole window and is opened without it. */
+export const PANEL_TAB_PARAM = "tabId";
+
 /** Background → page: a side panel is showing this tab, so stand down. */
 export const TELL_REMOTE = "matchup:remote";
 

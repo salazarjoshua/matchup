@@ -35,7 +35,9 @@ const ToolbarToggle = ({
     aria-pressed={on}
     className={cn(
       "flex-1",
-      on ? [accentFill[accent], accentGlyph[accent]] : "hover:bg-toolbar-hover",
+      on
+        ? [accentFill[accent], accentGlyph[accent]]
+        : "hover:bg-toolbar-hover active:bg-toolbar-hover",
       className,
     )}
     {...props}
