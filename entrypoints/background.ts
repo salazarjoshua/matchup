@@ -85,6 +85,25 @@ const tellTab = (tabId: number) => {
     .catch(() => undefined);
 };
 
+/**
+ * The content script only injects on load, so a tab already open when Matchup was
+ * installed or updated has none. Added then rather than to every open tab up front, so
+ * a page is only touched once Matchup is asked for there. Rejects where the browser
+ * won't let anything in — its own pages, the extension stores.
+ */
+const toggleTab = async (tabId: number, open?: boolean) => {
+  const message = { type: "matchup:toggle", open };
+  try {
+    await browser.tabs.sendMessage(tabId, message);
+  } catch {
+    await browser.scripting.executeScript({
+      target: { tabId },
+      files: ["/content-scripts/content.js"],
+    });
+    await browser.tabs.sendMessage(tabId, message);
+  }
+};
+
 export default defineBackground(() => {
   // The manifest's default_path would open one panel for the whole window, following
   // whichever tab is active. Every panel is opened per tab instead, above.
@@ -149,11 +168,11 @@ export default defineBackground(() => {
       }
       if (request.openPage) {
         // The page owns the flag, so it is asked rather than told about; a rejection
-        // means no content script is there to ask, which only a reload fixes.
+        // means not even injecting got Matchup in, and a reload is all that's left.
         const target = watching;
-        void browser.tabs
-          .sendMessage(target, { type: "matchup:toggle", open: true })
-          .catch(() => tellPanels(target, false, { needsReload: true }));
+        void toggleTab(target, true).catch(() =>
+          tellPanels(target, false, { needsReload: true }),
+        );
       }
     });
 
@@ -175,9 +194,9 @@ export default defineBackground(() => {
     const tabId = tab.id;
     if (!tabId || !tab.url || isRestricted(tab.url)) return;
     try {
-      await browser.tabs.sendMessage(tabId, { type: "matchup:toggle" });
+      await toggleTab(tabId);
     } catch {
-      // The content script isn't in this tab yet — it only injects on load.
+      // Not even injecting got Matchup into this tab.
       await browser.action.setBadgeText({ tabId, text: "!" });
       await browser.action.setTitle({
         tabId,
