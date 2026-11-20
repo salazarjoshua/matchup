@@ -16,7 +16,14 @@ export default defineConfig({
     // own "Options" menu and runtime.openOptionsPage() both land on it.
     options_ui: { page: "settings.html", open_in_tab: true },
     description: "Overlay any image on any page. See how they match up.",
-    permissions: ["storage", "unlimitedStorage", "clipboardRead", "sidePanel"],
+    permissions: [
+      "storage",
+      "unlimitedStorage",
+      "clipboardRead",
+      "sidePanel",
+      // Puts the content script into tabs opened before Matchup was installed or updated.
+      "scripting",
+    ],
     // The panel's font is fetched by the content script from the page's own
     // context, so the page has to be allowed to read it.
     web_accessible_resources: [

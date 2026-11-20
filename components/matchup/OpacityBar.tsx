@@ -82,8 +82,10 @@ const OpacityBar = ({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onKeyDown={onKeyDown}
+        // pan-y: under the panel's touch-manipulation a sideways touch drag was taken
+        // as a pan, which cancels the pointer mid-slide. Vertical still scrolls.
         className={cn(
-          "h-10 rounded-xl bg-surface group relative flex-1 overflow-hidden",
+          "h-10 rounded-xl bg-surface group relative flex-1 overflow-hidden touch-pan-y",
           !disabled && "cursor-pointer",
         )}
       >

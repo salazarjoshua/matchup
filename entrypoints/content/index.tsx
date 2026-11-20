@@ -51,6 +51,9 @@ export default defineContentScript({
       // root would be ignored, leaving the panel on a system fallback.
       loadInterFont();
       const built = await (ui ??= createUi());
+      // A copy retired while the stylesheet loaded never gets its panel taken down by
+      // WXT, so it must not put one up.
+      if (ctx.isInvalid) return;
       // The toggle can flip back while the stylesheet is still loading.
       if (open && !built.mounted) built.mount();
     };
@@ -69,23 +72,32 @@ export default defineContentScript({
      * icon and the side panel's own prompt both have to reach a page that has Matchup
      * turned off, and there is no React mounted there to hear them.
      */
-    browser.runtime.onMessage.addListener(
-      (message: unknown, _, sendResponse) => {
-        const request = message as { type?: string; open?: boolean };
-        if (request?.type === PAGE_QUERY) {
-          sendResponse({ open });
-          return;
-        }
-        if (request?.type !== "matchup:toggle") return;
-        // An explicit value when the side panel asks, so it can't blindly flip Matchup
-        // back off if its view of the page is a moment stale.
-        open = typeof request.open === "boolean" ? request.open : !open;
-        // Written only for a deliberate toggle, so merely visiting a page still leaves
-        // nothing behind in its sessionStorage.
-        patchTab({ open });
-        if (open) void show();
-        else hide();
-      },
+    const onMessage = (
+      message: unknown,
+      _: unknown,
+      sendResponse: (response: unknown) => void,
+    ) => {
+      const request = message as { type?: string; open?: boolean };
+      if (request?.type === PAGE_QUERY) {
+        sendResponse({ open });
+        return;
+      }
+      if (request?.type !== "matchup:toggle") return;
+      // An explicit value when the side panel asks, so it can't blindly flip Matchup
+      // back off if its view of the page is a moment stale.
+      open = typeof request.open === "boolean" ? request.open : !open;
+      // Written only for a deliberate toggle, so merely visiting a page still leaves
+      // nothing behind in its sessionStorage.
+      patchTab({ open });
+      if (open) void show();
+      else hide();
+    };
+    browser.runtime.onMessage.addListener(onMessage);
+    // The background can inject a second copy into a page that was still loading its
+    // first. WXT retires the older one and takes its panel down, but not this listener,
+    // and two of them would flip every toggle straight back.
+    ctx.onInvalidated(() =>
+      browser.runtime.onMessage.removeListener(onMessage),
     );
 
     if (open) void show();
